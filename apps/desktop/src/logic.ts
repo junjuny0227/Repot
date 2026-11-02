@@ -1,4 +1,5 @@
-import type { Availability, AvailabilityMap, Category, Item, Selection } from "./types";
+import type { Availability, AvailabilityMap, Category, Item, Os, Selection } from "./types";
+import { TARGET_OPTIONS } from "./strings";
 
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
 
@@ -58,4 +59,13 @@ export function categoryCounts(items: Item[], checked: Set<string>): Record<Cate
     if (checked.has(item.id)) counts[item.category].checked += 1;
   }
   return counts;
+}
+
+/** Stable string key for an OS, usable as a `<select>` option value. */
+export const osKey = (os: Os): string => JSON.stringify(os);
+
+/** Destination choices, plus the current target if it is not one of them (e.g. Linux "other"). */
+export function targetOptions(current: Os | null): Os[] {
+  if (current === null || TARGET_OPTIONS.some((o) => osKey(o) === osKey(current))) return TARGET_OPTIONS;
+  return [...TARGET_OPTIONS, current];
 }
