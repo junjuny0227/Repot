@@ -48,15 +48,19 @@ jobs:
           New-LocalUser -Name $user -Password $secure | Out-Null
           Add-LocalGroupMember -Group Users -Member $user
           $account = "$env:COMPUTERNAME\$user"
-          $root = 'C:\Users\Public\repot-scoop'
-          New-Item -ItemType Directory -Path $root -Force | Out-Null
-          icacls $root /grant "${account}:(OI)(CI)F" | Out-Null
+          # Scoop refuses a non-empty install dir, so the bootstrap script and logs
+          # live next to it and $root itself is created by the installer.
+          $base = 'C:\repot-ci'
+          $root = Join-Path $base 'scoop'
+          $work = Join-Path $base 'setup'
+          New-Item -ItemType Directory -Path $work -Force | Out-Null
+          icacls $base /grant "${account}:(OI)(CI)F" | Out-Null
           if ($LASTEXITCODE -ne 0) { throw 'Cannot grant Scoop directory access' }
-          $script = Join-Path $root 'install.ps1'
-          $log = Join-Path $root 'install.log'
+          $script = Join-Path $work 'install.ps1'
+          $log = Join-Path $work 'install.log'
           @'
           $ErrorActionPreference = 'Stop'
-          $env:SCOOP = 'C:\Users\Public\repot-scoop'
+          $env:SCOOP = '__SCOOP_ROOT__'
           Start-Transcript -Path '__SCOOP_LOG__'
           try {
             $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -72,13 +76,13 @@ jobs:
             Write-Output ($_ | Out-String)
             exit 1
           } finally { Stop-Transcript }
-          '@.Replace('__SCOOP_LOG__', $log) | Set-Content $script
+          '@.Replace('__SCOOP_LOG__', $log).Replace('__SCOOP_ROOT__', $root) | Set-Content $script
           $credential = [pscredential]::new($account, $secure)
-          $stdout = Join-Path $root 'stdout.log'
-          $stderr = Join-Path $root 'stderr.log'
+          $stdout = Join-Path $work 'stdout.log'
+          $stderr = Join-Path $work 'stderr.log'
           try {
             Start-Service seclogon
-            $process = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $root -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            $process = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $work -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
             if (-not $process.WaitForExit(300000)) {
               $process.Kill()
               throw 'Scoop setup timed out'
