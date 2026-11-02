@@ -1,4 +1,5 @@
 pub mod bash;
+pub mod powershell;
 
 use super::{
     paths::display_path,
