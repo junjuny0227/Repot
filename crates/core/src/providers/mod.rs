@@ -8,6 +8,7 @@ pub mod node_managers;
 pub mod npm;
 pub mod nvm;
 pub mod pacman;
+pub mod pnpm;
 pub mod pyenv;
 pub mod rustup;
 pub mod scoop;
