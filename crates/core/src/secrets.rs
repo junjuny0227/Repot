@@ -147,10 +147,10 @@ pub fn findings(content: &str) -> Vec<Finding> {
     let mut findings: Vec<Finding> = Vec::new();
     for secret in detect(content) {
         if let Some(previous) = findings.last_mut().filter(|f| f.line == Some(secret.line)) {
-            if let FindingKind::Secret { name } = &mut previous.kind {
-                if name.is_none() {
-                    *name = secret.name;
-                }
+            if let FindingKind::Secret { name } = &mut previous.kind
+                && name.is_none()
+            {
+                *name = secret.name;
             }
         } else {
             findings.push(Finding {
