@@ -1,6 +1,29 @@
 use crate::{catalog, model::*, secrets};
 use crate::{env::Env, scan::ProviderError};
 use std::path::PathBuf;
+pub(crate) fn package_item(
+    provider: &str,
+    manager: PackageManager,
+    kind: PackageKind,
+    name: String,
+    version: Option<String>,
+    description: Option<String>,
+    command: &str,
+) -> Item {
+    Item {
+        id: format!("{provider}:{name}"),
+        provider: provider.into(),
+        category: Category::PackageManager,
+        name,
+        version,
+        description,
+        origin: Origin::Command(command.into()),
+        portability: Portability::SameOs,
+        details: ItemDetails::Package { manager, kind },
+        findings: vec![],
+    }
+}
+
 pub(crate) struct ConfigFileSpec {
     pub provider: &'static str,
     pub category: Category,

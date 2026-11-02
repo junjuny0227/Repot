@@ -5,6 +5,7 @@ pub mod npm;
 pub mod nvm;
 pub mod shell;
 pub mod vscode;
+pub mod winget;
 use crate::scan::Provider;
 use std::sync::Arc;
 pub fn default_providers() -> Vec<Arc<dyn Provider>> {

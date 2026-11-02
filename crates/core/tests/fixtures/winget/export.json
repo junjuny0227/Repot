@@ -1,0 +1,29 @@
+{
+  "Sources": [
+    {
+      "SourceDetails": {
+        "Name": "winget"
+      },
+      "Packages": [
+        {
+          "PackageIdentifier": "Git.Git",
+          "Version": "2.47.0"
+        },
+        {
+          "PackageIdentifier": "Microsoft.VisualStudioCode",
+          "Version": "1.95.0"
+        }
+      ]
+    },
+    {
+      "SourceDetails": {
+        "Name": "msstore"
+      },
+      "Packages": [
+        {
+          "PackageIdentifier": "9NBLGGH4NNS1"
+        }
+      ]
+    }
+  ]
+}
