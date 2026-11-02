@@ -2,6 +2,7 @@ pub mod apt;
 pub mod brew;
 pub mod choco;
 pub(crate) mod common;
+pub mod dnf;
 pub mod git;
 pub mod npm;
 pub mod nvm;
