@@ -32,7 +32,8 @@
 |---|---|---|---|
 | `apps/desktop/src/__fixtures__/scan.json` | `crates/core/examples/ui_fixture.rs`와 core 모델 | `cargo run -p repot-core --example ui_fixture > apps/desktop/src/__fixtures__/scan.json` | Vitest (`logic.test.ts`, `state.test.ts`) |
 | `crates/core/tests/snapshots/` | `export/` 렌더러 | `INSTA_UPDATE=always cargo test` (cargo-insta가 설치돼 있으면 `cargo insta review`), unverified | `cargo test` |
-| `apps/desktop/src-tauri/icons/` | `apps/desktop/app-icon.svg` | `pnpm --filter @repot/desktop tauri icon app-icon.svg` | 빌드 |
+| `apps/desktop/src-tauri/icons/` (`icon.icns` 제외) | `apps/desktop/app-icon.svg` (여백 없는 원본, Windows·Linux용. 시작 화면도 이 파일을 쓴다) | `apps/desktop`에서 `pnpm tauri icon app-icon.svg` | 빌드 |
+| `apps/desktop/src-tauri/icons/icon.icns` | `apps/desktop/app-icon-macos.svg` (macOS 템플릿: 1024 캔버스, 824 판, 100px 여백) | 위 명령 다음에 `tmp=$(mktemp -d) && pnpm tauri icon app-icon-macos.svg -o "$tmp" && cp "$tmp/icon.icns" src-tauri/icons/icon.icns && rm -rf "$tmp"` | 빌드, Dock에서 다른 앱과 크기 비교 |
 | `pnpm-lock.yaml`, `Cargo.lock` | 의존성 선언 | `pnpm install`, `cargo` | CI `--frozen-lockfile` |
 
 - core 모델의 직렬화 모양을 바꾸면 `scan.json`을 반드시 다시 생성한다. TS 타입은 손으로 맞추고 이 fixture 테스트로만 검증한다.
