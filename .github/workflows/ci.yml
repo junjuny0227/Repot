@@ -37,6 +37,136 @@ jobs:
         if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - name: Install Scoop without elevation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Install as a standard local account, never with -RunAsAdmin.
+          $user = 'RepotScoop'
+          $password = [guid]::NewGuid().ToString('N') + 'aA1!'
+          $secure = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name $user -Password $secure | Out-Null
+          Add-LocalGroupMember -Group Users -Member $user
+          $account = "$env:COMPUTERNAME\$user"
+          # Scoop refuses a non-empty install dir, so the bootstrap script and logs
+          # live next to it and $root itself is created by the installer.
+          $base = 'C:\repot-ci'
+          $root = Join-Path $base 'scoop'
+          $work = Join-Path $base 'setup'
+          New-Item -ItemType Directory -Path $work -Force | Out-Null
+          icacls $base /grant "${account}:(OI)(CI)F" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot grant Scoop directory access' }
+          $script = Join-Path $work 'install.ps1'
+          $log = Join-Path $work 'install.log'
+          @'
+          $ErrorActionPreference = 'Stop'
+          $env:SCOOP = '__SCOOP_ROOT__'
+          # The child inherits runneradmin's profile variables; keep Scoop's config writable.
+          $env:XDG_CONFIG_HOME = '__SCOOP_CONFIG__'
+          Start-Transcript -Path '__SCOOP_LOG__'
+          try {
+            $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+            $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+            if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+              throw 'Scoop must be installed with a non-admin token'
+            }
+            Write-Output 'Confirmed non-admin Scoop installation'
+            Invoke-RestMethod https://get.scoop.sh | Invoke-Expression
+            & "$env:SCOOP/shims/scoop.cmd" install jq ripgrep
+            if ($LASTEXITCODE -ne 0) { throw 'Scoop package installation failed' }
+          } catch {
+            Write-Output ($_ | Out-String)
+            exit 1
+          } finally { Stop-Transcript }
+          '@.Replace('__SCOOP_LOG__', $log).Replace('__SCOOP_ROOT__', $root).Replace('__SCOOP_CONFIG__', (Join-Path $base 'config')) | Set-Content $script
+          $credential = [pscredential]::new($account, $secure)
+          $stdout = Join-Path $work 'stdout.log'
+          $stderr = Join-Path $work 'stderr.log'
+          try {
+            Start-Service seclogon
+            $process = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $work -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            if (-not $process.WaitForExit(300000)) {
+              $process.Kill()
+              throw 'Scoop setup timed out'
+            }
+            if ($process.ExitCode -ne 0) { throw "Scoop setup failed: $($process.ExitCode)" }
+          } finally {
+            foreach ($file in @($log, $stdout, $stderr)) {
+              if (Test-Path $file) { Get-Content $file }
+            }
+            Remove-LocalUser -Name $user
+          }
+          "SCOOP=$root" >> $env:GITHUB_ENV
+          "XDG_CONFIG_HOME=$(Join-Path $base 'config')" >> $env:GITHUB_ENV
+          "$root/shims" >> $env:GITHUB_PATH
+          "REPOT_REQUIRED_PROVIDERS=choco,npm,cargo,scoop" >> $env:GITHUB_ENV
+          "REPOT_REQUIRED_ITEMS=scoop:main/jq,scoop:main/ripgrep" >> $env:GITHUB_ENV
+      - name: Probe winget on the hosted image
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $winget = Get-Command winget -ErrorAction SilentlyContinue
+          if ($winget) {
+            winget --version
+            if ($LASTEXITCODE -ne 0) { throw 'Installed winget is not usable' }
+            "REPOT_REQUIRED_PROVIDERS=$env:REPOT_REQUIRED_PROVIDERS,winget" >> $env:GITHUB_ENV
+          } else {
+            # Some Windows Server runner images do not include App Installer.
+            # Do not treat an installed but broken winget as an optional skip.
+            $reason = 'winget skipped: this hosted Windows image has no winget executable (App Installer is not provisioned).'
+            Write-Host "::notice::$reason"
+            $reason >> $env:GITHUB_STEP_SUMMARY
+          }
+      - name: Record real Windows package-manager output
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          scoop export
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Get-Command winget -ErrorAction SilentlyContinue) {
+            winget export -o "$env:RUNNER_TEMP/winget-real.json" --include-versions --accept-source-agreements --disable-interactivity
+            if (Test-Path "$env:RUNNER_TEMP/winget-real.json") { Get-Content "$env:RUNNER_TEMP/winget-real.json" }
+          }
+      - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
+
+  linux-provider-scans:
+    name: Real scan (${{ matrix.provider }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:latest
+            provider: dnf
+          - image: archlinux:base
+            provider: pacman
+    container: ${{ matrix.image }}
+    env:
+      REPOT_REQUIRED_PROVIDERS: ${{ matrix.provider }},cargo
+      REPOT_REQUIRED_ITEMS: ${{ matrix.provider }}:jq,${{ matrix.provider }}:ripgrep
+    steps:
+      - name: Install build tools and seed explicit packages
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf install -y gcc git curl rust cargo jq ripgrep
+          else
+            pacman -Syu --noconfirm --needed base-devel git curl rust jq ripgrep
+          fi
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Record real package-manager output
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf repoquery --userinstalled --qf '%{name}|%{version}|%{summary}\n'
+          else
+            pacman -Qe
+            pacman -Qi jq ripgrep
+          fi
+      # No Tauri dependencies or frontend: these containers build core only.
+      - run: cargo build -p repot-core
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   frontend:
