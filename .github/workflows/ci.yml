@@ -37,6 +37,7 @@ jobs:
         if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   frontend:
     runs-on: ubuntu-latest
