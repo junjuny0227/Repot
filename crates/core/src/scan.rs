@@ -26,7 +26,7 @@ pub enum ProviderError {
     Env(#[from] EnvError),
 }
 
-pub const PROVIDER_TIMEOUT: Duration = Duration::from_secs(30);
+pub const PROVIDER_TIMEOUT: Duration = Duration::from_secs(60);
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ScanResult {
