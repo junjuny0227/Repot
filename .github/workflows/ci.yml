@@ -61,6 +61,8 @@ jobs:
           @'
           $ErrorActionPreference = 'Stop'
           $env:SCOOP = '__SCOOP_ROOT__'
+          # The child inherits runneradmin's profile variables; keep Scoop's config writable.
+          $env:XDG_CONFIG_HOME = '__SCOOP_CONFIG__'
           Start-Transcript -Path '__SCOOP_LOG__'
           try {
             $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -76,7 +78,7 @@ jobs:
             Write-Output ($_ | Out-String)
             exit 1
           } finally { Stop-Transcript }
-          '@.Replace('__SCOOP_LOG__', $log).Replace('__SCOOP_ROOT__', $root) | Set-Content $script
+          '@.Replace('__SCOOP_LOG__', $log).Replace('__SCOOP_ROOT__', $root).Replace('__SCOOP_CONFIG__', (Join-Path $base 'config')) | Set-Content $script
           $credential = [pscredential]::new($account, $secure)
           $stdout = Join-Path $work 'stdout.log'
           $stderr = Join-Path $work 'stderr.log'
@@ -95,6 +97,7 @@ jobs:
             Remove-LocalUser -Name $user
           }
           "SCOOP=$root" >> $env:GITHUB_ENV
+          "XDG_CONFIG_HOME=$(Join-Path $base 'config')" >> $env:GITHUB_ENV
           "$root/shims" >> $env:GITHUB_PATH
           "REPOT_REQUIRED_PROVIDERS=choco,npm,cargo,scoop" >> $env:GITHUB_ENV
           "REPOT_REQUIRED_ITEMS=scoop:main/jq,scoop:main/ripgrep" >> $env:GITHUB_ENV
