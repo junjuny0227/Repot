@@ -394,6 +394,7 @@ repot-export-2026-11-02/
   - macOS, Windows, Ubuntu 러너에서 `cargo test`, `clippy`, `fmt`
   - 각 러너에서 실제 스캔을 실행하는 통합 테스트(러너에 brew, choco, apt 등이 설치되어 있음)
   - 생성된 스크립트를 `shellcheck`, `PSScriptAnalyzer`로 검사
+  - `restore-e2e`: 새 macOS·Ubuntu·Windows 호스티드 러너에서 실제 `build_export`/`write_export`로 만든 스크립트를 실행한다. 사전 미설치 확인 후 brew/apt의 `sl`, choco의 `dos2unix`, 격리된 npm prefix의 `is-odd` 설치와 설정 파일 복사를 검증한다. 존재하지 않는 패키지 하나만 실패 목록에 남고 종료 코드가 1인지 확인하며, 두 번째 실행에서는 성공했던 세 항목이 모두 건너뜀 목록에 남아야 한다.
 - **프론트엔드**: 선택 상태, 목적지 OS 변경 시 비활성화 로직을 Vitest로 테스트한다.
 
 ## 14. 배포
