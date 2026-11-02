@@ -9,13 +9,13 @@
 
 ## 빌드와 테스트
 
-아직 코드가 없어 아래 명령은 모두 미검증이다. 해당 계획의 Task가 끝나 처음 실행해 보면 `verified (exit 0, <날짜>)`로 바꾼다.
+아직 실행하지 못한 명령은 unverified다. 해당 계획의 Task가 끝나 처음 실행해 보면 `verified (exit 0, <날짜>)`로 바꾼다.
 
 | 명령 | 상태 | 생기는 시점 |
 |---|---|---|
-| `cargo test --workspace` | unverified | 계획 1 Task 1 |
-| `cargo clippy --workspace --all-targets -- -D warnings` | unverified | 계획 1 Task 1 |
-| `cargo fmt --check` | unverified | 계획 1 Task 1 |
+| `cargo test --workspace` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
+| `cargo clippy --workspace --all-targets -- -D warnings` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
+| `cargo fmt --check` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
 | `cargo run -p repot-core --example scan` | unverified | 계획 1 Task 13 (실제 기기를 읽기만 함) |
 | `cargo run -p repot-core --example export` | unverified | 계획 2 Task 9 |
 | `pnpm --filter @repot/desktop typecheck` / `test` / `build` | unverified | 계획 3 Task 1 |
