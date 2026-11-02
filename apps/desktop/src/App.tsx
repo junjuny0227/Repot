@@ -39,7 +39,6 @@ export default function App() {
 
   return (
     <main className={`app screen-${state.screen}`}>
-      <div className="titlebar-drag" data-tauri-drag-region />
       {state.error !== null && (
         <div className="error" role="alert"><ExclamationCircle /><strong>{S.errorTitle}</strong> <span>{state.error}</span></div>
       )}

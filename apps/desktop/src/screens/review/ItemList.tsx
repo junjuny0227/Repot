@@ -3,6 +3,7 @@ import { isAvailable, type Filter } from "../../logic";
 import type { Action, State } from "../../state";
 import { S } from "../../strings";
 import type { Item } from "../../types";
+import { Duplicate, Magnifier, NoSign, WarningTriangle } from "../icons";
 
 interface Props {
   items: Item[];
@@ -19,56 +20,61 @@ const hasKind = (item: Item, kind: "secret" | "duplicate"): boolean =>
 
 export function ItemList({ items, state, dispatch, filter, onFilter, selectedId, onSelect }: Props) {
   return (
-    <section className="item-list card">
+    <section className="item-list">
       <div className="filters">
-        <input
-          type="search"
-          placeholder={S.search}
-          aria-label={S.search}
-          value={filter.query}
-          onChange={(e) => onFilter({ ...filter, query: e.target.value })}
-        />
-        <label>
+        <label className="search-field">
+          <Magnifier />
+          <input
+            type="search"
+            placeholder={S.search}
+            aria-label={S.search}
+            value={filter.query}
+            onChange={(e) => onFilter({ ...filter, query: e.target.value })}
+          />
+        </label>
+        <label className="check-label">
           <input type="checkbox" checked={filter.onlyAvailable} onChange={(e) => onFilter({ ...filter, onlyAvailable: e.target.checked })} />
           {S.onlyAvailable}
         </label>
-        <label>
+        <label className="check-label">
           <input type="checkbox" checked={filter.onlyWarnings} onChange={(e) => onFilter({ ...filter, onlyWarnings: e.target.checked })} />
           {S.onlyWarnings}
         </label>
       </div>
-      {items.length === 0 ? (
-        <p className="muted empty">{S.noItems}</p>
-      ) : (
-        <ul className="items">
-          {items.map((item) => {
-            const available = isAvailable(state.avail[item.id]);
-            return (
-              <li key={item.id} data-id={item.id} className={`item ${item.id === selectedId ? "selected" : ""} ${available ? "" : "unavailable"}`}>
-                <input
-                  type="checkbox"
-                  aria-label={item.name}
-                  checked={state.checked.has(item.id)}
-                  disabled={!available}
-                  onChange={() => dispatch({ type: "toggleItem", id: item.id })}
-                />
-                <button className="item-body" onClick={() => onSelect(item.id)}>
-                  <span className="item-title">
-                    <span className="item-name">{item.name}</span>
-                    {item.version !== null && <span className="item-version">{item.version}</span>}
-                    <span className="badges">
-                      {hasKind(item, "secret") && <span title={S.badgeSecret} aria-label={S.badgeSecret}>⚠️</span>}
-                      {hasKind(item, "duplicate") && <span title={S.badgeDuplicate} aria-label={S.badgeDuplicate}>🔁</span>}
-                      {!available && <span title={S.badgeUnavailable} aria-label={S.badgeUnavailable}>🚫</span>}
+      <div className="item-scroll">
+        {items.length === 0 ? (
+          <p className="muted empty">{S.noItems}</p>
+        ) : (
+          <ul className="group items">
+            {items.map((item) => {
+              const available = isAvailable(state.avail[item.id]);
+              return (
+                <li key={item.id} data-id={item.id} className={`item ${item.id === selectedId ? "selected" : ""} ${available ? "" : "unavailable"}`}>
+                  <input
+                    type="checkbox"
+                    aria-label={item.name}
+                    checked={state.checked.has(item.id)}
+                    disabled={!available}
+                    onChange={() => dispatch({ type: "toggleItem", id: item.id })}
+                  />
+                  <button className="item-body" aria-pressed={item.id === selectedId} onClick={() => onSelect(item.id)}>
+                    <span className="item-title">
+                      <span className="item-name">{item.name}</span>
+                      {item.version !== null && <span className="item-version">{item.version}</span>}
+                      <span className="badges">
+                        {hasKind(item, "secret") && <span className="badge" role="img" title={S.badgeSecret} aria-label={S.badgeSecret}><WarningTriangle className="symbol secret" /></span>}
+                        {hasKind(item, "duplicate") && <span className="badge" role="img" title={S.badgeDuplicate} aria-label={S.badgeDuplicate}><Duplicate className="symbol duplicate" /></span>}
+                        {!available && <span className="badge" role="img" title={S.badgeUnavailable} aria-label={S.badgeUnavailable}><NoSign className="symbol unavailable" /></span>}
+                      </span>
                     </span>
-                  </span>
-                  <span className="item-description muted">{item.description ?? S.noDescription}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                    <span className="item-description">{item.description ?? S.noDescription}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }

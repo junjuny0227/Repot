@@ -1,0 +1,75 @@
+/* Export: format segmented control in the toolbar, file browser + code preview. */
+
+.warnings {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-group);
+  background: color-mix(in srgb, var(--orange) 12%, var(--group));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--orange) 30%, transparent);
+}
+.warnings .symbol { width: 16px; height: 16px; }
+.warnings ul { margin-top: 4px; padding-left: 16px; list-style: disc; color: var(--label-2); font-size: var(--callout); line-height: var(--callout-lh); }
+
+.preview-status { padding: 24px; text-align: center; }
+
+.preview {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  margin: 12px 16px 16px;
+  overflow: hidden;
+  border-radius: var(--radius-group);
+  background-color: var(--group);
+  box-shadow: 0 0 0 1px var(--group-edge);
+}
+
+.tree { min-height: 0; overflow: auto; padding: 6px; border-right: 1px solid var(--separator); }
+.tree > p { padding: 6px 8px; }
+.tree ul { display: flex; flex-direction: column; gap: 1px; }
+.tree ul ul { padding: 1px 0 0 14px; }
+.tree summary { height: 24px; padding: 0 6px; border-radius: 5px; font-size: var(--callout); }
+.file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 5px;
+  background: none;
+  box-shadow: none;
+  font-size: var(--callout);
+  text-align: left;
+}
+.file .doc { width: 14px; height: 14px; color: var(--label-2); }
+.file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file.active { background-color: var(--accent); color: var(--on-accent); }
+.file.active .doc { color: var(--on-accent); }
+
+.contents { min-width: 0; min-height: 0; display: flex; flex-direction: column; background-color: var(--code); }
+.contents-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--separator);
+  color: var(--label-2);
+}
+.contents-header .mono { font-size: var(--caption); }
+.code { flex: 1; min-height: 0; overflow: auto; padding: 8px 0; counter-reset: line; font-size: 11.5px; line-height: 17px; }
+.code .line { position: relative; display: block; min-height: 17px; padding: 0 16px 0 52px; }
+.code .line::before {
+  counter-increment: line;
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 38px;
+  text-align: right;
+  color: var(--label-3);
+}
