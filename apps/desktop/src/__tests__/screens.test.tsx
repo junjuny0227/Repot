@@ -1,13 +1,15 @@
 import { expect, test } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { initialState, reducer, type State } from "../state";
-import { S, categoryLabel, findingText, originText, osLabel, reasonText, statusText, withCount } from "../strings";
-import type { AvailabilityMap, ScanResult } from "../types";
+import { S, categoryLabel, findingText, originText, osLabel, nextSteps, reasonText, statusText, warningText, withCount } from "../strings";
+import type { AvailabilityMap, ExportBundle, ScanResult } from "../types";
 import { StartScreen } from "../screens/StartScreen";
 import { ScanScreen } from "../screens/ScanScreen";
 import { ReviewScreen } from "../screens/ReviewScreen";
 import { Sidebar } from "../screens/review/Sidebar";
 import { DetailPanel } from "../screens/review/DetailPanel";
+import { ExportView } from "../screens/ExportScreen";
+import { DoneScreen } from "../screens/DoneScreen";
 
 const noop = () => {};
 
@@ -104,4 +106,49 @@ test("not detected and failed providers are collapsed, with raw failure detail",
   expect(html).toContain(withCount(S.notDetected, 2));
   expect(html).toContain(withCount(S.failed, 1));
   expect(html).toContain("<pre>raw stderr</pre>");
+});
+
+const bundle: ExportBundle = {
+  files: [
+    { path: "restore.sh", contents: "#!/usr/bin/env bash\necho restore", executable: true },
+    { path: "files/.zshrc", contents: "export A=1", executable: false },
+  ],
+  warnings: [{ readFailed: { itemId: "git:file:.gitconfig" } }],
+};
+
+test("export view shows formats, a folded file tree, warnings and the selected file", () => {
+  const s = reducer(reviewState("macOs"), { type: "goExport" });
+  const html = renderToStaticMarkup(
+    <ExportView state={s} dispatch={noop} bundle={bundle} selectedPath="restore.sh" onSelect={noop} onSave={noop} saving={false} />,
+  );
+  expect(html).toContain(S.formatScript);
+  expect(html).toContain(S.formatManifest);
+  expect(html).toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="script"|<input[^>]*value="script"[^>]*checked=""/);
+  expect(html).toMatch(/<details><summary>files\/[^<]*<\/summary>/);
+  expect(html).toContain(".zshrc");
+  expect(html).toContain(warningText(bundle.warnings[0], ".gitconfig"));
+  expect(html).toContain("echo restore");
+  expect(html).toMatch(new RegExp(`<button[^>]*>${S.back}</button>`));
+  expect(html).toMatch(new RegExp(`<button[^>]*>${S.save}</button>`));
+  expect(html).not.toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${S.save}`));
+});
+
+test("export view disables saving while the preview loads or a save runs", () => {
+  const s = reducer(reviewState("macOs"), { type: "goExport" });
+  const loading = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={null} selectedPath={null} onSelect={noop} onSave={noop} saving={false} />);
+  expect(loading).toContain(S.previewLoading);
+  expect(loading).toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${S.save}`));
+  const saving = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={bundle} selectedPath={null} onSelect={noop} onSave={noop} saving />);
+  expect(saving).toMatch(/<button[^>]*disabled=""[^>]*>/);
+});
+
+test("done screen shows the path, next steps and actions", () => {
+  let s = reducer(reducer(reviewState("windows"), { type: "goExport" }), { type: "exported", path: "/tmp/repot-export-2026-11-02" });
+  const html = renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />);
+  expect(html).toContain("/tmp/repot-export-2026-11-02");
+  for (const step of nextSteps("windows", "script")) expect(html).toContain(step);
+  expect(html).toContain(S.openFolder);
+  expect(html).toContain(S.startOver);
+  s = reducer(s, { type: "setFormat", format: "manifest" });
+  expect(renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />)).toContain(nextSteps("windows", "manifest")[0]);
 });

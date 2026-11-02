@@ -6,6 +6,8 @@ import { S } from "./strings";
 import { StartScreen } from "./screens/StartScreen";
 import { ScanScreen } from "./screens/ScanScreen";
 import { ReviewScreen } from "./screens/ReviewScreen";
+import { ExportScreen } from "./screens/ExportScreen";
+import { DoneScreen } from "./screens/DoneScreen";
 
 
 export default function App() {
@@ -42,6 +44,8 @@ export default function App() {
       {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} />}
       {state.screen === "scanning" && <ScanScreen state={state} />}
       {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} />}
+      {state.screen === "export" && <ExportScreen state={state} dispatch={dispatch} />}
+      {state.screen === "done" && <DoneScreen state={state} dispatch={dispatch} />}
     </main>
   );
 }
