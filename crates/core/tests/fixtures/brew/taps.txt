@@ -1,0 +1,2 @@
+homebrew/core
+oven-sh/bun
