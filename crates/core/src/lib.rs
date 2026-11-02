@@ -1,7 +1,13 @@
 pub mod availability;
+pub mod catalog;
 pub mod env;
 pub mod model;
 pub mod os;
+pub mod providers;
 pub mod scan;
 pub mod secrets;
+pub use env::real::RealEnv;
+pub use env::{Env, FakeEnv};
 pub use model::*;
+pub use providers::default_providers;
+pub use scan::{PROVIDER_TIMEOUT, scan};
