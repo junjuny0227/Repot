@@ -95,8 +95,10 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
             url: url.clone(),
             dest: target.clone(),
         },
-        // Connected to the payload path resolver in Task 2.
-        ItemDetails::ConfigFile { .. } => return vec![],
+        ItemDetails::ConfigFile { target, .. } => Step::CopyFile {
+            src: super::paths::payload_path(target),
+            dest: target.clone(),
+        },
     };
     vec![step]
 }
