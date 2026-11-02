@@ -94,14 +94,16 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
             // Only values that end up in the output are validated. Packages, globals and
             // extensions install the latest version, so their scanned version (e.g. a brew
             // cask's "17.0.21,17.70") is never written and must not block the item.
-            let (extra, version) = match &item.details {
-                ItemDetails::ShellPlugin { url, .. } => (Some(url.as_str()), None),
-                ItemDetails::Runtime { runtime, .. } => {
-                    (Some(runtime.as_str()), item.version.as_deref())
+            let (name, extra, version) = match &item.details {
+                ItemDetails::ShellPlugin { url, .. } => {
+                    (Some(item.name.as_str()), Some(url.as_str()), None)
                 }
-                _ => (None, None),
+                ItemDetails::Runtime { runtime, .. } => {
+                    (None, Some(runtime.as_str()), item.version.as_deref())
+                }
+                _ => (Some(item.name.as_str()), None, None),
             };
-            if !step::is_safe_value(&item.name)
+            if name.is_some_and(|v| !step::is_safe_value(v))
                 || version.is_some_and(|v| !step::is_safe_value(v))
                 || extra.is_some_and(|v| !step::is_safe_value(v))
             {
