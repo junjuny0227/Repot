@@ -6,6 +6,7 @@ pub mod dnf;
 pub mod git;
 pub mod npm;
 pub mod nvm;
+pub mod pacman;
 pub mod scoop;
 pub mod shell;
 pub mod vscode;
