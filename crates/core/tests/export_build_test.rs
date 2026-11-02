@@ -236,3 +236,48 @@ fn read_failure_becomes_warning() {
     ));
     assert!(b.files.iter().any(|f| f.path == "restore.sh"));
 }
+
+#[test]
+fn package_version_is_not_validated_because_it_is_not_exported() {
+    // brew cask versions contain commas (e.g. "17.0.21.0.3,17.70.113"), but packages are
+    // installed at the latest version, so the scanned version never reaches the script.
+    let mut cask = item(
+        "brew:cask:zulu@17",
+        "zulu@17",
+        Portability::SameOs,
+        ItemDetails::Package {
+            manager: PackageManager::Brew,
+            kind: PackageKind::Cask,
+        },
+    );
+    cask.version = Some("17.0.21.0.3,17.70.113".into());
+    let mut runtime = item(
+        "nvm:node:bad",
+        "Node.js",
+        Portability::Mapped(RuntimeTool::Nvm),
+        ItemDetails::Runtime {
+            tool: RuntimeTool::Nvm,
+            runtime: "node".into(),
+            is_default: false,
+        },
+    );
+    runtime.version = Some("20,1".into());
+    let items = vec![cask, runtime];
+    let sel = select_all(&items);
+    let env = FakeEnv::new(Os::MacOs, "/Users/t");
+    let b = build_export(
+        &env,
+        &request(&items, &sel, Os::MacOs, Os::MacOs, Format::Script),
+    );
+    assert_eq!(
+        b.warnings.iter().map(warning_id).collect::<Vec<_>>(),
+        vec!["nvm:node:bad"]
+    );
+    let script = &b
+        .files
+        .iter()
+        .find(|f| f.path == "restore.sh")
+        .unwrap()
+        .contents;
+    assert!(script.contains("zulu@17"));
+}

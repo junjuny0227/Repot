@@ -16,8 +16,8 @@
 | `cargo test --workspace` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
 | `cargo clippy --workspace --all-targets -- -D warnings` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
 | `cargo fmt --check` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
-| `cargo run -p repot-core --example scan` | unverified | 계획 1 Task 13 (실제 기기를 읽기만 함) |
-| `cargo run -p repot-core --example export` | unverified | 계획 2 Task 9 |
+| `cargo run -p repot-core --example scan` | verified (exit 0, 2026-11-02) | 계획 1 Task 13 (실제 기기를 읽기만 함) |
+| `cargo run -p repot-core --example export` | verified (exit 0, 2026-11-02) | 계획 2 Task 9 |
 | `pnpm --filter @repot/desktop typecheck` / `test` / `build` | unverified | 계획 3 Task 1 |
 | `pnpm --filter @repot/desktop tauri dev` | unverified | 계획 3 Task 1 |
 
