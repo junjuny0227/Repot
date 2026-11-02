@@ -10,6 +10,7 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
   const [bundle, setBundle] = useState<ExportBundle | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
   const selection = useMemo(() => buildSelection(state.checked, state.revealed), [state.checked, state.revealed]);
   const { target, format } = state;
 
@@ -17,13 +18,18 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
     if (target === null) return;
     let current = true;
     setBundle(null);
+    setPreviewFailed(false);
     previewExport(selection, target, format)
       .then((next) => {
         if (!current) return;
         setBundle(next);
         setSelectedPath((path) => (next.files.some((f) => f.path === path) ? path : next.files[0]?.path ?? null));
       })
-      .catch((e: unknown) => { if (current) dispatch({ type: "error", message: errorMessage(e) }); });
+      .catch((e: unknown) => {
+        if (!current) return;
+        setPreviewFailed(true);
+        dispatch({ type: "error", message: errorMessage(e) });
+      });
     return () => { current = false; };
   }, [selection, target, format, dispatch]);
 
@@ -43,20 +49,21 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
     }
   };
 
-  return <ExportView state={state} dispatch={dispatch} bundle={bundle} selectedPath={selectedPath} onSelect={setSelectedPath} onSave={onSave} saving={saving} />;
+  return <ExportView state={state} dispatch={dispatch} bundle={bundle} previewFailed={previewFailed} selectedPath={selectedPath} onSelect={setSelectedPath} onSave={onSave} saving={saving} />;
 }
 
 interface ViewProps {
   state: State;
   dispatch: Dispatch<Action>;
   bundle: ExportBundle | null;
+  previewFailed?: boolean;
   selectedPath: string | null;
   onSelect: (path: string) => void;
   onSave: () => void;
   saving: boolean;
 }
 
-export function ExportView({ state, dispatch, bundle, selectedPath, onSelect, onSave, saving }: ViewProps) {
+export function ExportView({ state, dispatch, bundle, previewFailed = false, selectedPath, onSelect, onSave, saving }: ViewProps) {
   const names = new Map((state.scan?.items ?? []).map((i) => [i.id, i.name]));
   const tree = bundle === null ? null : fileTree(bundle.files);
   const selected = bundle?.files.find((f) => f.path === selectedPath) ?? null;
@@ -95,7 +102,7 @@ export function ExportView({ state, dispatch, bundle, selectedPath, onSelect, on
         </div>
       )}
       {tree === null ? (
-        <p className="muted">{S.previewLoading}</p>
+        <p className="muted">{previewFailed ? S.previewFailed : S.previewLoading}</p>
       ) : (
         <div className="preview">
           <nav className="tree card">

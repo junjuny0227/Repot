@@ -115,6 +115,7 @@ export const S = {
   save: "Choose folder and save",
   saving: "Saving…",
   previewLoading: "Preparing preview…",
+  previewFailed: "The preview could not be created. Change the format or go back and try again.",
   previewEmpty: "No files will be created.",
   warningsTitle: "Some items will be skipped",
   savedTo: "Saved to",

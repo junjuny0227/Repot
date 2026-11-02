@@ -71,12 +71,13 @@ button.link { border: none; background: none; padding: 0; color: var(--accent); 
 
 .screen { display: flex; flex-direction: column; gap: 16px; padding: 24px; flex: 1; min-height: 0; }
 .screen.start, .screen.scan, .screen.done { max-width: 640px; width: 100%; margin: 0 auto; justify-content: center; }
+.screen.scan { justify-content: flex-start; }
 
 .form { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span { color: var(--muted); }
 
-.providers { display: flex; flex-direction: column; }
+.providers { display: flex; flex-direction: column; overflow: auto; min-height: 0; }
 .provider { display: grid; grid-template-columns: 16px 1fr 1fr auto; align-items: center; gap: 12px; padding: 10px 16px; }
 .provider + .provider { border-top: 1px solid var(--border); }
 .provider-id { font-family: var(--mono); }

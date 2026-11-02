@@ -152,3 +152,10 @@ test("done screen shows the path, next steps and actions", () => {
   s = reducer(s, { type: "setFormat", format: "manifest" });
   expect(renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />)).toContain(nextSteps("windows", "manifest")[0]);
 });
+
+test("export view stops showing the loading text when the preview failed", () => {
+  const s = reducer(reviewState("macOs"), { type: "goExport" });
+  const html = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={null} previewFailed selectedPath={null} onSelect={noop} onSave={noop} saving={false} />);
+  expect(html).toContain(S.previewFailed);
+  expect(html).not.toContain(S.previewLoading);
+});
