@@ -2,6 +2,13 @@ use crate::os::Shell;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Selection {
+    pub items: Vec<String>,
+    pub reveal_secret_lines: Vec<(String, u32)>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
