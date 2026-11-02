@@ -41,11 +41,12 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Use a standard local account: hosted images may disable UAC, so
-          # a Limited task for runneradmin is not reliably a non-admin token.
+          # Install as a standard local account, never with -RunAsAdmin.
           $user = 'RepotScoop'
           $password = [guid]::NewGuid().ToString('N') + 'aA1!'
-          New-LocalUser -Name $user -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+          $secure = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name $user -Password $secure | Out-Null
+          Add-LocalGroupMember -Group Users -Member $user
           $account = "$env:COMPUTERNAME\$user"
           $root = 'C:\Users\Public\repot-scoop'
           New-Item -ItemType Directory -Path $root -Force | Out-Null
@@ -72,21 +73,21 @@ jobs:
             exit 1
           } finally { Stop-Transcript }
           '@.Replace('__SCOOP_LOG__', $log) | Set-Content $script
-          $action = New-ScheduledTaskAction -Execute (Get-Command pwsh).Source -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
-          Register-ScheduledTask -TaskName RepotScoop -Action $action -User $account -Password $password -RunLevel Limited -Force | Out-Null
+          $credential = [pscredential]::new($account, $secure)
+          $stdout = Join-Path $root 'stdout.log'
+          $stderr = Join-Path $root 'stderr.log'
           try {
-            Start-ScheduledTask -TaskName RepotScoop
-            $deadline = (Get-Date).AddMinutes(5)
-            do {
-              Start-Sleep -Seconds 2
-              $info = Get-ScheduledTaskInfo -TaskName RepotScoop
-              if ((Get-Date) -gt $deadline) { throw 'Scoop setup timed out' }
-            } while ($info.LastRunTime.Year -lt 2020 -or (Get-ScheduledTask -TaskName RepotScoop).State -eq 'Running')
-            if (Test-Path $log) { Get-Content $log }
-            if ($info.LastTaskResult -ne 0) { throw "Scoop setup failed: $($info.LastTaskResult)" }
+            Start-Service seclogon
+            $process = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $root -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            if (-not $process.WaitForExit(300000)) {
+              $process.Kill()
+              throw 'Scoop setup timed out'
+            }
+            if ($process.ExitCode -ne 0) { throw "Scoop setup failed: $($process.ExitCode)" }
           } finally {
-            Stop-ScheduledTask -TaskName RepotScoop -ErrorAction SilentlyContinue
-            Unregister-ScheduledTask -TaskName RepotScoop -Confirm:$false
+            foreach ($file in @($log, $stdout, $stderr)) {
+              if (Test-Path $file) { Get-Content $file }
+            }
             Remove-LocalUser -Name $user
           }
           "SCOOP=$root" >> $env:GITHUB_ENV
