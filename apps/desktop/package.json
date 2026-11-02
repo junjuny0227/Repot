@@ -1,0 +1,28 @@
+{
+  "name": "@repot/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "@tauri-apps/api": "2",
+    "@tauri-apps/plugin-dialog": "2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}
