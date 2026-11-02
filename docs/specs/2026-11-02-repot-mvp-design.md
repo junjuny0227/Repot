@@ -1,7 +1,7 @@
 # Repot MVP 설계
 
 - 작성일: 2026-11-02
-- 상태: 검토 대기
+- 상태: 확정 (구현 계획 `docs/plans/2026-11-02-0[1-5]-*.md`에서 바뀐 결정 반영)
 
 ## 1. 개요
 
@@ -73,7 +73,7 @@ Repot/
 │           ├── env.rs            # 명령 실행·파일 읽기 추상화
 │           ├── scan.rs           # Provider 병렬 실행, 타임아웃, 결과 취합
 │           ├── availability.rs   # 목적지 OS 기준 항목 사용 가능 여부 판정
-│           ├── catalog/          # 내장 설명 데이터 (도구·설정 파일 설명)
+│           ├── catalog.rs        # 내장 설명 데이터 (도구·설정 파일 설명, 영어 한 문장)
 │           ├── providers/        # 도구별 스캐너, 도구 하나당 파일 하나
 │           ├── secrets.rs        # 비밀정보 감지·마스킹
 │           └── export/
@@ -89,8 +89,9 @@ Repot/
 ### 계층 경계
 
 - `core`는 Tauri, UI를 모른다. 단위 테스트와 향후 CLI 재사용이 가능하다.
+- `core`는 사람이 읽는 문장을 만들지 않는다. Finding과 판정 이유는 구조화된 데이터로 돌려주고 UI가 문장으로 바꾼다. 예외는 `catalog`의 내장 설명(영어 한 문장)뿐이다.
 - `src-tauri`는 `core` 호출, 직렬화, 진행 이벤트 전달만 한다.
-- 프론트엔드에는 **shell 권한을 주지 않는다.** 모든 명령 실행은 Rust 쪽에서만 일어난다. 프론트엔드 권한은 저장 위치 선택 대화상자와 폴더 열기뿐이다.
+- 프론트엔드에는 **shell 권한을 주지 않는다.** 모든 명령 실행은 Rust 쪽에서만 일어난다. 프론트엔드 권한은 저장 위치 선택 대화상자(`core:default`, `dialog:allow-open`)뿐이다.
 
 ### Tauri 명령
 
@@ -98,10 +99,12 @@ Repot/
 |---|---|---|
 | `detect_os` | - | 현재 `Os` |
 | `scan` | - | `ScanResult` (진행 상황은 `scan://progress` 이벤트로 전송) |
+| `availability_for` | 목적지 `Os` | 항목 id별 `Availability` |
 | `preview_export` | `Selection`, 목적지 `Os`, `Format` | 파일 트리와 각 파일 내용 |
 | `export` | `Selection`, 목적지 `Os`, `Format`, 저장 위치 | 생성된 폴더 경로 |
+| `open_export_folder` | - | 마지막으로 내보낸 폴더를 연다 |
 
-스캔 결과는 Rust 쪽 메모리에만 두고 디스크에 저장하지 않는다.
+스캔 결과는 Rust 쪽 메모리에만 두고 디스크에 저장하지 않는다. 사용 가능 판정은 Rust가 계산해 넘기며, TypeScript로 중복 구현하지 않는다. 폴더 열기는 프론트엔드 권한이 아니라 Rust 명령이 마지막 내보내기 경로만 연다.
 
 ## 6. 도메인 모델
 
@@ -113,57 +116,68 @@ pub enum Shell { Zsh, Bash, Fish, PowerShell }
 pub enum Category { PackageManager, Runtime, GlobalPackage, Editor, Git, Shell }
 
 pub struct Item {
-    pub id: ItemId,                 // 예: "brew:formula:ripgrep"
-    pub provider: ProviderId,
+    pub id: String,                 // 예: "brew:formula:ripgrep"
+    pub provider: String,
     pub category: Category,
-    pub kind: ItemKind,             // Package, Runtime, Extension, ConfigFile
     pub name: String,
     pub version: Option<String>,
     pub description: Option<String>,
-    pub origin: Origin,             // 어떤 명령/경로에서 얻었는지
+    pub origin: Origin,             // Command(String) | Path(PathBuf): 어떤 명령/경로에서 얻었는지
     pub portability: Portability,
+    pub details: ItemDetails,       // 종류별 정보. 복원에 필요한 정보는 모두 여기에 담는다
     pub findings: Vec<Finding>,
 }
 
+pub enum ItemDetails {
+    Package { manager: PackageManager, kind: PackageKind },          // Formula, Cask, Tap, Package
+    Runtime { tool: RuntimeTool, runtime: String, is_default: bool }, // runtime: "node", "python" …
+    GlobalPackage { manager: GlobalManager },
+    Extension { editor: Editor },
+    ConfigFile { source: PathBuf, target: TargetPath },
+    ShellPlugin { url: String, target: TargetPath },                  // oh-my-zsh 커스텀 플러그인·테마
+}
+
 pub enum Portability {
-    Any,                // 어떤 OS로든
-    SameOs,             // 같은 OS(Linux는 같은 배포판 계열)로만
-    SameShell(Shell),   // 목적지 OS에서 그 셸을 쓸 수 있을 때만
-    Mapped,             // 목적지 OS에 대응 도구가 있을 때만 (런타임, §9)
+    Any,                  // 어떤 OS로든
+    SameOs,               // 같은 OS(Linux는 같은 배포판 계열)로만
+    SameShell(Shell),     // 목적지 OS에서 그 셸을 쓸 수 있을 때만
+    Mapped(RuntimeTool),  // 목적지 OS에 대응 도구가 있을 때만 (런타임, §9)
 }
 
 pub struct Finding {
-    pub kind: FindingKind,          // Secret, OsSpecificLine, Duplicate, Unreadable, Note
-    pub line: Option<u32>,
-    pub message: String,
+    pub line: Option<u32>,          // 1부터
+    pub kind: FindingKind,
+}
+
+pub enum FindingKind {              // 문장은 UI가 만든다 (§5 계층 경계)
+    Secret { name: Option<String> },
+    OsSpecificLine { key: String }, // 예: "credential.helper"
+    Duplicate { other_provider: String },
+    Unreadable,
 }
 
 pub struct Selection {
-    pub items: Vec<ItemId>,
-    pub reveal_secret_lines: Vec<(ItemId, u32)>,  // 사용자가 원본 내보내기를 허용한 줄
+    pub items: Vec<String>,                       // 체크한 Item id
+    pub reveal_secret_lines: Vec<(String, u32)>,  // 사용자가 원본 내보내기를 허용한 줄
 }
 ```
+
+공개 모델 타입은 serde로 camelCase 직렬화해 프론트엔드에 그대로 넘긴다.
 
 ### Provider 인터페이스
 
 ```rust
 pub trait Provider: Send + Sync {
-    fn id(&self) -> ProviderId;
+    fn id(&self) -> &'static str;
     fn category(&self) -> Category;
     fn detect(&self, env: &dyn Env) -> bool;
     fn scan(&self, env: &dyn Env) -> Result<Vec<Item>, ProviderError>;
-    fn export(&self, items: &[Item], ctx: &ExportContext) -> Result<ExportPart, ExportError>;
-}
-
-pub struct ExportPart {
-    pub steps: Vec<Step>,               // 스크립트 형식에서 사용
-    pub manifests: Vec<ManifestFile>,   // 매니페스트 형식에서 사용
-    pub payload: Vec<PayloadFile>,      // files/ 아래에 들어갈 설정 파일 (마스킹 적용 후)
-    pub notes: Vec<Note>,               // README·실행 요약에 들어갈 안내
 }
 ```
 
-`Env`는 `run(cmd, args, timeout)`, `read_file`, `list_dir`, `home_dir`, `os`를 제공한다. 실제 구현(`RealEnv`)과 fixture를 돌려주는 테스트 구현(`FakeEnv`)이 있다.
+Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중앙 `export` 모듈(§10)이 맡는다. Provider마다 내보내기를 구현하면 렌더러별 규칙(따옴표 처리, 백업, 순서)이 흩어지기 때문이다.
+
+`Env`는 `run(cmd, args, timeout)`, `read_file`, `list_dir`, `home_dir`, `os`와, winget·sdkman 스캔에 필요한 `temp_file`, `remove_file`, `read_link`를 제공한다. 실제 구현(`RealEnv`)과 fixture를 돌려주는 테스트 구현(`FakeEnv`)이 있다.
 
 ## 7. 스캔
 
@@ -182,7 +196,7 @@ pub struct ExportPart {
 | | `nvm-windows` | `nvm list` | 내장 | Mapped |
 | | `fnm`, `volta` | `fnm list`, `volta list --format plain` | 내장 | Mapped |
 | | `pyenv` (pyenv-win 포함) | `pyenv versions --bare`, `pyenv global` | 내장 | Mapped |
-| | `rustup` | `rustup toolchain list`, 설치된 component·target | 내장 | Mapped |
+| | `rustup` | `rustup toolchain list` (툴체인만) | 내장 | Mapped |
 | | `sdkman` | `~/.sdkman/candidates/*/` 폴더 읽기 | 내장 | Mapped |
 | C 전역 패키지 | `npm` | `npm ls -g --depth=0 --json` (`npm`, `corepack` 제외) | 각 패키지 `package.json` | Any |
 | | `pnpm` | `pnpm ls -g --json` | 각 패키지 `package.json` | Any |
@@ -270,25 +284,28 @@ pub struct ExportPart {
 - 선택된 항목 중 목적지 OS에서 사용할 수 없는 항목은 내보내지 않는다.
 - 패키지 이름·버전·확장 ID는 허용 패턴(`^[A-Za-z0-9@._+/:-]+$`)에 맞아야 한다. 맞지 않으면 내보내지 않고 경고한다. 렌더러는 모든 값을 셸 규칙에 맞게 따옴표로 감싼다.
 - 설정 파일 내용은 스크립트에 넣지 않고 `files/` 아래에만 둔다.
+- 생성 파일(스크립트 출력 문구, README)은 영어로 쓴다. 오픈소스 배포물이라 UI 언어와 별개로 통일한다.
+- 스크립트 종료 코드는 실패한 단계가 하나라도 있으면 1, 아니면 0이다.
 
 ### Step
 
-Provider는 셸 코드 대신 추상 단계를 돌려준다.
+셸 코드 대신 추상 단계를 쓰고, 렌더러가 목적지 셸에 맞게 바꾼다.
 
 ```rust
 pub enum Step {
-    AddTap { manager: PackageManager, name: String },
-    InstallPackage { manager: PackageManager, name: String, kind: PackageKind },
-    InstallRuntime { tool: RuntimeTool, version: String },
-    SetDefaultRuntime { tool: RuntimeTool, version: String },
+    AddTap { manager: PackageManager, name: String },     // brew tap, scoop bucket
+    InstallPackage { manager: PackageManager, kind: PackageKind, name: String },
+    InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool },
     InstallGlobal { manager: GlobalManager, name: String },
     InstallExtension { editor: Editor, id: String },
-    CopyFile { src: PathBuf /* files/ 기준 상대 경로 */, dest: TargetPath },
-    GitClone { url: String, dest: TargetPath },   // oh-my-zsh 커스텀 플러그인
+    CopyFile { src: String /* files/ 기준 상대 경로, '/' 구분 */, dest: TargetPath },
+    GitClone { url: String, dest: TargetPath },           // oh-my-zsh 커스텀 플러그인
 }
 ```
 
-`TargetPath`는 `Home(rel)`, `EditorUser(editor, rel)`, `PowerShellProfile` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다.
+`export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다.
+
+`TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
 ### ① 통합 스크립트
 
@@ -336,7 +353,8 @@ repot-export-2026-11-02/
 
 ## 11. UI
 
-- 스택: React + TypeScript + Vite. 상태는 React 내장 기능(`useReducer`, Context)으로 시작한다.
+- 스택: React + TypeScript + Vite. 상태는 React 내장 기능(`useReducer`, Context)으로 시작한다. UI 라이브러리(컴포넌트 킷, 상태 관리 라이브러리)는 쓰지 않는다.
+- UI 문구는 `src/strings.ts` 한 파일에 모은다. MVP는 영어이고, 다른 언어는 이 파일만 바꾸면 되게 한다.
 - 화면 4개: 시작, 스캔 진행, 검토, 내보내기(+완료).
 
 ### 검토 화면
@@ -390,6 +408,10 @@ repot-export-2026-11-02/
 - 패키지 매니저 간 중복은 이름이 정확히 같을 때만 감지한다.
 - 비밀정보 감지는 패턴 기반이라 모든 비밀을 잡지는 못한다. UI와 README에 이 점을 명시한다.
 - WSL, Git Bash 환경은 고려하지 않는다.
+- winget은 `winget` 소스 패키지만 다룬다(msstore 제외).
+- volta는 런타임만 다룬다(volta로 설치한 전역 패키지 제외).
+- rustup은 툴체인만 다룬다(component·target 제외).
+- scoop은 기본 bucket 이외의 사용자 지정 bucket URL을 보존하지 않는다.
 
 ## 16. 향후 방향
 
