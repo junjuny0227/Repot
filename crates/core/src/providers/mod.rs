@@ -1,3 +1,4 @@
+pub mod apt;
 pub mod brew;
 pub mod choco;
 pub(crate) mod common;
