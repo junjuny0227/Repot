@@ -75,3 +75,28 @@ fn cursor_on_windows_uses_appdata() {
         vec!["vscode:cursor:file:keybindings.json"]
     );
 }
+
+#[test]
+fn keeps_newest_version_when_extension_is_listed_twice() {
+    // VS Code keeps the old entry in extensions.json after an update until it cleans up.
+    let ext = "/Users/t/.vscode/extensions";
+    let env = FakeEnv::new(Os::MacOs, "/Users/t").with_file(
+        format!("{ext}/extensions.json"),
+        include_str!("fixtures/vscode/extensions-duplicate.json"),
+    );
+    let items = VsCode.scan(&env).unwrap();
+    let got: Vec<_> = items
+        .iter()
+        .map(|i| (i.id.as_str(), i.version.as_deref()))
+        .collect();
+    assert_eq!(
+        got,
+        vec![
+            (
+                "vscode:code:ext:github.vscode-pull-request-github",
+                Some("0.174.0")
+            ),
+            ("vscode:code:ext:esbenp.prettier-vscode", Some("11.0.0")),
+        ]
+    );
+}
