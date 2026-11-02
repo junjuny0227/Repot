@@ -1,5 +1,6 @@
 pub mod apt;
 pub mod brew;
+pub mod cargo;
 pub mod choco;
 pub(crate) mod common;
 pub mod dnf;
