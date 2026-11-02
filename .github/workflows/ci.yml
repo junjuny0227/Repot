@@ -37,6 +37,115 @@ jobs:
         if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - name: Install Scoop without elevation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Hosted runners are elevated. An interactive Limited scheduled task
+          # uses runneradmin's filtered token, not Scoop's -RunAsAdmin bypass.
+          $script = Join-Path $env:RUNNER_TEMP 'install-scoop.ps1'
+          $log = Join-Path $env:RUNNER_TEMP 'install-scoop.log'
+          @'
+          $ErrorActionPreference = 'Stop'
+          Start-Transcript -Path "$env:RUNNER_TEMP/install-scoop.log"
+          try {
+            $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+            $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+            if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+              throw 'Scoop must be installed with a non-admin token'
+            }
+            Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            Invoke-RestMethod https://get.scoop.sh | Invoke-Expression
+            & "$HOME/scoop/shims/scoop.cmd" install jq ripgrep
+            if ($LASTEXITCODE -ne 0) { throw 'Scoop package installation failed' }
+          } finally { Stop-Transcript }
+          '@ | Set-Content $script
+          $action = New-ScheduledTaskAction -Execute (Get-Command pwsh).Source -Argument "-NoProfile -File `"$script`""
+          $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
+          Register-ScheduledTask -TaskName RepotScoop -Action $action -Principal $principal -Force | Out-Null
+          try {
+            Start-ScheduledTask -TaskName RepotScoop
+            $deadline = (Get-Date).AddMinutes(5)
+            do {
+              Start-Sleep -Seconds 2
+              $info = Get-ScheduledTaskInfo -TaskName RepotScoop
+              if ((Get-Date) -gt $deadline) { throw 'Scoop setup timed out' }
+            } while ($info.LastRunTime.Year -lt 2020 -or (Get-ScheduledTask -TaskName RepotScoop).State -eq 'Running')
+            if (Test-Path $log) { Get-Content $log }
+            if ($info.LastTaskResult -ne 0) { throw "Scoop setup failed: $($info.LastTaskResult)" }
+          } finally {
+            Stop-ScheduledTask -TaskName RepotScoop -ErrorAction SilentlyContinue
+            Unregister-ScheduledTask -TaskName RepotScoop -Confirm:$false
+          }
+          "$HOME/scoop/shims" >> $env:GITHUB_PATH
+          "REPOT_REQUIRED_PROVIDERS=choco,npm,cargo,scoop" >> $env:GITHUB_ENV
+          "REPOT_REQUIRED_ITEMS=scoop:main/jq,scoop:main/ripgrep" >> $env:GITHUB_ENV
+      - name: Probe winget on the hosted image
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $winget = Get-Command winget -ErrorAction SilentlyContinue
+          if ($winget) {
+            winget --version
+            if ($LASTEXITCODE -ne 0) { throw 'Installed winget is not usable' }
+            "REPOT_REQUIRED_PROVIDERS=$env:REPOT_REQUIRED_PROVIDERS,winget" >> $env:GITHUB_ENV
+          } else {
+            # Some Windows Server runner images do not include App Installer.
+            # Do not treat an installed but broken winget as an optional skip.
+            $reason = 'winget skipped: this hosted Windows image has no winget executable (App Installer is not provisioned).'
+            Write-Host "::notice::$reason"
+            $reason >> $env:GITHUB_STEP_SUMMARY
+          }
+      - name: Record real Windows package-manager output
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          scoop export
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Get-Command winget -ErrorAction SilentlyContinue) {
+            winget export -o "$env:RUNNER_TEMP/winget-real.json" --include-versions --accept-source-agreements --disable-interactivity
+            if (Test-Path "$env:RUNNER_TEMP/winget-real.json") { Get-Content "$env:RUNNER_TEMP/winget-real.json" }
+          }
+      - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
+
+  linux-provider-scans:
+    name: Real scan (${{ matrix.provider }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:latest
+            provider: dnf
+          - image: archlinux:base
+            provider: pacman
+    container: ${{ matrix.image }}
+    env:
+      REPOT_REQUIRED_PROVIDERS: ${{ matrix.provider }},cargo
+      REPOT_REQUIRED_ITEMS: ${{ matrix.provider }}:jq,${{ matrix.provider }}:ripgrep
+    steps:
+      - name: Install build tools and seed explicit packages
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf install -y gcc git curl rust cargo jq ripgrep
+          else
+            pacman -Syu --noconfirm --needed base-devel git curl rust jq ripgrep
+          fi
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Record real package-manager output
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf repoquery --userinstalled --qf '%{name}|%{version}|%{summary}\n'
+          else
+            pacman -Qe
+            pacman -Qi jq ripgrep
+          fi
+      # No Tauri dependencies or frontend: these containers build core only.
+      - run: cargo build -p repot-core
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   frontend:
