@@ -11,6 +11,7 @@ pub mod pacman;
 pub mod pyenv;
 pub mod rustup;
 pub mod scoop;
+pub mod sdkman;
 pub mod shell;
 pub mod vscode;
 pub mod winget;
