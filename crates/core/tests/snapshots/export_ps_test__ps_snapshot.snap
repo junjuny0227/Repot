@@ -10,16 +10,24 @@ $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
 $script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
-function Test-Have($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
+function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
 function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
 function Write-Missing($Name, $Url) { Write-Host "  $Name not found. Install it first: $Url" }
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
+# Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
+# load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
+function Test-SameFile($A, $B) {
+  $x = [System.IO.File]::ReadAllBytes($A); $y = [System.IO.File]::ReadAllBytes($B)
+  if ($x.Length -ne $y.Length) { return $false }
+  for ($i = 0; $i -lt $x.Length; $i++) { if ($x[$i] -ne $y[$i]) { return $false } }
+  return $true
+}
 function Copy-RepotFile($Src, $Dest) {
   $from = Join-Path $Dir (Join-Path 'files' $Src)
   if (-not (Test-Path $from)) { return 1 }
-  if ((Test-Path $Dest) -and ((Get-FileHash $from).Hash -eq (Get-FileHash $Dest).Hash)) { return 2 }
+  if ((Test-Path $Dest) -and (Test-SameFile $from $Dest)) { return 2 }
   try {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Dest) | Out-Null
     if (Test-Path $Dest) { Copy-Item $Dest "$Dest.repot-backup-$Stamp" -ErrorAction Stop }
@@ -42,14 +50,15 @@ Write-Host '  - copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1'
 if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -and $answer -cne 'Y') { exit 0 } }
 
 Write-Host '== Packages =='
-if (Test-Have 'scoop') {
-  if (& scoop bucket list 2>$null | Select-String -SimpleMatch 'extras' -Quiet) { Add-Skip 'scoop bucket add extras' }
+if (Test-Tool 'scoop') {
+  $installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'extras' -Quiet
+  if ($installed) { Add-Skip 'scoop bucket add extras' }
   else { & scoop bucket add 'extras'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop bucket add extras' } else { Add-Fail 'scoop bucket add extras' } }
 } else {
   Write-Missing 'scoop' 'https://scoop.sh'
   Add-Skip 'scoop bucket add extras'
 }
-if (Test-Have 'winget') {
+if (Test-Tool 'winget') {
   & winget list --id 'Git.Git' --exact *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install Git.Git' }
   else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Add-Fail 'winget install Git.Git' } }
@@ -57,7 +66,7 @@ if (Test-Have 'winget') {
   Write-Missing 'winget' 'https://learn.microsoft.com/windows/package-manager/winget/'
   Add-Skip 'winget install Git.Git'
 }
-if (Test-Have 'scoop') {
+if (Test-Tool 'scoop') {
   & scoop prefix 'extras/vlc' *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install extras/vlc' }
   else { & scoop install 'extras/vlc'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/vlc' } else { Add-Fail 'scoop install extras/vlc' } }
@@ -69,8 +78,9 @@ if (-not (Test-Admin)) {
   Write-Host '  choco requires an Administrator PowerShell. Skipping choco packages.'
   Add-Skip 'choco install 7zip'
 } else {
-if (Test-Have 'choco') {
-  if (& choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet) { Add-Skip 'choco install 7zip' }
+if (Test-Tool 'choco') {
+  $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet
+  if ($installed) { Add-Skip 'choco install 7zip' }
   else { & choco install '7zip' -y; if ($LASTEXITCODE -eq 0) { Add-Ok 'choco install 7zip' } else { Add-Fail 'choco install 7zip' } }
 } else {
   Write-Missing 'choco' 'https://chocolatey.org/install'
@@ -79,8 +89,9 @@ if (Test-Have 'choco') {
 }
 
 Write-Host '== Runtimes =='
-if (Test-Have 'nvm') {
-  if (& nvm list 2>$null | Select-String -SimpleMatch '20.11.0' -Quiet) { Add-Skip 'nvm-windows install node 20.11.0' }
+if (Test-Tool 'nvm') {
+  $installed = & nvm list 2>$null | Select-String -SimpleMatch '20.11.0' -Quiet
+  if ($installed) { Add-Skip 'nvm-windows install node 20.11.0' }
   else { & nvm install '20.11.0'; if ($LASTEXITCODE -eq 0) { & nvm use '20.11.0' }; if ($LASTEXITCODE -eq 0) { Add-Ok 'nvm-windows install node 20.11.0' } else { Add-Fail 'nvm-windows install node 20.11.0' } }
 } else {
   Write-Missing 'nvm-windows' 'https://github.com/coreybutler/nvm-windows'
@@ -88,8 +99,9 @@ if (Test-Have 'nvm') {
 }
 
 Write-Host '== Global packages =='
-if (Test-Have 'npm') {
-  if (& npm ls -g --depth=0 2>$null | Select-String -SimpleMatch 'typescript' -Quiet) { Add-Skip 'npm install -g typescript' }
+if (Test-Tool 'npm') {
+  $installed = & npm ls -g --depth=0 2>$null | Select-String -SimpleMatch 'typescript' -Quiet
+  if ($installed) { Add-Skip 'npm install -g typescript' }
   else { & npm install -g 'typescript'; if ($LASTEXITCODE -eq 0) { Add-Ok 'npm install -g typescript' } else { Add-Fail 'npm install -g typescript' } }
 } else {
   Write-Missing 'npm' 'https://nodejs.org'
@@ -97,8 +109,9 @@ if (Test-Have 'npm') {
 }
 
 Write-Host '== Extensions =='
-if (Test-Have 'code') {
-  if (& code --list-extensions 2>$null | Select-String -SimpleMatch 'esbenp.prettier-vscode' -Quiet) { Add-Skip 'code --install-extension esbenp.prettier-vscode' }
+if (Test-Tool 'code') {
+  $installed = & code --list-extensions 2>$null | Select-String -SimpleMatch 'esbenp.prettier-vscode' -Quiet
+  if ($installed) { Add-Skip 'code --install-extension esbenp.prettier-vscode' }
   else { & code --install-extension 'esbenp.prettier-vscode'; if ($LASTEXITCODE -eq 0) { Add-Ok 'code --install-extension esbenp.prettier-vscode' } else { Add-Fail 'code --install-extension esbenp.prettier-vscode' } }
 } else {
   Write-Missing 'code' 'https://code.visualstudio.com/docs/setup/setup-overview'

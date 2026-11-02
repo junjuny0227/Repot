@@ -1,5 +1,6 @@
 use repot_core::env::real::{RealEnv, candidate_names};
 use repot_core::env::{Env, EnvError};
+#[cfg(unix)]
 use std::time::{Duration, Instant};
 
 #[test]

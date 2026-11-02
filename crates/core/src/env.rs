@@ -114,7 +114,9 @@ impl FakeEnv {
 }
 impl Env for FakeEnv {
     fn temp_file(&self, name: &str) -> PathBuf {
-        PathBuf::from("/tmp/repot-fake").join(name)
+        // Built as a string so the path, and command arguments derived from it, are identical
+        // on every OS; `join` would insert `\` on Windows and break fixtures that spell it out.
+        PathBuf::from(format!("/tmp/repot-fake/{name}"))
     }
     fn remove_file(&self, _path: &Path) {}
     fn read_link(&self, path: &Path) -> Option<PathBuf> {

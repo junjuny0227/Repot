@@ -10,16 +10,24 @@ $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
 $script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
-function Test-Have($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
+function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
 function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
 function Write-Missing($Name, $Url) { Write-Host "  $Name not found. Install it first: $Url" }
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
+# Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
+# load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
+function Test-SameFile($A, $B) {
+  $x = [System.IO.File]::ReadAllBytes($A); $y = [System.IO.File]::ReadAllBytes($B)
+  if ($x.Length -ne $y.Length) { return $false }
+  for ($i = 0; $i -lt $x.Length; $i++) { if ($x[$i] -ne $y[$i]) { return $false } }
+  return $true
+}
 function Copy-RepotFile($Src, $Dest) {
   $from = Join-Path $Dir (Join-Path 'files' $Src)
   if (-not (Test-Path $from)) { return 1 }
-  if ((Test-Path $Dest) -and ((Get-FileHash $from).Hash -eq (Get-FileHash $Dest).Hash)) { return 2 }
+  if ((Test-Path $Dest) -and (Test-SameFile $from $Dest)) { return 2 }
   try {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Dest) | Out-Null
     if (Test-Path $Dest) { Copy-Item $Dest "$Dest.repot-backup-$Stamp" -ErrorAction Stop }
@@ -211,12 +219,16 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             }
             out.push_str("} else {\n");
         }
-        writeln!(out, "if (Test-Have {}) {{", q(t.0)).unwrap();
+        writeln!(out, "if (Test-Tool {}) {{", q(t.0)).unwrap();
         for step in group {
             let (check, output_check, install) = commands(step);
             let label = q(&step.label(h.target));
             if output_check {
-                writeln!(out, "  if ({check}) {{ Add-Skip {label} }}").unwrap();
+                writeln!(
+                    out,
+                    "  $installed = {check}\n  if ($installed) {{ Add-Skip {label} }}"
+                )
+                .unwrap();
             } else {
                 writeln!(
                     out,

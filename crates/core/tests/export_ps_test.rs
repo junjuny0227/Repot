@@ -67,6 +67,16 @@ fn windows_plan() -> ScriptPlan {
     }
 }
 #[test]
+fn native_output_is_assigned_before_conditionals() {
+    let s = render_powershell(&windows_plan());
+    assert!(s.contains("function Test-Tool($Name)"));
+    assert!(!s.contains("Test-Have"));
+    assert!(!s.contains("if (& "));
+    assert!(s.contains("$installed = & scoop bucket list 2>$null | Select-String"));
+    assert!(s.contains("if ($installed) { Add-Skip"));
+}
+
+#[test]
 fn ps_snapshot() {
     insta::assert_snapshot!(render_powershell(&windows_plan()));
 }
@@ -146,7 +156,12 @@ fn ps_copy_backs_up_once_on_windows() {
     assert_eq!(backups(), 1);
     let second = run();
     assert!(second.status.success());
-    assert!(String::from_utf8_lossy(&second.stdout).contains("skipped: copy"));
+    let out = String::from_utf8_lossy(&second.stdout);
+    assert!(
+        out.contains("skipped: copy"),
+        "stdout:\n{out}\nstderr:\n{}",
+        String::from_utf8_lossy(&second.stderr)
+    );
     assert_eq!(backups(), 1);
 }
 #[test]

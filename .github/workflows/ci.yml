@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @repot/desktop build
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+        if: runner.os == 'Linux'
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/check-version.test.mjs
+      - run: pnpm --filter @repot/desktop typecheck
+      - run: pnpm --filter @repot/desktop test
+      - run: pnpm --filter @repot/desktop build
+
+  scripts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test -p repot-core --example render_samples --example smoke_export
+      - run: cargo run -p repot-core --example render_samples -- samples
+      - name: Lint Bash samples
+        if: runner.os == 'Linux'
+        # SC1091 is informational: external nvm/sdkman sources are not present.
+        # All warnings and errors still fail CI.
+        run: shellcheck --severity=warning -s bash samples/restore-macos.sh samples/restore-linux.sh
+      - name: Lint PowerShell sample
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $r = Invoke-ScriptAnalyzer -Path samples/restore.ps1 -Severity Warning,Error -ExcludeRule PSAvoidUsingWriteHost
+          if ($r) { $r | Format-Table -AutoSize; exit 1 }
+      - name: Restore smoke test (Bash)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p smoke smoke-home
+          out=$(cargo run -q -p repot-core --example smoke_export -- smoke)
+          export npm_config_prefix="$PWD/smoke-home/npm"
+          HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes
+          test "$(cat smoke-home/.repot-smoke)" = "smoke"
+          HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes > smoke/second.log
+          grep -q "skipped: copy ~/.repot-smoke" smoke/second.log
+      - name: Restore smoke test (PowerShell 5.1)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $out = cargo run -q -p repot-core --example smoke_export -- smoke
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $env:npm_config_prefix = Join-Path $PWD 'smoke/npm'
+          powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ((Get-Content "$HOME\.repot-smoke") -ne 'smoke') { exit 1 }
+          $second = powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes | Out-String
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($second -notmatch 'skipped: copy') { exit 1 }

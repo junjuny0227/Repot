@@ -1,3 +1,5 @@
+#[cfg(unix)]
+use repot_core::os::LinuxFamily;
 use repot_core::{
     export::{
         payload::{ExportNote, MaskedLine},
@@ -5,7 +7,7 @@ use repot_core::{
         step::Step,
     },
     model::*,
-    os::{LinuxFamily, Os},
+    os::Os,
 };
 
 fn header(target: Os) -> ScriptHeader {
@@ -86,6 +88,10 @@ fn sample_plan(target: Os) -> ScriptPlan {
 fn bash_snapshot_macos() {
     insta::assert_snapshot!(render_bash(&sample_plan(Os::MacOs)));
 }
+// Unix only: on Windows runners `bash` may resolve to the WSL launcher, which cannot
+// check a script passed through `-c`. The generated bash is linted and run on the macOS and
+// Ubuntu runners (ci.yml scripts job), which is where it is executed for real.
+#[cfg(unix)]
 #[test]
 fn bash_syntax_is_valid() {
     for os in [Os::MacOs, Os::Linux(LinuxFamily::Debian)] {
