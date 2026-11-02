@@ -3,6 +3,7 @@ import { CATEGORIES, categoryCounts, isAvailable } from "../../logic";
 import type { Action, State } from "../../state";
 import { S, categoryLabel, selectCategory } from "../../strings";
 import type { Category } from "../../types";
+import { CategoryIcon } from "../icons";
 
 interface Props {
   state: State;
@@ -15,9 +16,10 @@ export function Sidebar({ state, dispatch, category, onCategory }: Props) {
   const items = state.scan?.items ?? [];
   const counts = categoryCounts(items, state.checked);
   return (
-    <nav className="sidebar card">
-      <button className={`category-all ${category === null ? "active" : ""}`} onClick={() => onCategory(null)}>
-        <span>{S.allItems}</span>
+    <nav className="sidebar">
+      <button className={`source-item category-all ${category === null ? "active" : ""}`} aria-current={category === null ? "true" : undefined} onClick={() => onCategory(null)}>
+        <CategoryIcon category="all" />
+        <span className="source-label">{S.allItems}</span>
         <span className="count">{state.checked.size}/{items.length}</span>
       </button>
       <ul>
@@ -25,7 +27,12 @@ export function Sidebar({ state, dispatch, category, onCategory }: Props) {
           const usable = items.filter((i) => i.category === c && isAvailable(state.avail[i.id]));
           const allOn = usable.length > 0 && usable.every((i) => state.checked.has(i.id));
           return (
-            <li key={c} className={`category ${category === c ? "active" : ""}`}>
+            <li key={c} className={`source-item category ${category === c ? "active" : ""}`}>
+              <button className="source-button" aria-current={category === c ? "true" : undefined} onClick={() => onCategory(c)}>
+                <CategoryIcon category={c} />
+                <span className="source-label">{categoryLabel(c)}</span>
+              </button>
+              <span className="count">{counts[c].checked}/{counts[c].total}</span>
               <input
                 type="checkbox"
                 aria-label={selectCategory(categoryLabel(c))}
@@ -33,8 +40,6 @@ export function Sidebar({ state, dispatch, category, onCategory }: Props) {
                 disabled={usable.length === 0}
                 onChange={() => dispatch({ type: "setCategory", category: c, on: !allOn })}
               />
-              <button className="link" onClick={() => onCategory(c)}>{categoryLabel(c)}</button>
-              <span className="count">{counts[c].checked}/{counts[c].total}</span>
             </li>
           );
         })}

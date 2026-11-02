@@ -34,39 +34,47 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
 
   return (
     <section className="screen review">
-      <header className="toolbar">
-        <h1>{S.reviewTitle}</h1>
-        <TargetSelect value={state.target} onChange={changeTarget} />
-        <span className="muted">{selectedCount(state.checked.size, all.length)}</span>
-        <button className="primary" disabled={!canExport(state)} onClick={() => dispatch({ type: "goExport" })}>{S.nextExport}</button>
-      </header>
-      <div className="review-body">
+      <aside className="sidebar-pane">
+        <div className="sidebar-titlebar" data-tauri-drag-region="deep" />
         <Sidebar state={state} dispatch={dispatch} category={category} onCategory={setCategory} />
-        <ItemList items={items} state={state} dispatch={dispatch} filter={filter} onFilter={setFilter} selectedId={selectedId} onSelect={setSelectedId} />
-        <DetailPanel item={selected} state={state} dispatch={dispatch} />
+        <footer className="provider-groups">
+          <details>
+            <summary>{withCount(S.notDetected, notDetected.length)}</summary>
+            <ul>{notDetected.map((p) => <li key={p.id} className="mono">{p.id}</li>)}</ul>
+          </details>
+          <details>
+            <summary>{withCount(S.failed, failed.length)}</summary>
+            <ul>
+              {failed.map((p) => (
+                <li key={p.id}>
+                  <span className="mono">{p.id}</span>: {statusText(p.status)}
+                  {typeof p.status === "object" && "failed" in p.status && (
+                    <details>
+                      <summary>{S.failedDetail}</summary>
+                      <pre>{p.status.failed.detail}</pre>
+                    </details>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </footer>
+      </aside>
+      <div className="review-main">
+        <header className="toolbar" data-tauri-drag-region="deep">
+          <div className="toolbar-title">
+            <h1>{S.reviewTitle}</h1>
+            <p className="subtitle">{selectedCount(state.checked.size, all.length)}</p>
+          </div>
+          <div className="spacer" />
+          <TargetSelect value={state.target} onChange={changeTarget} />
+          <button className="primary" disabled={!canExport(state)} onClick={() => dispatch({ type: "goExport" })}>{S.nextExport}</button>
+        </header>
+        <div className="review-body">
+          <ItemList items={items} state={state} dispatch={dispatch} filter={filter} onFilter={setFilter} selectedId={selectedId} onSelect={setSelectedId} />
+          <DetailPanel item={selected} state={state} dispatch={dispatch} />
+        </div>
       </div>
-      <footer className="provider-groups">
-        <details>
-          <summary>{withCount(S.notDetected, notDetected.length)}</summary>
-          <ul>{notDetected.map((p) => <li key={p.id} className="mono">{p.id}</li>)}</ul>
-        </details>
-        <details>
-          <summary>{withCount(S.failed, failed.length)}</summary>
-          <ul>
-            {failed.map((p) => (
-              <li key={p.id}>
-                <span className="mono">{p.id}</span>: {statusText(p.status)}
-                {typeof p.status === "object" && "failed" in p.status && (
-                  <details>
-                    <summary>{S.failedDetail}</summary>
-                    <pre>{p.status.failed.detail}</pre>
-                  </details>
-                )}
-              </li>
-            ))}
-          </ul>
-        </details>
-      </footer>
     </section>
   );
 }

@@ -5,6 +5,7 @@ import { buildSelection, fileTree, warningItemId } from "../logic";
 import type { Action, State } from "../state";
 import { S, warningText, withCount } from "../strings";
 import type { ExportBundle, Format, OutputFile } from "../types";
+import { DocIcon, TerminalIcon, WarningTriangle } from "./icons";
 
 export function ExportScreen({ state, dispatch }: { state: State; dispatch: Dispatch<Action> }) {
   const [bundle, setBundle] = useState<ExportBundle | null>(null);
@@ -69,43 +70,51 @@ export function ExportView({ state, dispatch, bundle, previewFailed = false, sel
   const selected = bundle?.files.find((f) => f.path === selectedPath) ?? null;
   const fileButton = (f: OutputFile, label: string) => (
     <li key={f.path}>
-      <button className={`file ${f.path === selectedPath ? "active" : ""}`} onClick={() => onSelect(f.path)}>{label}</button>
+      <button className={`file ${f.path === selectedPath ? "active" : ""}`} aria-current={f.path === selectedPath ? "true" : undefined} onClick={() => onSelect(f.path)}>
+        {f.executable ? <TerminalIcon /> : <DocIcon />}
+        <span className="file-name">{label}</span>
+      </button>
     </li>
   );
   const formats: [Format, string][] = [["script", S.formatScript], ["manifest", S.formatManifest]];
 
   return (
     <section className="screen export">
-      <header className="toolbar">
-        <h1>{S.exportTitle}</h1>
-        <fieldset className="formats" disabled={saving}>
-          <legend>{S.format}</legend>
+      <header className="toolbar" data-tauri-drag-region="deep">
+        <div className="toolbar-title"><h1>{S.exportTitle}</h1></div>
+        <div className="spacer" />
+        <fieldset className="segmented" disabled={saving}>
+          <legend className="visually-hidden">{S.format}</legend>
           {formats.map(([value, label]) => (
             <label key={value}>
               <input type="radio" name="format" value={value} checked={state.format === value} onChange={() => dispatch({ type: "setFormat", format: value })} />
-              {label}
+              <span>{label}</span>
             </label>
           ))}
         </fieldset>
+        <div className="spacer" />
         <button disabled={saving} onClick={() => dispatch({ type: "backToReview" })}>{S.back}</button>
         <button className="primary" disabled={saving || bundle === null} onClick={onSave}>{saving ? S.saving : S.save}</button>
       </header>
       {bundle !== null && bundle.warnings.length > 0 && (
-        <div className="warnings card">
-          <h3>{S.warningsTitle}</h3>
-          <ul>
-            {bundle.warnings.map((w, n) => {
-              const id = warningItemId(w);
-              return <li key={n}>{warningText(w, names.get(id) ?? id)}</li>;
-            })}
-          </ul>
+        <div className="warnings" role="status">
+          <WarningTriangle className="symbol secret" />
+          <div>
+            <h2>{S.warningsTitle}</h2>
+            <ul>
+              {bundle.warnings.map((w, n) => {
+                const id = warningItemId(w);
+                return <li key={n}>{warningText(w, names.get(id) ?? id)}</li>;
+              })}
+            </ul>
+          </div>
         </div>
       )}
       {tree === null ? (
-        <p className="muted">{previewFailed ? S.previewFailed : S.previewLoading}</p>
+        <p className="muted preview-status">{previewFailed ? S.previewFailed : S.previewLoading}</p>
       ) : (
         <div className="preview">
-          <nav className="tree card">
+          <nav className="tree">
             {bundle?.files.length === 0 && <p className="muted">{S.previewEmpty}</p>}
             <ul>
               {tree.files.map((f) => fileButton(f, f.path))}
@@ -118,8 +127,15 @@ export function ExportView({ state, dispatch, bundle, previewFailed = false, sel
               ))}
             </ul>
           </nav>
-          <div className="contents card">
-            {selected !== null && <pre>{selected.contents}</pre>}
+          <div className="contents">
+            {selected !== null && (
+              <>
+                <div className="contents-header"><span className="mono">{selected.path}</span></div>
+                <pre className="code">
+                  {selected.contents.split("\n").map((line, n) => <span key={n} className="line">{line}</span>)}
+                </pre>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -1,51 +1,75 @@
 import type { Dispatch } from "react";
 import { revealKey } from "../../logic";
 import type { Action, State } from "../../state";
-import { S, availableOn, findingText, originText, reasonText, revealLine } from "../../strings";
-import type { Item } from "../../types";
+import { S, availableOn, categoryLabel, findingText, originText, reasonText, revealLine } from "../../strings";
+import type { Finding, Item } from "../../types";
+import { CategoryIcon, CheckCircle, Duplicate, ExclamationCircle, InfoCircle, NoSign, WarningTriangle } from "../icons";
+
+function FindingIcon({ finding }: { finding: Finding }) {
+  const k = finding.kind;
+  if (k === "unreadable") return <ExclamationCircle className="symbol finding-icon unreadable" />;
+  if ("secret" in k) return <WarningTriangle className="symbol finding-icon secret" />;
+  if ("duplicate" in k) return <Duplicate className="symbol finding-icon duplicate" />;
+  return <InfoCircle className="symbol finding-icon info" />;
+}
 
 export function DetailPanel({ item, state, dispatch }: { item: Item | null; state: State; dispatch: Dispatch<Action> }) {
-  if (item === null) return <aside className="detail card muted">{S.selectItem}</aside>;
+  if (item === null) return <aside className="detail inspector empty-state"><p className="muted">{S.selectItem}</p></aside>;
   const a = state.avail[item.id];
+  const reason = a === undefined || a === "available" ? null : a.unavailable;
   const checked = state.checked.has(item.id);
   const hasSecret = item.findings.some((f) => typeof f.kind === "object" && "secret" in f.kind);
   return (
-    <aside className="detail card">
-      <h2>{item.name} {item.version !== null && <span className="item-version">{item.version}</span>}</h2>
+    <aside className="detail inspector">
+      <header className="inspector-header">
+        <CategoryIcon category={item.category} />
+        <div className="inspector-title">
+          <h2 className="selectable">{item.name}</h2>
+          <p className="muted note">{categoryLabel(item.category)}{item.version !== null && <> · <span className="item-version">{item.version}</span></>}</p>
+        </div>
+      </header>
       <section>
-        <h3>{S.description}</h3>
-        <p className={item.description === null ? "muted" : ""}>{item.description ?? S.noDescription}</p>
+        <h3 className="inspector-heading">{S.description}</h3>
+        <p className={`selectable ${item.description === null ? "muted" : ""}`}>{item.description ?? S.noDescription}</p>
       </section>
       <section>
-        <h3>{S.origin}</h3>
-        <p className="mono">{originText(item.origin)}</p>
+        <h3 className="inspector-heading">{S.origin}</h3>
+        <p className="mono origin">{originText(item.origin)}</p>
       </section>
       <section>
-        <h3>{S.availability}</h3>
-        <p>{a === undefined || a === "available" ? (state.target ? availableOn(state.target) : S.available) : reasonText(a.unavailable)}</p>
+        <h3 className="inspector-heading">{S.availability}</h3>
+        <p className={`availability ${reason === null ? "ok" : "no"}`}>
+          {reason === null ? <CheckCircle /> : <NoSign />}
+          <span>{reason === null ? (state.target ? availableOn(state.target) : S.available) : reasonText(reason)}</span>
+        </p>
       </section>
       <section>
-        <h3>{S.findings}</h3>
+        <h3 className="inspector-heading">{S.findings}</h3>
         {item.findings.length === 0 ? (
           <p className="muted">{S.noFindings}</p>
         ) : (
-          <ul className="findings">
+          <ul className="group findings">
             {item.findings.map((f, n) => {
               const line = f.line;
               const secret = typeof f.kind === "object" && "secret" in f.kind && line !== null;
               return (
-                <li key={n}>
-                  <p>{findingText(f)}</p>
+                <li key={n} className="finding">
+                  <div className="finding-text">
+                    <FindingIcon finding={f} />
+                    <p className="selectable">{findingText(f)}</p>
+                  </div>
                   {secret && (
                     <label className="reveal">
+                      <span>{S.revealSecret}</span>
                       <input
                         type="checkbox"
+                        role="switch"
+                        className="switch"
                         aria-label={`${S.revealSecret} ${revealLine(line)}`}
                         checked={state.revealed.has(revealKey(item.id, line))}
                         disabled={!checked}
                         onChange={() => dispatch({ type: "toggleReveal", id: item.id, line })}
                       />
-                      {S.revealSecret}
                     </label>
                   )}
                 </li>
@@ -53,7 +77,7 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
             })}
           </ul>
         )}
-        {hasSecret && <p className="muted note">{S.secretLimit}</p>}
+        {hasSecret && <p className="muted note section-footer">{S.secretLimit}</p>}
       </section>
     </aside>
   );
