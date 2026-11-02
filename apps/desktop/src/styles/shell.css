@@ -1,0 +1,36 @@
+/* Window shell: toolbar, title bar area, error banner. */
+
+.app { position: relative; display: flex; flex-direction: column; height: 100%; }
+
+.screen { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; background-color: var(--window); }
+
+/* Title bar strip for screens without a toolbar: draggable, no chrome. */
+.titlebar { flex: none; height: var(--toolbar-height); }
+
+/* Until every screen has its own toolbar, one strip keeps the window draggable. */
+.titlebar-drag { position: absolute; top: 0; left: 0; right: 0; z-index: 1; height: var(--toolbar-height); }
+:root:not([data-platform="mac"]) .titlebar-drag { display: none; }
+
+/* Errors float above content like a HUD, so the layout under them does not jump. */
+.error {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: min(560px, calc(100% - 32px));
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--label);
+  background-color: var(--group);
+  box-shadow: var(--shadow-pop);
+  transform: translateX(-50%);
+  -webkit-user-select: text;
+  user-select: text;
+  animation: rise var(--motion) ease-out;
+}
+.error .symbol { width: 16px; height: 16px; color: var(--red); margin-top: 0; }
+.error strong { font-weight: 600; white-space: nowrap; }
+@keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } }

@@ -1,0 +1,132 @@
+/* macOS system palette and type scale, approximated for a WebView.
+   Semantic names follow AppKit (label, secondaryLabel, separator, controlAccent). */
+
+:root {
+  color-scheme: light dark;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale (size / line height / tracking) close to macOS text styles. */
+  --body: 13px;
+  --body-lh: 16px;
+  --body-track: -0.08px;
+  --callout: 12px;
+  --callout-lh: 15px;
+  --caption: 11px;
+  --caption-lh: 14px;
+  --caption-track: 0.06px;
+  --title3: 15px;
+  --title3-track: -0.23px;
+  --title2: 17px;
+  --title1: 20px;
+  --title1-track: -0.45px;
+
+  /* Colors: light appearance. */
+  --accent: #007aff;
+  --on-accent: #ffffff;
+  --focus: rgb(0 122 255 / 0.5);
+  --label: rgb(0 0 0 / 0.85);
+  --label-2: rgb(0 0 0 / 0.6);
+  --label-3: rgb(0 0 0 / 0.3);
+  --separator: rgb(0 0 0 / 0.1);
+  --window: #f5f5f5;
+  --group: #ffffff;
+  --group-edge: rgb(0 0 0 / 0.07);
+  --sidebar: #e8e8ea;
+  --code: #ffffff;
+  --control: #ffffff;
+  --control-edge: rgb(0 0 0 / 0.16);
+  --control-shadow: rgb(0 0 0 / 0.1);
+  --segment-selected: #ffffff;
+  --fill: rgb(0 0 0 / 0.05);
+  --fill-2: rgb(0 0 0 / 0.09);
+  --selection-quiet: rgb(0 0 0 / 0.08);
+  --shadow-pop: 0 6px 24px rgb(0 0 0 / 0.16), 0 0 0 0.5px rgb(0 0 0 / 0.12);
+
+  /* System status colors. *-text variants keep 4.5:1 for small text. */
+  --green: #34c759;
+  --green-text: #248a3d;
+  --orange: #ff9500;
+  --orange-text: #c93400;
+  --red: #ff3b30;
+  --red-text: #d70015;
+  --gray: #8e8e93;
+  --blue: #007aff;
+  --purple: #af52de;
+  --teal: #30b0c7;
+  --brown: #a2845e;
+  --graphite: #48484a;
+
+  --radius-control: 6px;
+  --radius-group: 10px;
+  --toolbar-height: 52px;
+  /* Room for the traffic lights when content sits under an overlay title bar. */
+  --titlebar-inset: 16px;
+  --motion: 180ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #0a84ff;
+    --focus: rgb(10 132 255 / 0.55);
+    --label: rgb(255 255 255 / 0.86);
+    --label-2: rgb(255 255 255 / 0.6);
+    --label-3: rgb(255 255 255 / 0.3);
+    --separator: rgb(255 255 255 / 0.1);
+    --window: #1e1e1e;
+    --group: #2a2a2a;
+    --group-edge: rgb(255 255 255 / 0.06);
+    --sidebar: #262628;
+    --code: #161616;
+    --control: #3c3c3e;
+    --control-edge: rgb(255 255 255 / 0.08);
+    --control-shadow: rgb(0 0 0 / 0.3);
+    --segment-selected: #636366;
+    --fill: rgb(255 255 255 / 0.07);
+    --fill-2: rgb(255 255 255 / 0.12);
+    --selection-quiet: rgb(255 255 255 / 0.1);
+    --shadow-pop: 0 6px 24px rgb(0 0 0 / 0.5), 0 0 0 0.5px rgb(255 255 255 / 0.12);
+
+    --green: #30d158;
+    --green-text: #30d158;
+    --orange: #ff9f0a;
+    --orange-text: #ffb340;
+    --red: #ff453a;
+    --red-text: #ff6961;
+    --gray: #98989d;
+    --blue: #0a84ff;
+    --purple: #bf5af2;
+    --teal: #40c8e0;
+    --brown: #ac8e68;
+    --graphite: #636366;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --label-2: rgb(0 0 0 / 0.75);
+    --separator: rgb(0 0 0 / 0.25);
+    --group-edge: rgb(0 0 0 / 0.25);
+    --control-edge: rgb(0 0 0 / 0.4);
+  }
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root {
+    --label-2: rgb(255 255 255 / 0.78);
+    --separator: rgb(255 255 255 / 0.28);
+    --group-edge: rgb(255 255 255 / 0.28);
+    --control-edge: rgb(255 255 255 / 0.4);
+  }
+}
+
+/* macOS only (set in main.tsx): the window uses an overlay title bar, so
+   leave room for the traffic lights. Other platforms keep the native title bar. */
+:root[data-platform="mac"] {
+  --titlebar-inset: 92px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion: 0ms; }
+}
