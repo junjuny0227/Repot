@@ -8,6 +8,7 @@ import { ScanScreen } from "./screens/ScanScreen";
 import { ReviewScreen } from "./screens/ReviewScreen";
 import { ExportScreen } from "./screens/ExportScreen";
 import { DoneScreen } from "./screens/DoneScreen";
+import { ExclamationCircle } from "./screens/icons";
 
 
 export default function App() {
@@ -38,8 +39,9 @@ export default function App() {
 
   return (
     <main className={`app screen-${state.screen}`}>
+      <div className="titlebar-drag" data-tauri-drag-region />
       {state.error !== null && (
-        <div className="error" role="alert"><strong>{S.errorTitle}</strong> <span>{state.error}</span></div>
+        <div className="error" role="alert"><ExclamationCircle /><strong>{S.errorTitle}</strong> <span>{state.error}</span></div>
       )}
       {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} />}
       {state.screen === "scanning" && <ScanScreen state={state} />}
