@@ -1,4 +1,5 @@
 pub mod brew;
+pub mod choco;
 pub(crate) mod common;
 pub mod git;
 pub mod npm;
