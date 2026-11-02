@@ -4,7 +4,34 @@ use std::sync::Arc;
 #[test]
 fn default_provider_ids_are_ordered() {
     let ids: Vec<_> = default_providers().iter().map(|p| p.id()).collect();
-    assert_eq!(ids, vec!["brew", "nvm", "npm", "vscode", "git", "shell"]);
+    assert_eq!(
+        ids,
+        vec![
+            "brew",
+            "winget",
+            "scoop",
+            "choco",
+            "apt",
+            "dnf",
+            "pacman",
+            "nvm",
+            "nvm-windows",
+            "fnm",
+            "volta",
+            "pyenv",
+            "rustup",
+            "sdkman",
+            "npm",
+            "pnpm",
+            "pipx",
+            "cargo",
+            "vscode",
+            "git",
+            "shell"
+        ]
+    );
+    let unique: std::collections::BTreeSet<_> = ids.iter().collect();
+    assert_eq!(unique.len(), ids.len());
 }
 
 #[test]

@@ -1,6 +1,9 @@
 pub fn describe(key: &str) -> Option<&'static str> {
     Some(match key {
         "runtime:node" => "Node.js runs JavaScript outside the browser.",
+        "runtime:python" => "Python is a general-purpose programming language.",
+        "runtime:rust" => "The Rust toolchain compiles and builds Rust programs.",
+        "runtime:sdkman" => "An SDKMAN candidate is a JVM-ecosystem SDK or tool.",
         "file:gitconfig" => "Git configuration controls identity and repository behavior.",
         "file:gitignore-global" => "Global Git ignore rules exclude files from all repositories.",
         "file:zshrc" => "Zsh configuration customizes interactive shells.",
