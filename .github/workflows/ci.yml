@@ -127,6 +127,27 @@ jobs:
             winget export -o "$env:RUNNER_TEMP/winget-real.json" --include-versions --accept-source-agreements --disable-interactivity
             if (Test-Path "$env:RUNNER_TEMP/winget-real.json") { Get-Content "$env:RUNNER_TEMP/winget-real.json" }
           }
+      - name: Warm up Windows package managers
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # The first call of choco, npm and pipx on a fresh runner can exceed the
+          # 30 s per-command timeout. real_scan checks real output parsing, not cold
+          # start time, so run the same commands once and ignore their result.
+          $calls = @(
+            @('choco', 'list', '--limit-output'),
+            @('npm', 'ls', '-g', '--depth=0', '--json'),
+            @('npm', 'root', '-g'),
+            @('pipx', 'list', '--json')
+          )
+          foreach ($call in $calls) {
+            if (Get-Command $call[0] -ErrorAction SilentlyContinue) {
+              $watch = [Diagnostics.Stopwatch]::StartNew()
+              & $call[0] $call[1..($call.Length - 1)] *> $null
+              Write-Host "$($call -join ' '): $([int]$watch.Elapsed.TotalSeconds) s"
+            }
+          }
+          $global:LASTEXITCODE = 0
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   linux-provider-scans:
