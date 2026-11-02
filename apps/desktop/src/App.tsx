@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { availabilityFor, detectOs, runScan } from "./api";
 import { initialState, reducer } from "./state";
+import { errorMessage } from "./errors";
 import { S } from "./strings";
 import { StartScreen } from "./screens/StartScreen";
 import { ScanScreen } from "./screens/ScanScreen";
+import { ReviewScreen } from "./screens/ReviewScreen";
 
-export const errorMessage = (e: unknown): string => (e instanceof Error ? e.message : String(e));
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -40,6 +41,7 @@ export default function App() {
       )}
       {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} />}
       {state.screen === "scanning" && <ScanScreen state={state} />}
+      {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} />}
     </main>
   );
 }
