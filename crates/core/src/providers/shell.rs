@@ -114,6 +114,9 @@ impl Provider for ShellProvider {
                     continue;
                 };
                 let config = path.join(".git/config");
+                if !env.exists(&config) {
+                    continue;
+                }
                 let content = match env.read_file(&config) {
                     Ok(s) => s,
                     Err(EnvError::NotFound | EnvError::PermissionDenied) => continue,

@@ -6,6 +6,56 @@ use repot_core::{
     scan::Provider,
 };
 
+// Mimic the real filesystem's ENOTDIR when traversing a regular theme file.
+struct StrictEnv(FakeEnv);
+impl repot_core::env::Env for StrictEnv {
+    fn os(&self) -> Os {
+        self.0.os()
+    }
+    fn home_dir(&self) -> std::path::PathBuf {
+        self.0.home_dir()
+    }
+    fn var(&self, n: &str) -> Option<String> {
+        self.0.var(n)
+    }
+    fn which(&self, n: &str) -> bool {
+        self.0.which(n)
+    }
+    fn run(
+        &self,
+        p: &str,
+        a: &[&str],
+    ) -> Result<repot_core::env::CommandOutput, repot_core::env::EnvError> {
+        self.0.run(p, a)
+    }
+    fn read_file(&self, p: &std::path::Path) -> Result<String, repot_core::env::EnvError> {
+        if p.to_string_lossy().contains("example.zsh-theme/") {
+            return Err(repot_core::env::EnvError::Io("Not a directory".into()));
+        }
+        self.0.read_file(p)
+    }
+    fn list_dir(
+        &self,
+        p: &std::path::Path,
+    ) -> Result<Vec<std::path::PathBuf>, repot_core::env::EnvError> {
+        self.0.list_dir(p)
+    }
+    fn exists(&self, p: &std::path::Path) -> bool {
+        self.0.exists(p)
+    }
+}
+#[test]
+fn ignores_regular_theme_files() {
+    let env = StrictEnv(
+        FakeEnv::new(Os::MacOs, "/Users/t")
+            .with_file(
+                "/Users/t/.oh-my-zsh/custom/themes/example.zsh-theme",
+                "# local theme",
+            )
+            .with_file("/Users/t/.zshrc", ""),
+    );
+    assert_eq!(ShellProvider.scan(&env).unwrap().len(), 1);
+}
 #[test]
 fn unix_shell_files_and_omz_plugins() {
     let env = FakeEnv::new(Os::MacOs, "/Users/t")
