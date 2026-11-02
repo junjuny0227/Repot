@@ -53,6 +53,29 @@ fn scans_top_level_formulae_casks_and_taps() {
 }
 
 #[test]
+fn scans_tapped_full_name_and_legacy_short_name() {
+    let env = FakeEnv::new(Os::MacOs, "/Users/t")
+        .with_command(
+            "brew",
+            &["leaves", "--installed-on-request"],
+            "azure/bicep/bicep\njq\n",
+        )
+        .with_command("brew", &["list", "--cask"], "")
+        .with_command("brew", &["tap"], "azure/bicep\n")
+        .with_command(
+            "brew",
+            &["info", "--json=v2", "--installed"],
+            include_str!("fixtures/brew/tapped-info.json"),
+        );
+    let items = Brew.scan(&env).unwrap();
+    assert_eq!(items[0].id, "brew:formula:azure/bicep/bicep");
+    assert_eq!(items[0].name, "azure/bicep/bicep");
+    assert_eq!(items[0].version.as_deref(), Some("0.38.3"));
+    assert_eq!(items[0].description.as_deref(), Some("Bicep compiler"));
+    assert_eq!(items[1].id, "brew:formula:jq");
+}
+
+#[test]
 fn invalid_info_json_fails_whole_provider() {
     assert!(matches!(
         Brew.scan(&brew_env("{not json")),

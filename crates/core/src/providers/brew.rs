@@ -13,6 +13,7 @@ struct Info {
 #[derive(Deserialize)]
 struct Formula {
     name: String,
+    full_name: Option<String>,
     desc: Option<String>,
     installed: Vec<Version>,
 }
@@ -67,7 +68,8 @@ impl Provider for Brew {
                         let f = info
                             .formulae
                             .iter()
-                            .find(|f| f.name == name)
+                            .find(|f| f.full_name.as_deref() == Some(name))
+                            .or_else(|| info.formulae.iter().find(|f| f.name == name))
                             .ok_or_else(|| parse(format!("missing formula {name}")))?;
                         (
                             f.installed.first().map(|v| v.version.clone()),
