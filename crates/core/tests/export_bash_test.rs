@@ -1,3 +1,5 @@
+#[cfg(unix)]
+use repot_core::os::LinuxFamily;
 use repot_core::{
     export::{
         payload::{ExportNote, MaskedLine},
@@ -5,7 +7,7 @@ use repot_core::{
         step::Step,
     },
     model::*,
-    os::{LinuxFamily, Os},
+    os::Os,
 };
 
 fn header(target: Os) -> ScriptHeader {
