@@ -238,6 +238,50 @@ fn read_failure_becomes_warning() {
 }
 
 #[test]
+fn runtime_display_name_is_not_validated_but_package_name_is() {
+    let mut runtime = item(
+        "rustup:rust:stable",
+        "Rust toolchain",
+        Portability::Mapped(RuntimeTool::Rustup),
+        ItemDetails::Runtime {
+            tool: RuntimeTool::Rustup,
+            runtime: "rust".into(),
+            is_default: true,
+        },
+    );
+    runtime.version = Some("stable".into());
+    let package = item(
+        "npm:unsafe",
+        "unsafe name",
+        Portability::Any,
+        ItemDetails::GlobalPackage {
+            manager: GlobalManager::Npm,
+        },
+    );
+    let items = vec![runtime, package];
+    let selection = select_all(&items);
+    let env = FakeEnv::new(Os::MacOs, "/Users/t");
+    let bundle = build_export(
+        &env,
+        &request(&items, &selection, Os::MacOs, Os::MacOs, Format::Script),
+    );
+
+    assert_eq!(
+        bundle.warnings,
+        vec![ExportWarning::InvalidValue {
+            item_id: "npm:unsafe".into(),
+        }]
+    );
+    let script = &bundle
+        .files
+        .iter()
+        .find(|file| file.path == "restore.sh")
+        .unwrap()
+        .contents;
+    assert!(script.contains("rustup toolchain install 'stable'"));
+}
+
+#[test]
 fn package_version_is_not_validated_because_it_is_not_exported() {
     // brew cask versions contain commas (e.g. "17.0.21.0.3,17.70.113"), but packages are
     // installed at the latest version, so the scanned version never reaches the script.
