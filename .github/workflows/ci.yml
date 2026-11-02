@@ -190,6 +190,119 @@ jobs:
       - run: cargo build -p repot-core
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
+  restore-e2e:
+    name: Restore E2E (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos
+          - os: ubuntu-latest
+            target: ubuntu
+          - os: windows-latest
+            target: windows
+    env:
+      REPOT_E2E_TARGET: ${{ matrix.target }}
+      # Do not spend the restore budget updating every Homebrew formula.
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Refresh apt indexes
+        if: runner.os == 'Linux'
+        run: sudo apt-get update
+      - run: cargo test -p repot-core --example e2e_export
+      - run: cargo build -p repot-core --example e2e_export
+      - name: Install, fail, copy, then restore again
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import shutil
+          import subprocess
+
+          target = os.environ['REPOT_E2E_TARGET']
+          root = Path(os.environ['RUNNER_TEMP']) / 'repot-e2e'
+          root.mkdir()
+          # A private empty npm prefix proves an install rather than reusing runner tools.
+          os.environ['npm_config_prefix'] = str(root / 'npm')
+          missing = 'repot-e2e-nonexistent-package-7f49c2'
+          package = 'dos2unix' if target == 'windows' else 'sl'
+          manager = {'macos': 'brew', 'ubuntu': 'apt-get', 'windows': 'choco'}[target]
+          dest = Path.home() / '.repot-e2e'
+          assert not dest.exists(), f'Config already exists: {dest}'
+
+          def run(args):
+              args = [str(a) for a in args]
+              args[0] = shutil.which(args[0]) or args[0]
+              result = subprocess.run(args, text=True, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT, timeout=180)
+              print(f'$ {args}\n{result.stdout}\nexit: {result.returncode}', flush=True)
+              return result
+
+          def installed(name):
+              if target == 'macos':
+                  return run(['brew', 'list', '--formula', name]).returncode == 0
+              if target == 'ubuntu':
+                  r = run(['dpkg-query', '-W', '-f=${Status}', name])
+                  return r.returncode == 0 and r.stdout == 'install ok installed'
+              r = run(['choco', 'list', '--exact', name, '--limit-output'])
+              assert r.returncode == 0, 'choco list failed'
+              return any(line.lower().startswith(name.lower() + '|') for line in r.stdout.splitlines())
+
+          def npm_installed():
+              r = run(['npm', 'ls', '-g', '--depth=0', '--json'])
+              return 'is-odd' in json.loads(r.stdout).get('dependencies', {})
+
+          # Never uninstall seeded runner tools to manufacture a clean-machine result.
+          assert not installed(package), f'{package} is preinstalled; choose another fixture'
+          assert not installed(missing), 'Deliberate failure unexpectedly exists'
+          assert not npm_installed(), 'npm fixture is preinstalled'
+          export = run(['cargo', 'run', '-q', '-p', 'repot-core', '--example',
+                        'e2e_export', '--', target, root])
+          assert export.returncode == 0, 'export failed'
+          out = Path(export.stdout.strip())
+          command = (['powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy',
+                      'Bypass', '-File', out / 'restore.ps1', '-Yes'] if target == 'windows'
+                     else ['/bin/bash', out / 'restore.sh', '--yes'])
+          labels = [f'{manager} install {package}', 'npm install -g is-odd',
+                    'copy %USERPROFILE%\\.repot-e2e' if target == 'windows' else 'copy ~/.repot-e2e']
+          for attempt in (1, 2):
+              result = run(command)
+              (root / f'restore-{attempt}.log').write_text(result.stdout, encoding='utf-8')
+              assert result.returncode == 1, 'Partial failure must exit 1 (spec section 10)'
+              summary = result.stdout.split('Summary\n', 1)[1]
+              sections = re.fullmatch(r'OK:\n(.*?)Skipped:\n(.*?)Failed:\n(.*)', summary, re.S)
+              assert sections, f'Malformed summary: {summary}'
+              entries = lambda text: [line.strip()[2:] for line in text.splitlines() if line.strip()]
+              ok, skipped, failed = map(entries, sections.groups())
+              assert failed == [f'{manager} install {missing}'], f'Unexpected failures: {failed}'
+              assert sorted(ok if attempt == 1 else skipped) == sorted(labels), summary
+              assert not (skipped if attempt == 1 else ok), summary
+              assert installed(package), 'Native package was not installed'
+              assert not installed(missing), 'Deliberate failure was installed'
+              assert npm_installed(), 'npm package was not installed'
+              assert dest.read_bytes() == b'repot restore e2e\n', 'Config content differs'
+              assert not list(dest.parent.glob('.repot-e2e.repot-backup-*')), 'Unchanged config was backed up'
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as report:
+                  report.write(f'### Restore {target}, run {attempt}\nExit: {result.returncode}\n```text\n{summary}```\n')
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: restore-e2e-${{ matrix.target }}
+          path: ${{ runner.temp }}/repot-e2e
+
   frontend:
     runs-on: ubuntu-latest
     steps:
