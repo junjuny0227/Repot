@@ -52,3 +52,53 @@ jobs:
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test
       - run: pnpm --filter @repot/desktop build
+
+  scripts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test -p repot-core --example render_samples --example smoke_export
+      - run: cargo run -p repot-core --example render_samples -- samples
+      - name: Lint Bash samples
+        if: runner.os == 'Linux'
+        # SC1091 is informational: external nvm/sdkman sources are not present.
+        # All warnings and errors still fail CI.
+        run: shellcheck --severity=warning -s bash samples/restore-macos.sh samples/restore-linux.sh
+      - name: Lint PowerShell sample
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $r = Invoke-ScriptAnalyzer -Path samples/restore.ps1 -Severity Warning,Error -ExcludeRule PSAvoidUsingWriteHost
+          if ($r) { $r | Format-Table -AutoSize; exit 1 }
+      - name: Restore smoke test (Bash)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p smoke smoke-home
+          out=$(cargo run -q -p repot-core --example smoke_export -- smoke)
+          export npm_config_prefix="$PWD/smoke-home/npm"
+          HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes
+          test "$(cat smoke-home/.repot-smoke)" = "smoke"
+          HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes > smoke/second.log
+          grep -q "skipped: copy ~/.repot-smoke" smoke/second.log
+      - name: Restore smoke test (PowerShell 5.1)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $out = cargo run -q -p repot-core --example smoke_export -- smoke
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $env:npm_config_prefix = Join-Path $PWD 'smoke/npm'
+          powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ((Get-Content "$HOME\.repot-smoke") -ne 'smoke') { exit 1 }
+          $second = powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes | Out-String
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($second -notmatch 'skipped: copy') { exit 1 }
