@@ -18,7 +18,7 @@
 | `cargo fmt --check` | verified (exit 0, 2026-11-02) | 계획 1 Task 1 |
 | `cargo run -p repot-core --example scan` | verified (exit 0, 2026-11-02) | 계획 1 Task 13 (실제 기기를 읽기만 함) |
 | `cargo run -p repot-core --example export` | verified (exit 0, 2026-11-02) | 계획 2 Task 9 |
-| `pnpm --filter @repot/desktop typecheck` / `test` / `build` | unverified | 계획 3 Task 1 |
+| `pnpm --filter @repot/desktop typecheck` / `test` / `build` | verified (exit 0, 2026-11-02) | 계획 3 Task 1 |
 | `pnpm --filter @repot/desktop tauri dev` | unverified | 계획 3 Task 1 |
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.
