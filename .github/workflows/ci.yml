@@ -41,12 +41,21 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Hosted runners are elevated. An interactive Limited scheduled task
-          # uses runneradmin's filtered token, not Scoop's -RunAsAdmin bypass.
-          $script = Join-Path $env:RUNNER_TEMP 'install-scoop.ps1'
-          $log = Join-Path $env:RUNNER_TEMP 'install-scoop.log'
+          # Use a standard local account: hosted images may disable UAC, so
+          # a Limited task for runneradmin is not reliably a non-admin token.
+          $user = 'RepotScoop'
+          $password = [guid]::NewGuid().ToString('N') + 'aA1!'
+          New-LocalUser -Name $user -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+          $account = "$env:COMPUTERNAME\$user"
+          $root = 'C:\Users\Public\repot-scoop'
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          icacls $root /grant "${account}:(OI)(CI)F" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot grant Scoop directory access' }
+          $script = Join-Path $root 'install.ps1'
+          $log = Join-Path $root 'install.log'
           @'
           $ErrorActionPreference = 'Stop'
+          $env:SCOOP = 'C:\Users\Public\repot-scoop'
           Start-Transcript -Path '__SCOOP_LOG__'
           try {
             $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -54,15 +63,17 @@ jobs:
             if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
               throw 'Scoop must be installed with a non-admin token'
             }
-            Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            Write-Output 'Confirmed non-admin Scoop installation'
             Invoke-RestMethod https://get.scoop.sh | Invoke-Expression
-            & "$HOME/scoop/shims/scoop.cmd" install jq ripgrep
+            & "$env:SCOOP/shims/scoop.cmd" install jq ripgrep
             if ($LASTEXITCODE -ne 0) { throw 'Scoop package installation failed' }
+          } catch {
+            Write-Output ($_ | Out-String)
+            exit 1
           } finally { Stop-Transcript }
           '@.Replace('__SCOOP_LOG__', $log) | Set-Content $script
           $action = New-ScheduledTaskAction -Execute (Get-Command pwsh).Source -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
-          $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
-          Register-ScheduledTask -TaskName RepotScoop -Action $action -Principal $principal -Force | Out-Null
+          Register-ScheduledTask -TaskName RepotScoop -Action $action -User $account -Password $password -RunLevel Limited -Force | Out-Null
           try {
             Start-ScheduledTask -TaskName RepotScoop
             $deadline = (Get-Date).AddMinutes(5)
@@ -76,8 +87,10 @@ jobs:
           } finally {
             Stop-ScheduledTask -TaskName RepotScoop -ErrorAction SilentlyContinue
             Unregister-ScheduledTask -TaskName RepotScoop -Confirm:$false
+            Remove-LocalUser -Name $user
           }
-          "$HOME/scoop/shims" >> $env:GITHUB_PATH
+          "SCOOP=$root" >> $env:GITHUB_ENV
+          "$root/shims" >> $env:GITHUB_PATH
           "REPOT_REQUIRED_PROVIDERS=choco,npm,cargo,scoop" >> $env:GITHUB_ENV
           "REPOT_REQUIRED_ITEMS=scoop:main/jq,scoop:main/ripgrep" >> $env:GITHUB_ENV
       - name: Probe winget on the hosted image
