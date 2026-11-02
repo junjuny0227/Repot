@@ -9,6 +9,7 @@ pub mod npm;
 pub mod nvm;
 pub mod pacman;
 pub mod pyenv;
+pub mod rustup;
 pub mod scoop;
 pub mod shell;
 pub mod vscode;
