@@ -78,9 +78,10 @@ button.link { border: none; background: none; padding: 0; color: var(--accent); 
 .field > span { color: var(--muted); }
 
 .providers { display: flex; flex-direction: column; overflow: auto; min-height: 0; }
-.provider { display: grid; grid-template-columns: 16px 1fr 1fr auto; align-items: center; gap: 12px; padding: 10px 16px; }
+.provider { display: grid; grid-template-columns: 16px 1fr 1fr 8rem; align-items: center; gap: 12px; padding: 10px 16px; }
 .provider + .provider { border-top: 1px solid var(--border); }
 .provider-id { font-family: var(--mono); }
+.provider-status { text-align: right; }
 .provider.status-failed .provider-status, .provider.status-timedOut .provider-status { color: var(--danger); }
 .provider.status-notDetected .provider-status { color: var(--muted); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
@@ -135,7 +136,7 @@ button.link { border: none; background: none; padding: 0; color: var(--accent); 
 .detail { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
 .detail p { margin: 4px 0 0; }
 .findings { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-.findings li { padding: 8px; border-radius: var(--radius); background: var(--surface-2); }
+.findings li { padding: 8px; border-radius: var(--radius); background: var(--surface-2); overflow-wrap: anywhere; }
 .reveal { display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--warn); }
 
 .provider-groups { display: flex; flex-direction: column; gap: 6px; }

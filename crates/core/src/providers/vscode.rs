@@ -51,6 +51,18 @@ fn description(env: &dyn Env, dir: &Path) -> Option<String> {
         Some(desc.to_owned())
     }
 }
+/// Compares dotted versions numerically (`0.174.0` > `0.99.0`).
+fn newer(a: &str, b: &str) -> bool {
+    let parts = |v: &str| -> Vec<u64> {
+        v.split('.')
+            .map(|p| {
+                let digits: String = p.chars().take_while(char::is_ascii_digit).collect();
+                digits.parse().unwrap_or(0)
+            })
+            .collect()
+    };
+    parts(a) > parts(b)
+}
 impl Provider for VsCode {
     fn id(&self) -> &'static str {
         "vscode"
@@ -89,8 +101,16 @@ impl Provider for VsCode {
                             });
                         }
                         let name = e.identifier.id;
-                        items.push(Item {
-                            id: format!("vscode:{label}:ext:{name}"),
+                        let id = format!("vscode:{label}:ext:{name}");
+                        // After an update VS Code keeps the old entry until it cleans up; keep the newest.
+                        let existing = items.iter().position(|i: &Item| i.id == id);
+                        if let Some(at) = existing
+                            && !newer(&e.version, items[at].version.as_deref().unwrap_or(""))
+                        {
+                            continue;
+                        }
+                        let item = Item {
+                            id,
                             provider: "vscode".into(),
                             category: self.category(),
                             name,
@@ -100,7 +120,11 @@ impl Provider for VsCode {
                             portability: Portability::Any,
                             details: ItemDetails::Extension { editor },
                             findings: vec![],
-                        });
+                        };
+                        match existing {
+                            Some(at) => items[at] = item,
+                            None => items.push(item),
+                        }
                     }
                 }
                 Err(EnvError::NotFound) => {}
