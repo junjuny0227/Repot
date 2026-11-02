@@ -40,14 +40,19 @@ unavailable items are disabled rather than guessed.
 ## Install
 
 Download an installer for your OS from [GitHub Releases](https://github.com/junjuny0227/Repot/releases)
-when a release is available. Builds are currently unsigned beta software; code
-signing and automatic updates are not included. Draft releases are not public.
+when a release is available. Builds are unsigned prereleases: they are not
+code-signed or notarized, and there are no automatic updates yet, so your OS warns
+on first launch.
 
 First launch after verifying that you trust the download:
 
-- **macOS (Apple silicon or Intel):** open the `.dmg`, copy Repot to Applications,
-  then open it. If macOS blocks it, use **System Settings › Privacy & Security ›
-  Open Anyway** and confirm.
+- **macOS (Apple silicon or Intel):** open the `.dmg` and drag Repot to
+  Applications. Open Repot once; macOS says it cannot verify the developer. Then
+  open **System Settings › Privacy & Security**, choose **Open Anyway** next to the
+  Repot message, and confirm. This is needed only the first time. On current macOS,
+  Control-click › Open no longer bypasses the check. Alternatively, remove the
+  download quarantine flag in Terminal:
+  `xattr -dr com.apple.quarantine /Applications/Repot.app`.
 - **Windows:** open the `.msi` or setup `.exe`. If SmartScreen blocks it, choose
   **More info › Run anyway** only if you trust the file.
 - **Linux:** make the downloaded AppImage executable with
