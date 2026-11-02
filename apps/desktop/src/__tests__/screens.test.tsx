@@ -103,7 +103,7 @@ test("not detected and failed providers are collapsed, with raw failure detail",
   const s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "scanFinished", scan: failed, avail: availMac });
   const html = renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} />);
   expect(html).not.toMatch(/<details[^>]*open/);
-  expect(html).toContain(withCount(S.notDetected, 2));
+  expect(html).toContain(withCount(S.notDetected, scan.providers.filter((p) => p.status === "notDetected").length));
   expect(html).toContain(withCount(S.failed, 1));
   expect(html).toContain("<pre>raw stderr</pre>");
 });
