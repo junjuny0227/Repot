@@ -1,6 +1,7 @@
 pub mod availability;
 pub mod catalog;
 pub mod env;
+pub mod export;
 pub mod model;
 pub mod os;
 pub mod providers;

@@ -58,6 +58,11 @@ pub fn current_os() -> Os {
     }
 }
 impl Os {
+    /// Compare OS kinds without distinguishing Linux distribution families.
+    pub fn same_kind(self, other: Os) -> bool {
+        std::mem::discriminant(&self) == std::mem::discriminant(&other)
+    }
+
     pub fn supports_shell(self, shell: Shell) -> bool {
         shell == Shell::PowerShell || self != Self::Windows
     }
