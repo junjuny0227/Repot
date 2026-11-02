@@ -1,0 +1,67 @@
+/* Start, scan and done: compact centered pages with grouped sections. */
+
+.form-page {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+.form-page.wide { max-width: 580px; justify-content: flex-start; padding-top: 8px; padding-bottom: 20px; gap: 16px; }
+
+.hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.hero h1 { margin-top: 4px; font-size: var(--title1); line-height: 24px; letter-spacing: var(--title1-track); }
+.hero p { max-width: 400px; }
+.app-icon { width: 64px; height: 64px; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.2)); }
+.app-icon svg { display: block; width: 100%; height: 100%; }
+
+/* The destination pop-up as a form row: label leading, control trailing. */
+.popup-field.row .popup-label { flex: 1; color: var(--label); }
+
+.actions { display: flex; justify-content: center; gap: 10px; }
+
+/* Scan progress. */
+.page-header { display: flex; align-items: center; gap: 12px; padding: 0 4px; }
+.page-header h1 { font-size: var(--title2); line-height: 22px; }
+.providers { flex: 1; min-height: 0; overflow: auto; }
+.row.provider {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) minmax(0, 1fr) 9rem;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 12px;
+}
+.provider-category { color: var(--label-2); }
+.provider-status { text-align: right; color: var(--label-2); font-variant-numeric: tabular-nums; }
+.status-icon { color: var(--label-3); }
+.status-ok .status-icon { color: var(--green); }
+.status-ok .provider-status { color: var(--label); }
+.status-failed .status-icon { color: var(--red); }
+.status-failed .provider-status { color: var(--red-text); }
+.status-timedOut .status-icon { color: var(--orange); }
+.status-timedOut .provider-status { color: var(--orange-text); }
+
+/* Done. */
+.done-mark { width: 56px; height: 56px; color: var(--green); }
+.row.stacked { flex-direction: column; align-items: stretch; gap: 4px; }
+.row.stacked .row-label { color: var(--label-2); font-size: var(--callout); }
+.path { font-size: var(--callout); line-height: var(--callout-lh); word-break: break-all; }
+.steps .row { min-height: 36px; }
+.step-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--fill-2);
+  color: var(--label-2);
+  font-size: var(--caption);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
