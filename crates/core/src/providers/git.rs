@@ -98,8 +98,8 @@ impl Provider for Git {
             .strip_prefix(&home)
             .unwrap_or(std::path::Path::new(".config/git/ignore"))
             .to_path_buf();
-        if !items.iter().any(|i| i.origin == Origin::Path(path.clone())) {
-            if let Some(item) = config_file_item(
+        if !items.iter().any(|i| i.origin == Origin::Path(path.clone()))
+            && let Some(item) = config_file_item(
                 env,
                 ConfigFileSpec {
                     provider: "git",
@@ -112,9 +112,9 @@ impl Provider for Git {
                     catalog_key: "file:gitignore-global",
                 },
                 |_| vec![],
-            ) {
-                items.push(item);
-            }
+            )
+        {
+            items.push(item);
         }
         Ok(items)
     }
