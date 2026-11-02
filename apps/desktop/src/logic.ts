@@ -1,4 +1,5 @@
-import type { Availability, AvailabilityMap, Category, Item, Selection } from "./types";
+import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, Selection } from "./types";
+import { TARGET_OPTIONS } from "./strings";
 
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
 
@@ -58,4 +59,36 @@ export function categoryCounts(items: Item[], checked: Set<string>): Record<Cate
     if (checked.has(item.id)) counts[item.category].checked += 1;
   }
   return counts;
+}
+
+/** Stable string key for an OS, usable as a `<select>` option value. */
+export const osKey = (os: Os): string => JSON.stringify(os);
+
+/** Destination choices, plus the current target if it is not one of them (e.g. Linux "other"). */
+export function targetOptions(current: Os | null): Os[] {
+  if (current === null || TARGET_OPTIONS.some((o) => osKey(o) === osKey(current))) return TARGET_OPTIONS;
+  return [...TARGET_OPTIONS, current];
+}
+
+export interface FileTree { files: OutputFile[]; folders: { name: string; files: OutputFile[] }[] }
+
+/** Top-level files stay as they are; anything under a folder (e.g. `files/`) is grouped so it can be folded. */
+export function fileTree(files: OutputFile[]): FileTree {
+  const tree: FileTree = { files: [], folders: [] };
+  for (const file of files) {
+    const at = file.path.indexOf("/");
+    if (at < 0) { tree.files.push(file); continue; }
+    const name = file.path.slice(0, at);
+    const folder = tree.folders.find((f) => f.name === name);
+    if (folder) folder.files.push(file);
+    else tree.folders.push({ name, files: [file] });
+  }
+  return tree;
+}
+
+export function warningItemId(w: ExportWarning): string {
+  if ("unavailable" in w) return w.unavailable.itemId;
+  if ("invalidValue" in w) return w.invalidValue.itemId;
+  if ("duplicateTarget" in w) return w.duplicateTarget.itemId;
+  return w.readFailed.itemId;
 }

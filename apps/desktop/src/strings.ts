@@ -1,4 +1,4 @@
-import type { Category, ExportWarning, Finding, Format, Os, ProviderStatus, UnavailableReason } from "./types";
+import type { Category, ExportWarning, Finding, Format, Origin, Os, ProviderStatus, UnavailableReason } from "./types";
 
 // Every user-facing sentence lives here so the UI can be translated by replacing this file.
 
@@ -65,14 +65,41 @@ export function nextSteps(target: Os, format: Format): string[] {
   return ["Copy this folder to the new machine.", "Run: ./restore.sh"];
 }
 
+export function originText(o: Origin): string {
+  return "command" in o ? `Detected with: ${o.command}` : `File: ${o.path}`;
+}
+
+export const availableOn = (target: Os): string => `Available on ${osLabel(target)}.`;
+export const withCount = (label: string, n: number): string => `${label} (${n})`;
+export const selectedCount = (checked: number, total: number): string => `${checked} of ${total} items selected`;
+export const selectCategory = (label: string): string => `Select all in ${label}`;
+export const revealLine = (line: number): string => `Line ${line}`;
+
 export const S = {
   appTitle: "Repot",
   currentOs: "This machine",
   targetOs: "Destination OS",
   scanButton: "Scan this machine",
+  detectingOs: "Detecting…",
+  startIntro: "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",
   scanning: "Scanning this machine…",
+  scanIntro: "Each tool is checked separately. This can take up to 30 seconds.",
+  errorTitle: "Something went wrong",
   available: "Available",
+  reviewTitle: "Review what to move",
+  allItems: "All items",
   noDescription: "No description",
+  noItems: "No items match the current filters.",
+  selectItem: "Select an item to see its details.",
+  description: "Description",
+  origin: "Source",
+  availability: "On the destination",
+  findings: "Findings",
+  noFindings: "Nothing to warn about.",
+  badgeSecret: "Contains a secret",
+  badgeDuplicate: "Also found by another tool",
+  badgeUnavailable: "Unavailable on the destination OS",
+  failedDetail: "Details",
   search: "Search",
   onlyAvailable: "Available only",
   onlyWarnings: "With warnings only",
@@ -80,10 +107,19 @@ export const S = {
   notDetected: "Not detected",
   failed: "Failed",
   nextExport: "Next: Export",
+  exportTitle: "Export",
+  format: "Format",
   formatScript: "Restore script",
   formatManifest: "Native manifests",
   back: "Back",
   save: "Choose folder and save",
+  saving: "Saving…",
+  previewLoading: "Preparing preview…",
+  previewFailed: "The preview could not be created. Change the format or go back and try again.",
+  previewEmpty: "No files will be created.",
+  warningsTitle: "Some items will be skipped",
+  savedTo: "Saved to",
+  nextStepsTitle: "Next steps",
   done: "Export complete",
   openFolder: "Open folder",
   startOver: "Start over",

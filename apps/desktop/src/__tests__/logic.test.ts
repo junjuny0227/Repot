@@ -4,7 +4,8 @@ const fixture = (await import("../__fixtures__/scan.json")).default;
 const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
-import { applyTarget, buildSelection, categoryCounts, filterItems, initialChecked, isAvailable, revealKey, secretLines, setCategory } from "../logic";
+import { applyTarget, buildSelection, categoryCounts, fileTree, filterItems, warningItemId, initialChecked, isAvailable, osKey, revealKey, secretLines, setCategory, targetOptions } from "../logic";
+import { TARGET_OPTIONS } from "../strings";
 
 test("initialChecked selects only available items", () => {
   const checked = initialChecked(scan.items, availWin);
@@ -43,4 +44,26 @@ test("setCategory on never checks unavailable items and counts follow", () => {
   const counts = categoryCounts(scan.items, initialChecked(scan.items, availMac));
   expect(counts.shell).toEqual({ total: 1, checked: 1 });
   expect(counts.runtime).toEqual({ total: 0, checked: 0 });
+});
+
+test("osKey and targetOptions keep the current target selectable", () => {
+  expect(osKey({ linux: "arch" })).toBe(osKey({ linux: "arch" }));
+  expect(osKey("macOs")).not.toBe(osKey("windows"));
+  expect(targetOptions("macOs")).toEqual(TARGET_OPTIONS);
+  expect(targetOptions(null)).toEqual(TARGET_OPTIONS);
+  expect(targetOptions({ linux: "other" })).toEqual([...TARGET_OPTIONS, { linux: "other" }]);
+});
+
+test("fileTree keeps top-level files and folds nested ones into folders", () => {
+  const f = (path: string) => ({ path, contents: "", executable: false });
+  const tree = fileTree([f("restore.sh"), f("files/.zshrc"), f("files/vscode/settings.json"), f("README.md")]);
+  expect(tree.files.map((x) => x.path)).toEqual(["restore.sh", "README.md"]);
+  expect(tree.folders).toEqual([{ name: "files", files: [f("files/.zshrc"), f("files/vscode/settings.json")] }]);
+});
+
+test("warningItemId reads the item of every warning kind", () => {
+  expect(warningItemId({ unavailable: { itemId: "a", reason: "unreadable" } })).toBe("a");
+  expect(warningItemId({ invalidValue: { itemId: "b" } })).toBe("b");
+  expect(warningItemId({ duplicateTarget: { itemId: "c" } })).toBe("c");
+  expect(warningItemId({ readFailed: { itemId: "d" } })).toBe("d");
 });

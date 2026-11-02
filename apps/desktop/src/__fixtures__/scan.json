@@ -127,8 +127,68 @@
         }
       },
       {
+        "category": "packageManager",
+        "id": "winget",
+        "status": "notDetected"
+      },
+      {
+        "category": "packageManager",
+        "id": "scoop",
+        "status": "notDetected"
+      },
+      {
+        "category": "packageManager",
+        "id": "choco",
+        "status": "notDetected"
+      },
+      {
+        "category": "packageManager",
+        "id": "apt",
+        "status": "notDetected"
+      },
+      {
+        "category": "packageManager",
+        "id": "dnf",
+        "status": "notDetected"
+      },
+      {
+        "category": "packageManager",
+        "id": "pacman",
+        "status": "notDetected"
+      },
+      {
         "category": "runtime",
         "id": "nvm",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "nvm-windows",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "fnm",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "volta",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "pyenv",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "rustup",
+        "status": "notDetected"
+      },
+      {
+        "category": "runtime",
+        "id": "sdkman",
         "status": "notDetected"
       },
       {
@@ -139,6 +199,21 @@
             "count": 1
           }
         }
+      },
+      {
+        "category": "globalPackage",
+        "id": "pnpm",
+        "status": "notDetected"
+      },
+      {
+        "category": "globalPackage",
+        "id": "pipx",
+        "status": "notDetected"
+      },
+      {
+        "category": "globalPackage",
+        "id": "cargo",
+        "status": "notDetected"
       },
       {
         "category": "editor",
