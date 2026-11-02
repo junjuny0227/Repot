@@ -49,6 +49,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/check-version.test.mjs
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test
       - run: pnpm --filter @repot/desktop build
