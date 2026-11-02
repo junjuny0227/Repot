@@ -1,0 +1,8 @@
+{
+  "name": "repot",
+  "private": true,
+  "packageManager": "pnpm@12.11.2",
+  "scripts": {
+    "desktop": "pnpm --filter @repot/desktop tauri"
+  }
+}
