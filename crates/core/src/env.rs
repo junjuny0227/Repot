@@ -38,6 +38,9 @@ pub trait Env: Send + Sync {
     fn read_file(&self, path: &Path) -> Result<String, EnvError>;
     fn list_dir(&self, path: &Path) -> Result<Vec<PathBuf>, EnvError>;
     fn exists(&self, path: &Path) -> bool;
+    fn temp_file(&self, name: &str) -> PathBuf;
+    fn remove_file(&self, path: &Path);
+    fn read_link(&self, path: &Path) -> Option<PathBuf>;
 }
 
 type CommandKey = (String, Vec<String>);
@@ -49,6 +52,7 @@ pub struct FakeEnv {
     programs: BTreeSet<String>,
     commands: BTreeMap<CommandKey, Result<CommandOutput, EnvError>>,
     files: BTreeMap<PathBuf, Result<String, EnvError>>,
+    links: BTreeMap<PathBuf, PathBuf>,
 }
 impl FakeEnv {
     pub fn new(os: Os, home: impl Into<PathBuf>) -> Self {
@@ -59,6 +63,7 @@ impl FakeEnv {
             programs: BTreeSet::new(),
             commands: BTreeMap::new(),
             files: BTreeMap::new(),
+            links: BTreeMap::new(),
         }
     }
     pub fn with_var(mut self, name: &str, value: &str) -> Self {
@@ -93,6 +98,10 @@ impl FakeEnv {
         );
         self
     }
+    pub fn with_link(mut self, path: impl Into<PathBuf>, target: impl Into<PathBuf>) -> Self {
+        self.links.insert(path.into(), target.into());
+        self
+    }
     pub fn with_file(mut self, path: impl Into<PathBuf>, content: &str) -> Self {
         self.files.insert(path.into(), Ok(content.into()));
         self
@@ -104,6 +113,13 @@ impl FakeEnv {
     }
 }
 impl Env for FakeEnv {
+    fn temp_file(&self, name: &str) -> PathBuf {
+        PathBuf::from("/tmp/repot-fake").join(name)
+    }
+    fn remove_file(&self, _path: &Path) {}
+    fn read_link(&self, path: &Path) -> Option<PathBuf> {
+        self.links.get(path).cloned()
+    }
     fn os(&self) -> Os {
         self.os
     }
@@ -132,6 +148,7 @@ impl Env for FakeEnv {
         let children: BTreeSet<_> = self
             .files
             .keys()
+            .chain(self.links.keys())
             .filter_map(|file| {
                 let rel = file.strip_prefix(path).ok()?;
                 let first = rel.components().next()?;
@@ -145,6 +162,9 @@ impl Env for FakeEnv {
         }
     }
     fn exists(&self, path: &Path) -> bool {
-        self.files.keys().any(|file| file.starts_with(path))
+        self.files
+            .keys()
+            .chain(self.links.keys())
+            .any(|file| file.starts_with(path))
     }
 }

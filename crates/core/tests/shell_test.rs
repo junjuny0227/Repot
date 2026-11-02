@@ -9,6 +9,15 @@ use repot_core::{
 // Mimic the real filesystem's ENOTDIR when traversing a regular theme file.
 struct StrictEnv(FakeEnv);
 impl repot_core::env::Env for StrictEnv {
+    fn temp_file(&self, name: &str) -> std::path::PathBuf {
+        self.0.temp_file(name)
+    }
+    fn remove_file(&self, path: &std::path::Path) {
+        self.0.remove_file(path);
+    }
+    fn read_link(&self, path: &std::path::Path) -> Option<std::path::PathBuf> {
+        self.0.read_link(path)
+    }
     fn os(&self) -> Os {
         self.0.os()
     }
