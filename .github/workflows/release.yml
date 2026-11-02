@@ -59,7 +59,11 @@ jobs:
           projectPath: apps/desktop
           tagName: ${{ github.ref_name }}
           releaseName: Repot ${{ github.ref_name }}
-          releaseBody: See README.md for first-run instructions (the app is not code-signed yet).
+          # Prepended to GitHub's generated notes (PRs since the previous tag,
+          # grouped by label per .github/release.yml). Edit the draft before publishing.
+          releaseBody: |
+            > **Unsigned beta.** Not code-signed or notarized yet; see the README for first launch on macOS and Windows.
+          generateReleaseNotes: true
           releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}
