@@ -47,7 +47,7 @@ jobs:
           $log = Join-Path $env:RUNNER_TEMP 'install-scoop.log'
           @'
           $ErrorActionPreference = 'Stop'
-          Start-Transcript -Path "$env:RUNNER_TEMP/install-scoop.log"
+          Start-Transcript -Path '__SCOOP_LOG__'
           try {
             $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
             $principal = [Security.Principal.WindowsPrincipal]::new($identity)
@@ -59,8 +59,8 @@ jobs:
             & "$HOME/scoop/shims/scoop.cmd" install jq ripgrep
             if ($LASTEXITCODE -ne 0) { throw 'Scoop package installation failed' }
           } finally { Stop-Transcript }
-          '@ | Set-Content $script
-          $action = New-ScheduledTaskAction -Execute (Get-Command pwsh).Source -Argument "-NoProfile -File `"$script`""
+          '@.Replace('__SCOOP_LOG__', $log) | Set-Content $script
+          $action = New-ScheduledTaskAction -Execute (Get-Command pwsh).Source -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
           $principal = New-ScheduledTaskPrincipal -UserId ([Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
           Register-ScheduledTask -TaskName RepotScoop -Action $action -Principal $principal -Force | Out-Null
           try {
