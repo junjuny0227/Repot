@@ -10,7 +10,10 @@ use std::sync::Arc;
 fn real_scan_has_no_failures() {
     let env: Arc<dyn Env> = Arc::new(RealEnv::new());
     let result = scan(env, default_providers(), PROVIDER_TIMEOUT, &|_| {});
-    eprintln!("{}", serde_json::to_string_pretty(&result.providers).unwrap());
+    eprintln!(
+        "{}",
+        serde_json::to_string_pretty(&result.providers).unwrap()
+    );
     let bad: Vec<_> = result
         .providers
         .iter()
