@@ -237,6 +237,7 @@ jobs:
           root.mkdir()
           # A private empty npm prefix proves an install rather than reusing runner tools.
           os.environ['npm_config_prefix'] = str(root / 'npm')
+          (root / 'npm').mkdir()
           missing = 'repot-e2e-nonexistent-package-7f49c2'
           package = 'dos2unix' if target == 'windows' else 'sl'
           manager = {'macos': 'brew', 'ubuntu': 'apt-get', 'windows': 'choco'}[target]
