@@ -81,3 +81,54 @@ pub(crate) fn run_ok(env: &dyn Env, program: &str, args: &[&str]) -> Result<Stri
     }
     Ok(out.stdout)
 }
+
+pub(crate) struct RuntimeSpec<'a> {
+    pub provider: &'static str,
+    pub tool: RuntimeTool,
+    pub runtime: &'a str,
+    pub name: &'a str,
+    pub version: String,
+    pub is_default: bool,
+    pub origin: Origin,
+    pub catalog_key: &'static str,
+}
+pub(crate) fn runtime_item(spec: RuntimeSpec) -> Item {
+    Item {
+        id: format!("{}:{}:{}", spec.provider, spec.runtime, spec.version),
+        provider: spec.provider.into(),
+        category: Category::Runtime,
+        name: spec.name.into(),
+        version: Some(spec.version),
+        description: catalog::describe(spec.catalog_key).map(str::to_owned),
+        origin: spec.origin,
+        portability: Portability::Mapped(spec.tool),
+        details: ItemDetails::Runtime {
+            tool: spec.tool,
+            runtime: spec.runtime.into(),
+            is_default: spec.is_default,
+        },
+        findings: vec![],
+    }
+}
+
+pub(crate) fn global_item(
+    provider: &str,
+    manager: GlobalManager,
+    name: String,
+    version: Option<String>,
+    description: Option<String>,
+    command: &str,
+) -> Item {
+    Item {
+        id: format!("{provider}:{name}"),
+        provider: provider.into(),
+        category: Category::GlobalPackage,
+        name,
+        version,
+        description,
+        origin: Origin::Command(command.into()),
+        portability: Portability::Any,
+        details: ItemDetails::GlobalPackage { manager },
+        findings: vec![],
+    }
+}
