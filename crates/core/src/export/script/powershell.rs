@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
 $script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
-function Test-Have($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
+function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
 function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
@@ -211,12 +211,16 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             }
             out.push_str("} else {\n");
         }
-        writeln!(out, "if (Test-Have {}) {{", q(t.0)).unwrap();
+        writeln!(out, "if (Test-Tool {}) {{", q(t.0)).unwrap();
         for step in group {
             let (check, output_check, install) = commands(step);
             let label = q(&step.label(h.target));
             if output_check {
-                writeln!(out, "  if ({check}) {{ Add-Skip {label} }}").unwrap();
+                writeln!(
+                    out,
+                    "  $installed = {check}\n  if ($installed) {{ Add-Skip {label} }}"
+                )
+                .unwrap();
             } else {
                 writeln!(
                     out,
