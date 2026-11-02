@@ -22,6 +22,20 @@ fn item(portability: Portability, findings: Vec<Finding>) -> Item {
     }
 }
 #[test]
+fn availability_map_covers_every_item() {
+    let mut a = item(Portability::SameOs, vec![]);
+    a.id = "a".into();
+    let mut b = item(Portability::Any, vec![]);
+    b.id = "b".into();
+    let map = repot_core::availability::availability_map(&[a, b], Os::MacOs, Os::Windows);
+    assert_eq!(map.len(), 2);
+    assert_eq!(map["b"], Availability::Available);
+    assert!(matches!(
+        map["a"],
+        Availability::Unavailable(UnavailableReason::DifferentOs { .. })
+    ));
+}
+#[test]
 fn counterpart_table() {
     use RuntimeTool::*;
     for os in [

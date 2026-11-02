@@ -28,6 +28,17 @@ pub fn counterpart(tool: RuntimeTool, target: Os) -> Option<RuntimeTool> {
         (other, _) => other,
     })
 }
+pub fn availability_map(
+    items: &[Item],
+    source: Os,
+    target: Os,
+) -> std::collections::HashMap<String, Availability> {
+    items
+        .iter()
+        .map(|item| (item.id.clone(), availability(item, source, target)))
+        .collect()
+}
+
 pub fn availability(item: &Item, source: Os, target: Os) -> Availability {
     let reason = if item
         .findings
