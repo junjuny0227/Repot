@@ -1,0 +1,168 @@
+{
+  "availability": {
+    "macOs": {
+      "brew:formula:ripgrep": "available",
+      "git:file:.gitconfig": "available",
+      "npm:typescript": "available",
+      "shell:file:.zshrc": "available"
+    },
+    "windows": {
+      "brew:formula:ripgrep": {
+        "unavailable": {
+          "differentOs": {
+            "source": "macOs"
+          }
+        }
+      },
+      "git:file:.gitconfig": "available",
+      "npm:typescript": "available",
+      "shell:file:.zshrc": {
+        "unavailable": {
+          "shellUnsupported": "zsh"
+        }
+      }
+    }
+  },
+  "scan": {
+    "items": [
+      {
+        "category": "packageManager",
+        "description": "Search files quickly",
+        "details": {
+          "package": {
+            "kind": "formula",
+            "manager": "brew"
+          }
+        },
+        "findings": [],
+        "id": "brew:formula:ripgrep",
+        "name": "ripgrep",
+        "origin": {
+          "command": "brew leaves --installed-on-request"
+        },
+        "portability": "sameOs",
+        "provider": "brew",
+        "version": "14.1.1"
+      },
+      {
+        "category": "globalPackage",
+        "description": "Typed JavaScript tooling",
+        "details": {
+          "globalPackage": {
+            "manager": "npm"
+          }
+        },
+        "findings": [],
+        "id": "npm:typescript",
+        "name": "typescript",
+        "origin": {
+          "command": "npm ls -g --depth=0 --json"
+        },
+        "portability": "any",
+        "provider": "npm",
+        "version": "5.6.3"
+      },
+      {
+        "category": "git",
+        "description": "Git configuration controls identity and repository behavior.",
+        "details": {
+          "configFile": {
+            "source": "/Users/demo/.gitconfig",
+            "target": {
+              "home": ".gitconfig"
+            }
+          }
+        },
+        "findings": [],
+        "id": "git:file:.gitconfig",
+        "name": ".gitconfig",
+        "origin": {
+          "path": "/Users/demo/.gitconfig"
+        },
+        "portability": "any",
+        "provider": "git",
+        "version": null
+      },
+      {
+        "category": "shell",
+        "description": "Zsh configuration customizes interactive shells.",
+        "details": {
+          "configFile": {
+            "source": "/Users/demo/.zshrc",
+            "target": {
+              "home": ".zshrc"
+            }
+          }
+        },
+        "findings": [
+          {
+            "kind": {
+              "secret": {
+                "name": "DEMO_TOKEN"
+              }
+            },
+            "line": 1
+          }
+        ],
+        "id": "shell:file:.zshrc",
+        "name": ".zshrc",
+        "origin": {
+          "path": "/Users/demo/.zshrc"
+        },
+        "portability": {
+          "sameShell": "zsh"
+        },
+        "provider": "shell",
+        "version": null
+      }
+    ],
+    "providers": [
+      {
+        "category": "packageManager",
+        "id": "brew",
+        "status": {
+          "ok": {
+            "count": 1
+          }
+        }
+      },
+      {
+        "category": "runtime",
+        "id": "nvm",
+        "status": "notDetected"
+      },
+      {
+        "category": "globalPackage",
+        "id": "npm",
+        "status": {
+          "ok": {
+            "count": 1
+          }
+        }
+      },
+      {
+        "category": "editor",
+        "id": "vscode",
+        "status": "notDetected"
+      },
+      {
+        "category": "git",
+        "id": "git",
+        "status": {
+          "ok": {
+            "count": 1
+          }
+        }
+      },
+      {
+        "category": "shell",
+        "id": "shell",
+        "status": {
+          "ok": {
+            "count": 1
+          }
+        }
+      }
+    ]
+  }
+}
