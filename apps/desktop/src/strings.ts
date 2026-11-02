@@ -31,7 +31,7 @@ export const categoryLabel = (c: Category): string => CATEGORY_LABELS[c];
 export function statusText(s: ProviderStatus): string {
   if (s === "running") return "Scanning…";
   if (s === "notDetected") return "Not detected";
-  if (s === "timedOut") return "Timed out (30 s)";
+  if (s === "timedOut") return "Timed out (60 s)";
   if ("ok" in s) return `Found ${s.ok.count}`;
   return s.failed.message;
 }
@@ -83,7 +83,7 @@ export const S = {
   detectingOs: "Detecting…",
   startIntro: "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",
   scanning: "Scanning this machine…",
-  scanIntro: "Each tool is checked separately. This can take up to 30 seconds.",
+  scanIntro: "Each tool is checked separately. This can take up to 60 seconds.",
   errorTitle: "Something went wrong",
   available: "Available",
   reviewTitle: "Review what to move",
