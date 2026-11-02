@@ -88,6 +88,15 @@ impl RealEnv {
     }
 }
 impl Env for RealEnv {
+    fn temp_file(&self, name: &str) -> PathBuf {
+        std::env::temp_dir().join(format!("repot-{}-{name}", std::process::id()))
+    }
+    fn remove_file(&self, path: &Path) {
+        let _ = std::fs::remove_file(path);
+    }
+    fn read_link(&self, path: &Path) -> Option<PathBuf> {
+        std::fs::read_link(path).ok()
+    }
     fn os(&self) -> Os {
         self.os
     }

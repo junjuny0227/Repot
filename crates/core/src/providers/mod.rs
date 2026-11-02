@@ -1,10 +1,16 @@
+pub mod apt;
 pub mod brew;
+pub mod choco;
 pub(crate) mod common;
+pub mod dnf;
 pub mod git;
 pub mod npm;
 pub mod nvm;
+pub mod pacman;
+pub mod scoop;
 pub mod shell;
 pub mod vscode;
+pub mod winget;
 use crate::scan::Provider;
 use std::sync::Arc;
 pub fn default_providers() -> Vec<Arc<dyn Provider>> {

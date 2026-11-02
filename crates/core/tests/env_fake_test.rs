@@ -1,5 +1,23 @@
 use repot_core::env::{CommandOutput, Env, EnvError, FakeEnv};
 use repot_core::os::Os;
+
+#[test]
+fn fake_links_and_temp() {
+    let path = Path::new("/Users/t/.sdkman/candidates/java/current");
+    let env = FakeEnv::new(Os::MacOs, "/Users/t")
+        .with_file("/Users/t/.sdkman/candidates/java/21/bin/java", "")
+        .with_link(path, "21");
+    assert_eq!(env.read_link(path), Some(PathBuf::from("21")));
+    assert!(env.exists(path));
+    assert_eq!(env.list_dir(path.parent().unwrap()).unwrap().len(), 2);
+    assert_eq!(
+        env.temp_file("x.json"),
+        PathBuf::from("/tmp/repot-fake/x.json")
+    );
+    env.remove_file(path);
+    assert!(env.exists(path));
+    assert_eq!(env.read_link(Path::new("missing")), None);
+}
 use std::path::{Path, PathBuf};
 
 #[test]

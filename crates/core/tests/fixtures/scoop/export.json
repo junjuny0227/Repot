@@ -1,0 +1,22 @@
+{
+  "buckets": [
+    {
+      "Name": "main"
+    },
+    {
+      "Name": "extras"
+    }
+  ],
+  "apps": [
+    {
+      "Name": "git",
+      "Source": "main",
+      "Version": "2.47.0"
+    },
+    {
+      "Name": "vlc",
+      "Source": "extras",
+      "Version": "3.0.21"
+    }
+  ]
+}

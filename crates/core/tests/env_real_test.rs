@@ -76,6 +76,26 @@ fn resolves_absolute_paths_with_spaces_and_rejects_non_executables() {
     );
 }
 
+#[cfg(unix)]
+#[test]
+fn real_links_and_remove() {
+    let dir = tempfile::tempdir().unwrap();
+    let target = dir.path().join("t");
+    let link = dir.path().join("l");
+    std::fs::write(&target, "").unwrap();
+    std::os::unix::fs::symlink(&target, &link).unwrap();
+    let env = RealEnv::new();
+    assert_eq!(env.read_link(&link), Some(target.clone()));
+    assert_eq!(env.read_link(&target), None);
+    assert_eq!(
+        env.temp_file("x.json"),
+        std::env::temp_dir().join(format!("repot-{}-x.json", std::process::id()))
+    );
+    env.remove_file(&target);
+    env.remove_file(&target);
+    assert!(!target.exists());
+}
+
 #[test]
 fn reads_files_and_dirs() {
     let dir = tempfile::tempdir().unwrap();
