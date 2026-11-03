@@ -61,7 +61,7 @@ if (Test-Tool 'scoop') {
 if (Test-Tool 'winget') {
   & winget list --id 'Git.Git' --exact *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install Git.Git' }
-  else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Add-Fail 'winget install Git.Git' } }
+  else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { & winget list --id 'Git.Git' --exact *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'winget install Git.Git' } } else { Add-Fail 'winget install Git.Git' } }
 } else {
   Write-Missing 'winget' 'https://learn.microsoft.com/windows/package-manager/winget/'
   Add-Skip 'winget install Git.Git'
@@ -69,7 +69,7 @@ if (Test-Tool 'winget') {
 if (Test-Tool 'scoop') {
   & scoop prefix 'extras/vlc' *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install extras/vlc' }
-  else { & scoop install 'extras/vlc'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/vlc' } else { Add-Fail 'scoop install extras/vlc' } }
+  else { & scoop install 'extras/vlc'; if ($LASTEXITCODE -eq 0) { & scoop prefix 'extras/vlc' *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/vlc' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'scoop install extras/vlc' } } else { Add-Fail 'scoop install extras/vlc' } }
 } else {
   Write-Missing 'scoop' 'https://scoop.sh'
   Add-Skip 'scoop install extras/vlc'
@@ -81,7 +81,7 @@ if (-not (Test-Admin)) {
 if (Test-Tool 'choco') {
   $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet
   if ($installed) { Add-Skip 'choco install 7zip' }
-  else { & choco install '7zip' -y; if ($LASTEXITCODE -eq 0) { Add-Ok 'choco install 7zip' } else { Add-Fail 'choco install 7zip' } }
+  else { & choco install '7zip' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet; if ($installed) { Add-Ok 'choco install 7zip' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install 7zip' } } else { Add-Fail 'choco install 7zip' } }
 } else {
   Write-Missing 'choco' 'https://chocolatey.org/install'
   Add-Skip 'choco install 7zip'
