@@ -59,5 +59,5 @@
 
 - 커밋 메시지는 영어 Conventional Commits다 (`feat(core): …`, `docs: …`, `ci: …`). 각 계획 Task의 마지막 단계에 메시지가 적혀 있다.
 - 문서(`docs/`)는 한국어, 생성 파일(스크립트 출력, README)과 `catalog` 설명은 영어, UI 문구는 MVP에서 영어다.
-- 원격 push와 태그 생성은 실행 전에 사용자에게 확인을 받는다. 릴리스는 draft·prerelease로만 만든다.
+- 원격 push와 태그 생성은 실행 전에 사용자에게 확인을 받는다. 릴리스 워크플로는 draft로 만들고, 사용자가 확인한 뒤 공개한다. 0.x 버전은 prerelease가 아닌 정식 릴리스로 내고 이름에 `(beta)`를 붙인다.
 <!-- omh:agent-instructions:end -->
