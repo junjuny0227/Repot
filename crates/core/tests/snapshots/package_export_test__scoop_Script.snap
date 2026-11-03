@@ -1,6 +1,5 @@
 ---
 source: crates/core/tests/package_export_test.rs
-assertion_line: 213
 expression: output
 ---
 === restore.ps1 ===
@@ -58,15 +57,15 @@ if (Test-Tool 'scoop') {
   # from brew: ripgrep
   & scoop prefix 'ripgrep' *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install ripgrep' }
-  else { & scoop install 'ripgrep'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install ripgrep' } else { Add-Fail 'scoop install ripgrep' } }
+  else { & scoop install 'ripgrep'; if ($LASTEXITCODE -eq 0) { & scoop prefix 'ripgrep' *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install ripgrep' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'scoop install ripgrep' } } else { Add-Fail 'scoop install ripgrep' } }
   # from brew: git
   & scoop prefix 'git' *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install git' }
-  else { & scoop install 'git'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install git' } else { Add-Fail 'scoop install git' } }
+  else { & scoop install 'git'; if ($LASTEXITCODE -eq 0) { & scoop prefix 'git' *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'scoop install git' } } else { Add-Fail 'scoop install git' } }
   # from brew: firefox
   & scoop prefix 'extras/firefox' *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install extras/firefox' }
-  else { & scoop install 'extras/firefox'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/firefox' } else { Add-Fail 'scoop install extras/firefox' } }
+  else { & scoop install 'extras/firefox'; if ($LASTEXITCODE -eq 0) { & scoop prefix 'extras/firefox' *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/firefox' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'scoop install extras/firefox' } } else { Add-Fail 'scoop install extras/firefox' } }
 } else {
   Write-Missing 'scoop' 'https://scoop.sh'
   Add-Skip 'scoop bucket add main'

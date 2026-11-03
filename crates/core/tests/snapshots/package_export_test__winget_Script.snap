@@ -1,6 +1,5 @@
 ---
 source: crates/core/tests/package_export_test.rs
-assertion_line: 213
 expression: output
 ---
 === restore.ps1 ===
@@ -50,15 +49,15 @@ if (Test-Tool 'winget') {
   # from brew: ripgrep
   & winget list --id 'BurntSushi.ripgrep.MSVC' --exact *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install BurntSushi.ripgrep.MSVC' }
-  else { & winget install --id 'BurntSushi.ripgrep.MSVC' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install BurntSushi.ripgrep.MSVC' } else { Add-Fail 'winget install BurntSushi.ripgrep.MSVC' } }
+  else { & winget install --id 'BurntSushi.ripgrep.MSVC' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { & winget list --id 'BurntSushi.ripgrep.MSVC' --exact *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install BurntSushi.ripgrep.MSVC' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'winget install BurntSushi.ripgrep.MSVC' } } else { Add-Fail 'winget install BurntSushi.ripgrep.MSVC' } }
   # from brew: git
   & winget list --id 'Git.Git' --exact *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install Git.Git' }
-  else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Add-Fail 'winget install Git.Git' } }
+  else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { & winget list --id 'Git.Git' --exact *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'winget install Git.Git' } } else { Add-Fail 'winget install Git.Git' } }
   # from brew: firefox
   & winget list --id 'Mozilla.Firefox' --exact *> $null
   if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install Mozilla.Firefox' }
-  else { & winget install --id 'Mozilla.Firefox' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Mozilla.Firefox' } else { Add-Fail 'winget install Mozilla.Firefox' } }
+  else { & winget install --id 'Mozilla.Firefox' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { & winget list --id 'Mozilla.Firefox' --exact *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Mozilla.Firefox' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'winget install Mozilla.Firefox' } } else { Add-Fail 'winget install Mozilla.Firefox' } }
 } else {
   Write-Missing 'winget' 'https://learn.microsoft.com/windows/package-manager/winget/'
   Add-Skip 'winget install BurntSushi.ripgrep.MSVC'

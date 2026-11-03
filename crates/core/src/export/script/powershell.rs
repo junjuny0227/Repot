@@ -226,6 +226,13 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             }
             let (check, output_check, install) = commands(step);
             let label = q(&step.label(h.target));
+            // Some managers exit 0 without installing anything (choco 2.x when its feed
+            // returns 504), so a package counts as installed only if the check finds it.
+            let verify = if output_check {
+                format!("$installed = {check}; if ($installed)")
+            } else {
+                format!("& {check} *> $null; if ($LASTEXITCODE -eq 0)")
+            };
             if output_check {
                 writeln!(
                     out,
@@ -239,7 +246,11 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
                 )
                 .unwrap();
             }
-            writeln!(out, "  else {{ {install}; if ($LASTEXITCODE -eq 0) {{ Add-Ok {label} }} else {{ Add-Fail {label} }} }}").unwrap();
+            if matches!(step, Step::InstallPackage { .. }) {
+                writeln!(out, "  else {{ {install}; if ($LASTEXITCODE -eq 0) {{ {verify} {{ Add-Ok {label} }} else {{ Write-Host '  installer reported success, but the package is not installed'; Add-Fail {label} }} }} else {{ Add-Fail {label} }} }}").unwrap();
+            } else {
+                writeln!(out, "  else {{ {install}; if ($LASTEXITCODE -eq 0) {{ Add-Ok {label} }} else {{ Add-Fail {label} }} }}").unwrap();
+            }
         }
         writeln!(
             out,

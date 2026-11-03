@@ -84,6 +84,15 @@ fn ps_snapshot() {
     insta::assert_snapshot!(render_powershell(&windows_plan()));
 }
 #[test]
+fn package_installs_are_verified_after_a_zero_exit_code() {
+    // choco 2.x exits 0 with "installed 0/0 packages" when its feed returns 504.
+    let s = render_powershell(&windows_plan());
+    assert!(s.contains(
+        "else { & choco install '7zip' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet; if ($installed) { Add-Ok"
+    ));
+    assert!(s.contains("} else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail"));
+}
+#[test]
 fn ps_guards_choco_with_admin_and_quotes_values() {
     let s = render_powershell(&windows_plan());
     assert!(s.contains("if (-not (Test-Admin))"));

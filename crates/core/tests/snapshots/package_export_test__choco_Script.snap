@@ -1,6 +1,5 @@
 ---
 source: crates/core/tests/package_export_test.rs
-assertion_line: 213
 expression: output
 ---
 === restore.ps1 ===
@@ -56,15 +55,15 @@ if (Test-Tool 'choco') {
   # from brew: ripgrep
   $installed = & choco list --exact 'ripgrep' --limit-output 2>$null | Select-String -SimpleMatch 'ripgrep' -Quiet
   if ($installed) { Add-Skip 'choco install ripgrep' }
-  else { & choco install 'ripgrep' -y; if ($LASTEXITCODE -eq 0) { Add-Ok 'choco install ripgrep' } else { Add-Fail 'choco install ripgrep' } }
+  else { & choco install 'ripgrep' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'ripgrep' --limit-output 2>$null | Select-String -SimpleMatch 'ripgrep' -Quiet; if ($installed) { Add-Ok 'choco install ripgrep' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install ripgrep' } } else { Add-Fail 'choco install ripgrep' } }
   # from brew: git
   $installed = & choco list --exact 'git' --limit-output 2>$null | Select-String -SimpleMatch 'git' -Quiet
   if ($installed) { Add-Skip 'choco install git' }
-  else { & choco install 'git' -y; if ($LASTEXITCODE -eq 0) { Add-Ok 'choco install git' } else { Add-Fail 'choco install git' } }
+  else { & choco install 'git' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'git' --limit-output 2>$null | Select-String -SimpleMatch 'git' -Quiet; if ($installed) { Add-Ok 'choco install git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install git' } } else { Add-Fail 'choco install git' } }
   # from brew: firefox
   $installed = & choco list --exact 'firefox' --limit-output 2>$null | Select-String -SimpleMatch 'firefox' -Quiet
   if ($installed) { Add-Skip 'choco install firefox' }
-  else { & choco install 'firefox' -y; if ($LASTEXITCODE -eq 0) { Add-Ok 'choco install firefox' } else { Add-Fail 'choco install firefox' } }
+  else { & choco install 'firefox' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'firefox' --limit-output 2>$null | Select-String -SimpleMatch 'firefox' -Quiet; if ($installed) { Add-Ok 'choco install firefox' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install firefox' } } else { Add-Fail 'choco install firefox' } }
 } else {
   Write-Missing 'choco' 'https://chocolatey.org/install'
   Add-Skip 'choco install ripgrep'
