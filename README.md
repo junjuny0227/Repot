@@ -1,82 +1,128 @@
+<div align="center">
+
+<img src="apps/desktop/app-icon.svg" width="128" height="128" alt="">
+
 # Repot
 
-Move your dev environment to a new machine — explained, selective, and safe.
+**Scan your dev setup. Restore it on a new machine.**
 
-Website: <https://junjuny0227.github.io/Repot/>
+Repot reads what your machine has installed, explains each item, and exports a
+restore script you review before running. It never changes your device.
+
+[![Latest release](https://img.shields.io/github/v/release/junjuny0227/Repot?label=beta&color=0a84ff)](https://github.com/junjuny0227/Repot/releases/latest)
+[![CI](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml/badge.svg)](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+[**Download**](https://junjuny0227.github.io/Repot/) · [Releases](https://github.com/junjuny0227/Repot/releases/latest) · [Design (Korean)](docs/specs/2026-11-02-repot-mvp-design.md)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="apps/site/public/screenshots/review-dark.webp">
+  <img src="apps/site/public/screenshots/review-light.webp" width="840" alt="Repot's review screen: items grouped by category with checkboxes, and an inspector for .zshrc showing its description, source, availability on macOS and three masked secrets.">
+</picture>
+
+</div>
 
 ## What it does
 
-Scan your current machine, review each item with its description and portability
-warnings, select what you want to move, and export either a readable restore
-script or a bundle of native manifests. Copy the export folder to the new machine
-and review it before running anything. Repot does not run the restore for you.
+- **Finds your dev environment**: packages, runtime versions, global CLI tools,
+  editor extensions and settings, Git config and shell profiles, on macOS, Windows
+  and Linux.
+- **Explains every item.** Each one comes with a short description and a warning when
+  it cannot move to the destination OS. When Repot has no description, it says so.
+- **Lets you pick.** Select what to move by category or item; unavailable items are
+  disabled rather than guessed.
+- **Exports, never installs.** You get a readable `restore.sh` / `restore.ps1` or a
+  bundle of native manifests (Brewfile, winget JSON, VS Code extension list and so on).
+  You decide whether to run it on the new machine.
+- **Masks secrets.** Tokens found in config files are replaced with `<REDACTED>` unless
+  you choose otherwise.
+- **Updates itself** (from 0.2.0). New versions install from inside the app, verified
+  against Repot's update signing key.
+- **Speaks your language**: English, 한국어, 日本語 and 简体中文.
 
-Supported providers:
+## A closer look
 
-- **Packages:** Homebrew, winget, Scoop, Chocolatey, apt, dnf, pacman.
-- **Runtimes:** nvm, nvm-windows, fnm, Volta, pyenv (including pyenv-win), rustup,
-  SDKMAN!.
-- **Global packages:** npm, pnpm, pipx, Cargo.
-- **Editors:** VS Code and Cursor extensions, settings, keybindings and snippets.
-- **Git:** user configuration and the configured global ignore file.
-- **Shell:** zsh, Bash, fish and PowerShell profiles, oh-my-zsh custom plugins and
-  themes, and Starship configuration.
+<table>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="apps/site/public/screenshots/review-dark-1100.webp">
+        <img src="apps/site/public/screenshots/review-light-1100.webp" alt="Review screen with an item's description, source file, destination availability and secret findings.">
+      </picture>
+      <p align="center"><b>Review</b>: what each item is and whether it can move</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="apps/site/public/screenshots/export-dark-1100.webp">
+        <img src="apps/site/public/screenshots/export-light-1100.webp" alt="Export screen previewing restore.sh and the configuration files it copies, before choosing a folder.">
+      </picture>
+      <p align="center"><b>Export</b>: preview the script and files before saving</p>
+    </td>
+  </tr>
+</table>
 
-Package-manager entries can only move to the same OS (and Linux distribution
-family). Supported runtime managers are mapped between operating systems;
-unavailable items are disabled rather than guessed.
+## What it moves
+
+| Category | Tools |
+| --- | --- |
+| Packages | Homebrew, winget, Scoop, Chocolatey, apt, dnf, pacman |
+| Runtimes | nvm, nvm-windows, fnm, Volta, pyenv (including pyenv-win), rustup, SDKMAN! |
+| Global packages | npm, pnpm, pipx, Cargo |
+| Editors | VS Code and Cursor: extensions, settings, keybindings, snippets |
+| Git | User configuration and the global ignore file |
+| Shell | zsh, Bash, fish and PowerShell profiles, oh-my-zsh custom plugins and themes, Starship |
+
+Package-manager entries move only to the same OS (and Linux distribution family).
+Runtime managers are mapped between operating systems.
 
 ## Principles
 
-- **Explains everything:** shows local descriptions and portability warnings, or
-  honestly says when no description is available.
-- **Read-only scans:** scans only read your device; exports write to your chosen
-  folder. Only an app update you approve replaces Repot itself. You decide whether
-  to run the generated restore script.
-- **Conservative by default:** masks detected secrets, backs up changed destination
-  files, and never installs package managers for you.
-- **Networking only for app updates:** Repot connects to GitHub to check for and
-  download signed app updates. Automatic checks can be turned off in Settings.
-  Scan data never leaves your machine. The restore scripts you run separately can
-  download packages through their respective tools.
-- **Review before you run:** preview the files before saving and read the exported
-  script before executing it.
+- **Read-only scans.** Scans only read your device; exports write only to the folder
+  you choose. The one exception is an app update you approve.
+- **Conservative by default.** The restore script asks first, skips what is already
+  there, backs up files before changing them, and never installs package managers for
+  you.
+- **Network only for app updates.** Repot talks to GitHub to check for and download
+  signed updates; automatic checks can be turned off in Settings. Scan data never
+  leaves your machine. The restore script you run later downloads packages through
+  their own tools.
 
 ## Install
 
-Download an installer for your OS from [GitHub Releases](https://github.com/junjuny0227/Repot/releases)
-when a release is available. 0.x builds are unsigned betas: they are not
-code-signed or notarized, so your OS warns on first launch. Update bundles are
-verified with a separate updater signature; this is not Apple/Windows code signing.
+Download the latest beta from the [download page](https://junjuny0227.github.io/Repot/)
+or [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest).
 
-First launch after verifying that you trust the download:
+| Platform | Package | Status |
+| --- | --- | --- |
+| macOS (Apple silicon and Intel) | `.dmg` | Beta |
+| Windows 10 / 11 (x64) | `.msi`, `-setup.exe` | Beta |
+| Linux (x86_64) | `.AppImage`, `.deb`, `.rpm` | Beta |
 
-- **macOS (Apple silicon or Intel):** open the `.dmg` and drag Repot to
-  Applications. Open Repot once; macOS says it cannot verify the developer. Then
-  open **System Settings › Privacy & Security**, choose **Open Anyway** next to the
-  Repot message, and confirm. This is needed only the first time. On current macOS,
-  Control-click › Open no longer bypasses the check. Alternatively, remove the
-  download quarantine flag in Terminal:
+0.x builds are not code-signed or notarized yet, so the first launch needs one extra
+step. Update bundles are verified with a separate updater signature; this is not
+Apple/Windows code signing.
+
+- **macOS:** open the `.dmg` and drag Repot to Applications. Open Repot once; macOS
+  says it cannot verify the developer. Then open **System Settings › Privacy &
+  Security**, choose **Open Anyway**, and confirm. This is needed only the first time
+  (Control-click › Open no longer bypasses the check on current macOS). Alternatively:
   `xattr -dr com.apple.quarantine /Applications/Repot.app`.
 - **Windows:** open the `.msi` or setup `.exe`. If SmartScreen blocks it, choose
   **More info › Run anyway** only if you trust the file.
-- **Linux:** make the downloaded AppImage executable with
-  `chmod +x Repot_*.AppImage`, then open it, or install the `.deb` using your
-  distribution's package installer.
+- **Linux:** `chmod +x Repot_*.AppImage` and open it, or install the `.deb` / `.rpm`
+  with your distribution's package installer.
 
 ### App updates
 
-Repot checks GitHub for updates once on launch by default. Open **Settings** next
-to the language picker to turn off **Check for updates automatically** or use
-**Check now**. A new version is offered only on the start or done screen, never
-during a scan or export. Choose **Install and Restart**, or **Later**; downloads
-show progress and the signed update is verified before installation.
+Repot checks GitHub once on launch by default. Open **Settings** next to the language
+picker to turn off **Check for updates automatically** or use **Check now**. A new
+version is offered only on the start or done screen, never during a scan or export.
+Choose **Install and Restart** or **Later**; the signed update is verified before it
+is installed.
 
-Linux automatic updates require an **AppImage**. For `.deb`/`.rpm`, use your
-package manager or download the latest installer from the site. Users of
-**0.1.0 must install an updater-enabled version manually once**. Update checks
-use the latest published full release; `latest.json` is not available while its
-release is still a draft.
+- Linux automatic updates need the **AppImage**. For `.deb` / `.rpm`, update through
+  your package manager or download the latest installer.
+- **0.1.0 has no updater**: install 0.2.0 or later manually once.
 
 ## Using an export
 
@@ -162,6 +208,7 @@ workflow builds require a matching version tag and create a draft release named
 
 - [MVP design](docs/specs/2026-11-02-repot-mvp-design.md) (Korean)
 - [Implementation plans](docs/plans/) (Korean)
+- [Product site source](apps/site/)
 
 ## License
 
