@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rename, open, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -43,6 +43,7 @@ export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globa
     if (offline) throw new Error('Offline jeb response cache missing');
     const checkpointPath = join(cacheDir, 'checkpoint.json'), day = now().toISOString().slice(0, 10);
     let checkpoint = await readJson(checkpointPath, { day, attempts: 0, remainingCredits: null, stopped: null });
+    if (!checkpoint || !/^\d{4}-\d{2}-\d{2}$/.test(checkpoint.day) || !Number.isSafeInteger(checkpoint.attempts) || checkpoint.attempts < 0 || checkpoint.attempts > 1000 || (checkpoint.remainingCredits !== null && (!Number.isFinite(checkpoint.remainingCredits) || checkpoint.remainingCredits < 0))) throw new Error('Invalid jeb checkpoint');
     if (checkpoint.day !== day) checkpoint = { day, attempts: 0, remainingCredits: null, stopped: null };
     const secret = key ?? await readKey({ env, envPath });
     await mkdir(responses, { recursive: true });
@@ -78,7 +79,16 @@ export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globa
       return { ...result, cached: false };
     }
   }
-  const client = (source, row) => { const task = queue.then(() => judge(source, row)); queue = task.catch(() => {}); return task; };
+  async function locked(source, row) {
+    if (offline) return judge(source, row);
+    await mkdir(cacheDir, { recursive: true });
+    const path = join(cacheDir, 'judge.lock');
+    let lock;
+    try { lock = await open(path, 'wx'); } catch { throw new Error('Jeb cache is locked; another run may be active'); }
+    try { return await judge(source, row); }
+    finally { await lock.close(); await rm(path); }
+  }
+  const client = (source, row) => { const task = queue.then(() => locked(source, row)); queue = task.catch(() => {}); return task; };
   Object.defineProperty(client, 'stats', { get: () => ({ ...stats }) });
   return client;
 }

@@ -36,3 +36,10 @@ test('invalid names fail full preflight without changing either data file; dry-r
     assert.equal(JSON.parse(await readFile(provenancePath)).packages.good.winget.method, 'jeb');
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+test('valid constructor id is an own package key, never an inherited object', () => {
+  const result = mergeDecisions({ version: 1, packages: {} }, undefined, [row('constructor', 'winget', 'Vendor.Constructor')]);
+  assert.ok(Object.hasOwn(result.map.packages, 'constructor'));
+  assert.equal(result.map.packages.constructor.brew, 'constructor');
+  assert.ok(Object.hasOwn(result.provenance.packages, 'constructor'));
+  assert.equal(Object.winget, undefined);
+});

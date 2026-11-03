@@ -47,9 +47,9 @@ export function mergeDecisions(original, previous = { version: 1, packages: {} }
     if (typeof row.catalogSnapshot !== 'string' || !Number.isFinite(Date.parse(row.catalogSnapshot))) throw new Error('Invalid catalog snapshot date');
     const tier = row.candidates?.find(c => c.id === value)?.tier ?? null;
     if (tier !== null && !['HIGH', 'MEDIUM', 'LOW'].includes(tier)) throw new Error('Invalid candidate tier');
-    map.packages[id] ??= { [manager]: row.source };
+    if (!Object.hasOwn(map.packages, id)) map.packages[id] = { [manager]: row.source };
     map.packages[id][row.target] = value;
-    provenance.packages[id] ??= {};
+    if (!Object.hasOwn(provenance.packages, id)) provenance.packages[id] = {};
     provenance.packages[id][row.target] = { method: human ? 'human' : row.method, probability, tier, catalogSnapshot: row.catalogSnapshot };
     added.push({ id, target: row.target, value });
   }

@@ -75,3 +75,29 @@ test('offline cache miss and daily cap never invoke fetch', () => temp(async cac
   await assert.rejects(createJudge({ cacheDir, key: 'fake', fetch, now: () => new Date('2026-11-03') })(source, row), /limit/);
   assert.equal(calls, 0);
 }));
+test('malformed choice/probability is incomplete and a successful echoed header never enters cache', async () => {
+  for (const [choice, probabilities] of [['0', { 0: 1 }], ['99', { 99: 1 }], ['1', { 1: '0.9' }], ['1', { 1: 1.01 }], ['1', {}]]) await temp(async cacheDir => {
+    await assert.rejects(createJudge({ cacheDir, key: 'fake', fetch: async () => answer(choice, probabilities) })(source, row), /Invalid jeb response/);
+  });
+  await temp(async cacheDir => {
+    const secret = 'echoed-test-secret';
+    const judge = createJudge({ cacheDir, key: secret, fetch: async (_url, options) => Response.json({ answers: { q: { choice: '1', probabilities: { 1: 0.9 } } }, echoed: options.headers }, { headers: { 'x-ratelimit-remaining-credits': '900' } }) });
+    await judge(source, row);
+    const { readdir } = await import('node:fs/promises');
+    for (const file of await readdir(join(cacheDir, 'responses'))) {
+      const text = await readFile(join(cacheDir, 'responses', file), 'utf8');
+      assert.ok(!text.includes(secret)); assert.ok(!text.includes('Authorization'));
+    }
+  });
+});
+test('corrupt checkpoint fails closed and independent clients cannot race the same cache', () => temp(async cacheDir => {
+  await writeFile(join(cacheDir, 'checkpoint.json'), JSON.stringify({ day: '2026-11-03', attempts: -5, remainingCredits: 900, stopped: null }));
+  let calls = 0;
+  await assert.rejects(createJudge({ cacheDir, key: 'fake', now: () => new Date('2026-11-03'), fetch: async () => { calls++; return answer(); } })(source, row), /checkpoint/);
+  assert.equal(calls, 0);
+  await rm(join(cacheDir, 'checkpoint.json'));
+  const options = { cacheDir, key: 'fake', fetch: async () => { calls++; await new Promise(resolve => setTimeout(resolve, 10)); return answer(); } };
+  const results = await Promise.allSettled([createJudge(options)(source, row), createJudge(options)(source, row)]);
+  assert.equal(calls, 1);
+  assert.ok(results.some(r => r.status === 'fulfilled'));
+}));
