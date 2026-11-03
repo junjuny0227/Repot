@@ -1617,6 +1617,10 @@
       "apt": "zstd",
       "dnf": "zstd",
       "pacman": "zstd"
+    },
+    "zulu-17": {
+      "brewCask": "zulu@17",
+      "scoop": "java/zulu17-jdk"
     }
   }
 }

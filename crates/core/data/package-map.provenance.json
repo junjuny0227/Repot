@@ -1924,6 +1924,14 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "winget-pkgs manifests/z/Zoom/Zoom/7.2.51704 installer: ZoomInstallerFull.msi from zoom.us (official Zoom Workplace client, machine scope); EXE variant is the same client as per-user exe; VDI/Rooms/plugins are other products."
       }
+    },
+    "zulu-17": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9683328700391972,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
     }
   }
 }
