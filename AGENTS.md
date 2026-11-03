@@ -4,7 +4,7 @@
 ## 기준 문서
 
 - 제품 결정의 기준은 `docs/specs/2026-11-02-repot-mvp-design.md`이다. 구현 순서와 인터페이스는 `docs/plans/2026-11-02-0[1-5]-*.md`를 따른다.
-- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 제품 사이트(`apps/site`)는 계획 6(`docs/plans/2026-11-03-06-site.md`)을 따른다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
+- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 제품 사이트(`apps/site`)는 계획 6(`docs/plans/2026-11-03-06-site.md`)을 따른다. 다국어 UI는 계획 7(`docs/plans/2026-11-03-07-i18n.md`)을 따른다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
 - 구현 중 스펙과 다른 결정을 내리면 같은 PR에서 스펙도 고친다. 계획만 고치고 스펙을 두면 두 문서가 어긋난다.
 
 ## 빌드와 테스트
@@ -44,7 +44,7 @@
 ## 지켜야 할 경계
 
 - `repot-core`는 Tauri에 의존하지 않고 네트워크 통신을 하지 않는다.
-- core는 사람이 읽는 문장을 만들지 않는다. 문장은 UI(`apps/desktop/src/strings.ts`)가 만든다. 예외는 `catalog.rs`의 영어 한 문장 설명이다.
+- core는 사람이 읽는 문장을 만들지 않는다. 문장은 UI(`apps/desktop/src/locales/<locale>.json`, `strings.ts`)가 만든다. 예외는 `catalog.rs`의 영어 한 문장 설명이고, 각 설명의 id(`Item.catalog_id`)로 UI가 번역을 찾는다.
 - 외부 명령 실행과 파일 읽기는 모두 `Env`를 거친다. Provider 테스트는 `FakeEnv`와 `crates/core/tests/fixtures/<provider>/`로 하고, 테스트에서 실제 도구를 부르지 않는다.
 - 새 crate 의존성은 계획의 Global Constraints에 없으면 계획부터 고친 뒤 추가한다.
 - 프론트엔드에 shell 권한을 주지 않는다.
@@ -58,6 +58,6 @@
 ## 규칙
 
 - 커밋 메시지는 영어 Conventional Commits다 (`feat(core): …`, `docs: …`, `ci: …`). 각 계획 Task의 마지막 단계에 메시지가 적혀 있다.
-- 문서(`docs/`)는 한국어, 생성 파일(스크립트 출력, README)과 `catalog` 설명은 영어, UI 문구는 MVP에서 영어다.
+- 문서(`docs/`)는 한국어, 생성 파일(스크립트 출력, README)과 `catalog` 설명은 영어다. UI와 사이트 문구는 영어 원본(`en.json`)과 ko·ja·zh-Hans 번역을 로캘 JSON에 둔다(계획 7). 문구를 더하면 모든 로캘 파일에 같은 키를 넣는다.
 - 원격 push와 태그 생성은 실행 전에 사용자에게 확인을 받는다. 릴리스 워크플로는 draft로 만들고, 사용자가 확인한 뒤 공개한다. 0.x 버전은 prerelease가 아닌 정식 릴리스로 내고 이름에 `(beta)`를 붙인다.
 <!-- omh:agent-instructions:end -->
