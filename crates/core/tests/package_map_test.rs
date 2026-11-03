@@ -54,6 +54,30 @@ fn embedded_data_and_lookup_distinguish_missing_and_null() {
         ),
         Lookup::Missing
     );
+    assert_eq!(
+        map.lookup(
+            PackageManager::Scoop,
+            PackageKind::Package,
+            "MAIN/RIPGREP",
+            PackageManager::Brew
+        ),
+        Lookup::Found {
+            kind: PackageKind::Formula,
+            name: "ripgrep"
+        }
+    );
+    assert_eq!(
+        map.lookup(
+            PackageManager::Winget,
+            PackageKind::Package,
+            "Mozilla.Firefox",
+            PackageManager::Brew
+        ),
+        Lookup::Found {
+            kind: PackageKind::Cask,
+            name: "firefox"
+        }
+    );
     let small = PackageMap::parse(
         r#"{"version":1,"packages":{"example":{"brew":"example","scoop":"extras/example"}}}"#,
     )

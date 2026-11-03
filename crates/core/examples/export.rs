@@ -42,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         items: &result.items,
         selection: &selection,
         source,
-        target: source,
+        target: repot_core::Target::default_for(source),
         format,
         meta: ExportMeta::now(),
     };

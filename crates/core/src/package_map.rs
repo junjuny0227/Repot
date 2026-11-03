@@ -86,12 +86,12 @@ pub struct PackageMap {
     index: HashMap<(PackageManager, PackageKind, String), usize>,
 }
 fn normalized(manager: PackageManager, name: &str) -> String {
-    let name = if manager == PackageManager::Scoop {
-        name.strip_prefix("main/").unwrap_or(name)
+    let lower = name.to_ascii_lowercase();
+    if manager == PackageManager::Scoop {
+        lower.strip_prefix("main/").unwrap_or(&lower).to_owned()
     } else {
-        name
-    };
-    name.to_ascii_lowercase()
+        lower
+    }
 }
 impl PackageMap {
     pub fn parse(json: &str) -> Result<Self, String> {

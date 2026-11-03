@@ -49,6 +49,7 @@ fn commands(step: &Step, target: Os) -> (String, String) {
             manager,
             kind,
             name,
+            ..
         } => {
             let n = q(name);
             match manager {
@@ -251,6 +252,9 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         )
         .unwrap();
         for step in &plan.steps[start..i] {
+            if let Some(origin) = step.mapped_origin() {
+                writeln!(out, "  # from {origin}").unwrap();
+            }
             let (check, install) = commands(step, h.target);
             let label = q(&step.label(h.target));
             writeln!(out, "  if {check} >/dev/null 2>&1; then record_skip {label}\n  elif {install}; then record_ok {label}\n  else record_fail {label}; fi").unwrap();
