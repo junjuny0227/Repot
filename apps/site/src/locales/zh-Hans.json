@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "title": "Repot — 将开发环境迁移到新电脑",
+    "description": "Repot 以只读方式扫描你的开发电脑，并导出易读的恢复脚本或原生清单。敏感信息会被遮盖，全程无需联网，运行前由你亲自检查。",
+    "noscript": "Repot 帮你把开发环境迁移到新电脑。",
+    "noscriptLink": "从 GitHub Releases 下载"
+  },
+  "tagline": "把开发环境迁移到新电脑——逐项说明、按需选择、安全可靠。",
+  "skip": "跳到正文",
+  "nav": {
+    "how": "工作原理",
+    "principles": "设计原则",
+    "tools": "支持的工具",
+    "install": "安装"
+  },
+  "sectionsNav": "页面章节",
+  "projectNav": "项目",
+  "backToTop": "Repot，返回顶部",
+  "language": "语言",
+  "hero": {
+    "downloadFor": {
+      "mac": "下载 Mac 版",
+      "windows": "下载 Windows 版",
+      "linux": "下载 Linux 版"
+    },
+    "macHelp": "不确定是哪种 Mac？打开苹果菜单 ›“关于本机”：Apple 芯片机型显示“芯片”，Intel 机型显示“处理器”。",
+    "fileHint": {
+      "windows": "64 位安装程序（.exe）",
+      "linux": "适用于 x86_64 的 AppImage"
+    },
+    "unknown": "查看下载",
+    "unknownHint": "Repot 是适用于 macOS、Windows 和 Linux 的桌面应用。",
+    "version": "版本 {version}",
+    "beta": "这是未签名测试版。",
+    "betaNote": "目前的构建尚未进行代码签名和公证，因此首次启动时系统会发出警告。",
+    "howToOpen": "如何打开",
+    "otherDownloads": "其他下载",
+    "releaseNotes": "发行说明",
+    "screenshotAlt": "Repot 的检查窗口：左侧是带项目数量的分类侧边栏，中间是附有描述的扫描项目清单，右侧详情面板提示 .zshrc 中的三处敏感信息将被遮盖。"
+  },
+  "how": {
+    "title": "工作原理",
+    "lead": "Repot 会读取你的开发环境，并为新电脑生成恢复脚本或软件包列表。不会对这台电脑做任何更改。",
+    "steps": {
+      "scan": {
+        "title": "扫描",
+        "text": "读取这台电脑上的包管理器、运行时、全局软件包、编辑器设置，以及 Git 和 Shell 配置。全程只读。"
+      },
+      "select": {
+        "title": "选择",
+        "text": "查看每个项目的描述和可移植性提示，只保留你需要的内容。选择目标系统后，无法迁移的项目会被禁用，而不是靠猜测处理。"
+      },
+      "export": {
+        "title": "导出",
+        "text": "保存为易读的恢复脚本或一组原生清单。把文件夹复制到新电脑，阅读后亲自运行。"
+      }
+    },
+    "screenshotAlt": "Repot 的导出窗口正在预览 restore.sh：左侧是文件列表，右侧是带注释的 Bash 脚本。"
+  },
+  "principles": {
+    "title": "放心交给它处理你的电脑",
+    "items": {
+      "readonly": {
+        "title": "不会更改你的电脑",
+        "text": "扫描全程只读，Repot 只会写入你选择的导出文件夹。是否运行恢复脚本，由你决定。"
+      },
+      "secrets": {
+        "title": "敏感信息会被遮盖",
+        "text": "检测到的敏感信息会被替换为 <REDACTED>，除非你允许导出原始值。检测基于模式匹配，分享前请检查导出的文件。"
+      },
+      "network": {
+        "title": "无需联网",
+        "text": "应用只使用本地数据和内置描述。你另行运行的恢复脚本可能会通过各自的工具下载软件包。"
+      },
+      "review": {
+        "title": "运行前先检查",
+        "text": "保存前可以预览每个文件，执行前请先阅读导出的脚本。脚本会先征求确认，跳过已存在的项目，并备份配置文件。"
+      }
+    }
+  },
+  "tools": {
+    "title": "Repot 可以迁移什么",
+    "groups": {
+      "packageManager": "软件包",
+      "runtime": "运行时",
+      "globalPackage": "全局软件包",
+      "editor": "编辑器",
+      "git": "Git",
+      "shell": "Shell"
+    },
+    "pyenv": "pyenv（含 pyenv-win）",
+    "editor": "VS Code 和 Cursor 的扩展、设置、键绑定和代码片段",
+    "git": "用户配置，以及已配置的全局忽略文件",
+    "shell": "zsh、Bash、fish 和 PowerShell 配置文件，oh-my-zsh 自定义插件和主题，Starship 配置",
+    "note": "包管理器的项目只能迁移到相同的操作系统（Linux 需为同一发行版系列）。运行时管理器会按目标系统对应转换；无法迁移的项目会被禁用，而不是靠猜测处理。"
+  },
+  "install": {
+    "title": "安装与首次启动",
+    "lead": "0.x 版本是未签名的测试版：没有进行代码签名和公证，也暂不支持自动更新，因此首次启动时系统会发出警告。请先确认下载的文件可信，再继续操作。",
+    "osLabel": "操作系统",
+    "downloads": "下载",
+    "firstLaunch": "首次启动",
+    "allReleases": "GitHub 上的所有版本",
+    "download": "下载",
+    "downloadFile": "下载 {file}",
+    "files": {
+      "mac-arm": "Apple 芯片",
+      "mac-intel": "Intel",
+      "windows-setup": "安装程序",
+      "windows-msi": "MSI 安装包",
+      "linux-appimage": "AppImage",
+      "linux-deb": "Debian 软件包",
+      "linux-rpm": "RPM 软件包"
+    },
+    "steps": {
+      "mac": [
+        "打开 .dmg，将 Repot 拖到“应用程序”文件夹。",
+        "打开一次 Repot，macOS 会提示无法验证开发者。",
+        "打开“系统设置” ›“隐私与安全性”，在 Repot 相关提示旁点按“仍要打开”并确认。只需在首次打开时操作一次。"
+      ],
+      "windows": [
+        "打开安装用的 .exe 或 .msi。",
+        "如果被 SmartScreen 拦截，仅在信任该文件时选择“更多信息” ›“仍要运行”。"
+      ],
+      "linux": [
+        "为 AppImage 添加可执行权限，然后打开：",
+        "也可以用发行版的软件包安装工具安装 .deb 或 .rpm。"
+      ]
+    },
+    "macNote": "在新版 macOS 中，按住 Control 点按 ›“打开”已无法绕过此检查。你也可以在“终端”中移除下载文件的隔离属性："
+  },
+  "footer": {
+    "summary": "Repot 是免费的开源软件，基于 Apache-2.0 许可证发布。",
+    "links": {
+      "releases": "版本发布",
+      "license": "许可证"
+    },
+    "languages": "语言",
+    "translate": "帮助改进翻译"
+  },
+  "suggest": {
+    "label": "语言建议",
+    "text": "此页面也提供简体中文版本。",
+    "switch": "查看简体中文版",
+    "dismiss": "关闭"
+  }
+}

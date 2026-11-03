@@ -1,7 +1,8 @@
-import { C } from "../content";
+import { useContent } from "../content";
 import { Screenshot } from "./Screenshot";
 
 export function HowItWorks() {
+  const C = useContent();
   return (
     <section className="section" id="how" aria-labelledby="how-title">
       <div className="section-head">

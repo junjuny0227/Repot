@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { C } from "../content";
+import { useContent } from "../content";
 import { RELEASES_URL, downloadsFor, type DesktopOs, type Platform } from "../downloads";
 import { DownloadArrow } from "../icons";
 
 const ORDER: DesktopOs[] = ["mac", "windows", "linux"];
 
 export function Install({ platform }: { platform: Platform }) {
+  const C = useContent();
   const [os, setOs] = useState<DesktopOs>(platform === "unknown" ? "mac" : platform);
   const steps = C.install.steps[os];
   return (
