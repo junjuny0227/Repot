@@ -13,7 +13,7 @@ restore script you review before running. It never changes your device.
 [![CI](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml/badge.svg)](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-[**Download**](https://junjuny0227.github.io/Repot/) · [한국어](README.ko.md) · [Releases](https://github.com/junjuny0227/Repot/releases/latest) · [Design (Korean)](docs/specs/2026-11-02-repot-mvp-design.md)
+[**Download**](https://junjuny0227.github.io/Repot/) · [한국어](README.ko.md) · [日本語](README.ja.md) · [简体中文](README.zh-Hans.md) · [Releases](https://github.com/junjuny0227/Repot/releases/latest) · [Design (Korean)](docs/specs/2026-11-02-repot-mvp-design.md)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="apps/site/public/screenshots/review-dark.webp">
