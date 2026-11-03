@@ -1,5 +1,5 @@
 import { format, messages, plural, type Messages } from "./i18n";
-import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, ProviderStatus, UnavailableReason } from "./types";
+import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, PackageManager, ProviderStatus, UnavailableReason } from "./types";
 
 // Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
 // these functions pick the message for the active locale and fill in the values.
@@ -55,9 +55,21 @@ export function findingText(f: Finding): string {
   return f.line === null ? text : format(messages().finding.atLine, { line: String(f.line), text });
 }
 
+const MANAGER_LABELS: Record<PackageManager, string> = {
+  brew: "Homebrew", winget: "winget", scoop: "Scoop", choco: "Chocolatey", apt: "apt", dnf: "dnf", pacman: "pacman",
+};
+
+/** Tool names stay untranslated (spec §11). */
+export function managerLabel(m: PackageManager): string {
+  return MANAGER_LABELS[m];
+}
+
 export function reasonText(r: UnavailableReason): string {
   const m = messages().reason;
   if (r === "unreadable") return m.unreadable;
+  if (r === "noPackageManager") return m.noPackageManager;
+  if ("notInPackageMap" in r) return format(m.notInPackageMap, { manager: managerLabel(r.notInPackageMap.manager) });
+  if ("noPackageInManager" in r) return format(m.noPackageInManager, { manager: managerLabel(r.noPackageInManager.manager) });
   if ("differentOs" in r) return format(m.differentOs, { os: osLabel(r.differentOs.source) });
   if ("shellUnsupported" in r) return format(m.shellUnsupported, { shell: r.shellUnsupported });
   return format(m.noCounterpart, { tool: r.noCounterpart });

@@ -29,7 +29,10 @@
     "unreadable": "사용할 수 없음: 파일을 읽을 수 없습니다.",
     "differentOs": "사용할 수 없음: {os}에서만 작동합니다.",
     "shellUnsupported": "사용할 수 없음: 대상 OS에서는 {shell}을(를) 쓸 수 없습니다.",
-    "noCounterpart": "사용할 수 없음: 대상 OS에는 {tool}에 대응하는 도구가 없습니다."
+    "noCounterpart": "사용할 수 없음: 대상 OS에는 {tool}에 대응하는 도구가 없습니다.",
+    "noPackageManager": "사용 불가: 목적지 OS에 지원하는 패키지 매니저가 없습니다.",
+    "notInPackageMap": "사용 불가: Repot 대응표에 이 패키지의 {manager} 이름이 아직 없습니다.",
+    "noPackageInManager": "사용 불가: 이 패키지는 {manager}에 없습니다."
   },
   "warning": {
     "unavailable": "{item} 항목을 건너뜁니다. {reason}",

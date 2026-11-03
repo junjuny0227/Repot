@@ -28,8 +28,12 @@ export interface Item {
 export type ProviderStatus = "running" | "notDetected" | "timedOut" | { ok: { count: number } } | { failed: { message: string; detail: string } };
 export interface ProviderReport { id: string; category: Category; status: ProviderStatus }
 export interface ScanResult { items: Item[]; providers: ProviderReport[] }
-export type UnavailableReason = { differentOs: { source: Os } } | { shellUnsupported: Shell } | { noCounterpart: RuntimeTool } | "unreadable";
-export type Availability = "available" | { unavailable: UnavailableReason };
+export type UnavailableReason =
+  | { differentOs: { source: Os } } | { shellUnsupported: Shell } | { noCounterpart: RuntimeTool }
+  | "noPackageManager" | { notInPackageMap: { manager: PackageManager } } | { noPackageInManager: { manager: PackageManager } }
+  | "unreadable";
+export type Availability =
+  | "available" | { mapped: { manager: PackageManager; name: string } } | { unavailable: UnavailableReason };
 export type AvailabilityMap = Record<string, Availability>;
 export interface Selection { items: string[]; revealSecretLines: [string, number][] }
 export type Format = "script" | "manifest";

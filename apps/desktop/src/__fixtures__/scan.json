@@ -1,12 +1,20 @@
 {
   "availability": {
     "macOs": {
+      "brew:cask:rectangle": "available",
       "brew:formula:ripgrep": "available",
       "git:file:.gitconfig": "available",
       "npm:typescript": "available",
       "shell:file:.zshrc": "available"
     },
     "windows": {
+      "brew:cask:rectangle": {
+        "unavailable": {
+          "noPackageInManager": {
+            "manager": "winget"
+          }
+        }
+      },
       "brew:formula:ripgrep": {
         "mapped": {
           "manager": "winget",
@@ -24,6 +32,26 @@
   },
   "scan": {
     "items": [
+      {
+        "catalogId": null,
+        "category": "packageManager",
+        "description": "Move and resize windows",
+        "details": {
+          "package": {
+            "kind": "cask",
+            "manager": "brew"
+          }
+        },
+        "findings": [],
+        "id": "brew:cask:rectangle",
+        "name": "rectangle",
+        "origin": {
+          "command": "brew list --cask"
+        },
+        "portability": "package",
+        "provider": "brew",
+        "version": "0.85"
+      },
       {
         "catalogId": null,
         "category": "packageManager",
@@ -125,7 +153,7 @@
         "id": "brew",
         "status": {
           "ok": {
-            "count": 1
+            "count": 2
           }
         }
       },

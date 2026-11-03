@@ -29,7 +29,10 @@
     "unreadable": "Unavailable: the file could not be read.",
     "differentOs": "Unavailable: only works on {os}.",
     "shellUnsupported": "Unavailable: {shell} is not available on the destination OS.",
-    "noCounterpart": "Unavailable: {tool} has no counterpart on the destination OS."
+    "noCounterpart": "Unavailable: {tool} has no counterpart on the destination OS.",
+    "noPackageManager": "Unavailable: the destination OS has no supported package manager.",
+    "notInPackageMap": "Unavailable: Repot's package map has no {manager} name for this package yet.",
+    "noPackageInManager": "Unavailable: this package is not available in {manager}."
   },
   "warning": {
     "unavailable": "{item} was skipped. {reason}",

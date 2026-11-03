@@ -16,7 +16,7 @@ function FindingIcon({ finding }: { finding: Finding }) {
 export function DetailPanel({ item, state, dispatch }: { item: Item | null; state: State; dispatch: Dispatch<Action> }) {
   if (item === null) return <aside className="detail inspector empty-state"><p className="muted">{S.selectItem}</p></aside>;
   const a = state.avail[item.id];
-  const reason = a === undefined || a === "available" ? null : a.unavailable;
+  const reason = a !== undefined && typeof a === "object" && "unavailable" in a ? a.unavailable : null;
   const checked = state.checked.has(item.id);
   const description = itemDescription(item);
   const hasSecret = item.findings.some((f) => typeof f.kind === "object" && "secret" in f.kind);

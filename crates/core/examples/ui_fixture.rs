@@ -4,9 +4,9 @@ use std::sync::Arc;
 fn main() {
     let env = FakeEnv::new(Os::MacOs, "/Users/demo")
         .with_command("brew", &["leaves", "--installed-on-request"], "ripgrep\n")
-        .with_command("brew", &["list", "--cask"], "")
+        .with_command("brew", &["list", "--cask"], "rectangle\n")
         .with_command("brew", &["tap"], "")
-        .with_command("brew", &["info", "--json=v2", "--installed"], r#"{"formulae":[{"name":"ripgrep","desc":"Search files quickly","installed":[{"version":"14.1.1"}]}],"casks":[]}"#)
+        .with_command("brew", &["info", "--json=v2", "--installed"], r#"{"formulae":[{"name":"ripgrep","desc":"Search files quickly","installed":[{"version":"14.1.1"}]}],"casks":[{"token":"rectangle","desc":"Move and resize windows","installed":"0.85"}]}"#)
         .with_command("npm", &["ls", "-g", "--depth=0", "--json"], r#"{"dependencies":{"typescript":{"version":"5.6.3"}}}"#)
         .with_command("npm", &["root", "-g"], "/opt/npm")
         .with_file("/opt/npm/typescript/package.json", r#"{"description":"Typed JavaScript tooling"}"#)
