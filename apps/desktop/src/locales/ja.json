@@ -50,6 +50,7 @@
     "path": "ファイル：{path}"
   },
   "availableOn": "{os} で使用できます。",
+  "mappedTo": "{manager} で {name} としてインストールします",
   "withCount": "{label}（{count}）",
   "selectedCount": {
     "other": "{total}項目中 {checked}項目を選択"
@@ -125,6 +126,7 @@
     "openFolder": "フォルダを開く",
     "startOver": "最初に戻る",
     "secretLimit": "機密情報の検出はパターンに基づくため、見落としがある場合があります。共有する前にファイルを確認してください。",
+    "mappingNote": "Repot に内蔵された対応表に基づく名前です。復元を実行する前に確認してください。",
     "language": "言語"
   },
   "updates": {

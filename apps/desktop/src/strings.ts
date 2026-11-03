@@ -96,6 +96,8 @@ export function originText(o: Origin): string {
   return "command" in o ? format(m.command, { command: o.command }) : format(m.path, { path: o.path });
 }
 
+/** Tooltip for the mapped name in the item list. */
+export const mappedTo = (manager: PackageManager, name: string): string => format(messages().mappedTo, { manager: managerLabel(manager), name });
 export const availableOn = (target: Os): string => format(messages().availableOn, { os: osLabel(target) });
 export const withCount = (label: string, n: number): string => format(messages().withCount, { label, count: n });
 export const selectedCount = (checked: number, total: number): string => plural(messages().selectedCount, total, { checked, total });

@@ -25,6 +25,11 @@ export function isAvailable(a: Availability | undefined): boolean {
   return a === "available" || (typeof a === "object" && "mapped" in a);
 }
 
+/** The destination manager and name when core mapped a package to another OS's manager. */
+export function mapping(a: Availability | undefined): { manager: PackageManager; name: string } | null {
+  return typeof a === "object" && "mapped" in a ? a.mapped : null;
+}
+
 export function initialChecked(items: Item[], avail: AvailabilityMap): Set<string> {
   return new Set(items.filter((i) => isAvailable(avail[i.id])).map((i) => i.id));
 }

@@ -134,12 +134,14 @@ button.source-item { height: 28px; padding: 0 8px; }
 .item-title { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .item-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
 .item-version { flex: none; font-family: var(--mono); font-size: var(--caption); font-weight: 400; color: var(--label-2); }
+.item-mapped { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: var(--caption); color: var(--label-2); }
 .item-title .badges { margin-left: auto; align-self: center; }
 .item-description { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--callout); line-height: var(--callout-lh); color: var(--label-2); }
 .item.unavailable .item-name { color: var(--label-2); }
 
 .item.selected { background-color: var(--accent); color: var(--on-accent); }
 .item.selected .item-version,
+.item.selected .item-mapped,
 .item.selected .item-description,
 .item.selected.unavailable .item-name { color: rgb(255 255 255 / 0.82); }
 .item.selected .symbol { color: var(--on-accent); }
@@ -173,6 +175,12 @@ button.source-item { height: 28px; padding: 0 8px; }
 .availability .symbol { margin-top: 1px; }
 .availability.ok .symbol { color: var(--green); }
 .availability.no .symbol { color: var(--red); }
+/* Indented to line up with the availability text after its 14px symbol and 6px gap. */
+.mapping, .mapping-note { margin-left: 20px; }
+.mapping-note { margin-top: 4px; }
+/* "brew ripgrep → winget BurntSushi.ripgrep.MSVC": managers secondary, package names primary. */
+.mapping { margin-top: 4px; font-family: var(--mono); font-size: var(--callout); line-height: var(--callout-lh); color: var(--label-2); overflow-wrap: anywhere; }
+.mapping code { color: var(--label); }
 
 .findings { margin-top: 2px; }
 .finding { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 9px 12px; }

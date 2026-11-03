@@ -50,6 +50,7 @@
     "path": "파일: {path}"
   },
   "availableOn": "{os}에서 사용할 수 있습니다.",
+  "mappedTo": "{manager}에서 {name}(으)로 설치합니다",
   "withCount": "{label} ({count})",
   "selectedCount": {
     "other": "{total}개 중 {checked}개 선택됨"
@@ -125,6 +126,7 @@
     "openFolder": "폴더 열기",
     "startOver": "처음으로",
     "secretLimit": "비밀 정보 감지는 패턴 기반이라 일부를 놓칠 수 있습니다. 공유하기 전에 파일을 검토하십시오.",
+    "mappingNote": "Repot 내장 대응표를 기준으로 맞춘 이름입니다. 복원을 실행하기 전에 확인하세요.",
     "language": "언어"
   },
   "updates": {

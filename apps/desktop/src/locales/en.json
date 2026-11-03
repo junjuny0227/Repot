@@ -50,6 +50,7 @@
     "path": "File: {path}"
   },
   "availableOn": "Available on {os}.",
+  "mappedTo": "Installs as {name} with {manager}",
   "withCount": "{label} ({count})",
   "selectedCount": {
     "one": "{checked} of {total} item selected",
@@ -126,6 +127,7 @@
     "openFolder": "Open folder",
     "startOver": "Start over",
     "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
+    "mappingNote": "Matched using the package map built into Repot. Check it before you run the restore.",
     "language": "Language"
   },
   "updates": {
