@@ -4,6 +4,8 @@ export const defaultMapPath = new URL('../../crates/core/data/package-map.json',
 export const defaultProvenancePath = new URL('../../crates/core/data/package-map.provenance.json', import.meta.url);
 const managers = ['brew', 'brewCask', 'winget', 'scoop', 'choco', 'apt', 'dnf', 'pacman'];
 const sorted = object => Object.fromEntries(Object.entries(object).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+// Common id from a brew token: keep version marks, map '+' to 'plus', every other run outside [a-z0-9] to '-'.
+export const commonId = token => token.toLowerCase().replaceAll('+', '-plus-').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const validName = name => typeof name === 'string' && /^[A-Za-z0-9@._+/:-]+$/.test(name) && !name.startsWith('-');
 function validate(map) {
   if (map.version !== 1 || !map.packages || typeof map.packages !== 'object' || Array.isArray(map.packages)) throw new Error('Invalid package map');
@@ -33,7 +35,7 @@ export function mergeDecisions(original, previous = { version: 1, packages: {} }
     if (!validName(row.source)) throw new Error('Invalid source package name');
     const manager = row.sourceKind === 'formula' ? 'brew' : 'brewCask';
     let id = Object.keys(map.packages).find(id => map.packages[id][manager]?.toLowerCase() === row.source.toLowerCase());
-    const proposedId = row.source.toLowerCase();
+    const proposedId = commonId(row.source);
     let reason;
     if (!id && !/^[a-z0-9-]+$/.test(proposedId)) reason = 'invalid common id';
     if (!id && Object.hasOwn(map.packages, proposedId)) reason = 'common id collision';
