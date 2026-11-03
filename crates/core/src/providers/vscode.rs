@@ -116,6 +116,7 @@ impl Provider for VsCode {
                             name,
                             version: Some(e.version),
                             description: description(env, &ext.join(e.relative_location)),
+                            catalog_id: None,
                             origin: Origin::Path(path.clone()),
                             portability: Portability::Any,
                             details: ItemDetails::Extension { editor },

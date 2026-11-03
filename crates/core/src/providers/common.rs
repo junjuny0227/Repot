@@ -17,6 +17,7 @@ pub(crate) fn package_item(
         name,
         version,
         description,
+        catalog_id: None,
         origin: Origin::Command(command.into()),
         portability: Portability::SameOs,
         details: ItemDetails::Package { manager, kind },
@@ -60,6 +61,7 @@ pub(crate) fn config_file_item(
         name: spec.name,
         version: None,
         description: catalog::describe(spec.catalog_key).map(str::to_owned),
+        catalog_id: catalog::id(spec.catalog_key),
         origin: Origin::Path(spec.path.clone()),
         portability: spec.portability,
         details: ItemDetails::ConfigFile {
@@ -100,6 +102,7 @@ pub(crate) fn runtime_item(spec: RuntimeSpec) -> Item {
         name: spec.name.into(),
         version: Some(spec.version),
         description: catalog::describe(spec.catalog_key).map(str::to_owned),
+        catalog_id: catalog::id(spec.catalog_key),
         origin: spec.origin,
         portability: Portability::Mapped(spec.tool),
         details: ItemDetails::Runtime {
@@ -126,6 +129,7 @@ pub(crate) fn global_item(
         name,
         version,
         description,
+        catalog_id: None,
         origin: Origin::Command(command.into()),
         portability: Portability::Any,
         details: ItemDetails::GlobalPackage { manager },

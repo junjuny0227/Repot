@@ -1,7 +1,7 @@
 import type { Dispatch } from "react";
 import { isAvailable, type Filter } from "../../logic";
 import type { Action, State } from "../../state";
-import { S } from "../../strings";
+import { S, itemDescription } from "../../strings";
 import type { Item } from "../../types";
 import { Duplicate, Magnifier, NoSign, WarningTriangle } from "../icons";
 
@@ -67,7 +67,7 @@ export function ItemList({ items, state, dispatch, filter, onFilter, selectedId,
                         {!available && <span className="badge" role="img" title={S.badgeUnavailable} aria-label={S.badgeUnavailable}><NoSign className="symbol unavailable" /></span>}
                       </span>
                     </span>
-                    <span className="item-description">{item.description ?? S.noDescription}</span>
+                    <span className="item-description">{itemDescription(item) ?? S.noDescription}</span>
                   </button>
                 </li>
               );

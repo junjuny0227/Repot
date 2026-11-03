@@ -26,6 +26,7 @@
   "scan": {
     "items": [
       {
+        "catalogId": null,
         "category": "packageManager",
         "description": "Search files quickly",
         "details": {
@@ -45,6 +46,7 @@
         "version": "14.1.1"
       },
       {
+        "catalogId": null,
         "category": "globalPackage",
         "description": "Typed JavaScript tooling",
         "details": {
@@ -63,6 +65,7 @@
         "version": "5.6.3"
       },
       {
+        "catalogId": "file:gitconfig",
         "category": "git",
         "description": "Git configuration controls identity and repository behavior.",
         "details": {
@@ -84,6 +87,7 @@
         "version": null
       },
       {
+        "catalogId": "file:zshrc",
         "category": "shell",
         "description": "Zsh configuration customizes interactive shells.",
         "details": {

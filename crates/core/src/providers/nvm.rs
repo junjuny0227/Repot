@@ -57,6 +57,7 @@ impl Provider for Nvm {
                 name: "Node.js".into(),
                 version: Some(version),
                 description: crate::catalog::describe("runtime:node").map(str::to_owned),
+                catalog_id: crate::catalog::id("runtime:node"),
                 origin: Origin::Path(path),
                 portability: Portability::Mapped(RuntimeTool::Nvm),
                 details: ItemDetails::Runtime {

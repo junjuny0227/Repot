@@ -8,6 +8,7 @@ fn config(provider: &str, file: &str, target: TargetPath) -> Item {
         name: file.into(),
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Path(file.into()),
         portability: Portability::Any,
         details: ItemDetails::ConfigFile {

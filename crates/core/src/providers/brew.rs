@@ -93,6 +93,7 @@ impl Provider for Brew {
                     name: name.into(),
                     version,
                     description,
+                    catalog_id: None,
                     origin: Origin::Command(command.into()),
                     portability: Portability::SameOs,
                     details: ItemDetails::Package {
