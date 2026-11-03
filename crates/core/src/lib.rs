@@ -4,6 +4,7 @@ pub mod env;
 pub mod export;
 pub mod model;
 pub mod os;
+pub mod package_map;
 pub mod providers;
 pub mod scan;
 pub mod secrets;
