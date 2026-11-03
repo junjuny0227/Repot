@@ -54,7 +54,8 @@ const nextButton = (html: string): string => html.match(new RegExp(`<button[^>]*
 
 test("review marks unavailable and secret items and keeps them unchecked on another OS", () => {
   const html = renderToStaticMarkup(<ReviewScreen state={reviewState("windows")} dispatch={noop} />);
-  const brew = row(html, "brew:formula:ripgrep");
+  expect(row(html, "brew:formula:ripgrep")).toMatch(/checked=""/);
+  const brew = row(html, "brew:cask:rectangle");
   expect(brew).toContain(`aria-label="${S.badgeUnavailable}"`);
   expect(brew).toMatch(/<input[^>]*type="checkbox"[^>]*disabled=""/);
   expect(brew).not.toMatch(/checked=""/);

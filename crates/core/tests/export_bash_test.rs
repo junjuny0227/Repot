@@ -38,11 +38,13 @@ fn sample_plan(target: Os) -> ScriptPlan {
                 manager: PackageManager::Brew,
                 kind: PackageKind::Formula,
                 name: "jq".into(),
+                mapped_from: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Brew,
                 kind: PackageKind::Cask,
                 name: "visual-studio-code".into(),
+                mapped_from: None,
             },
             Step::InstallRuntime {
                 tool: RuntimeTool::Nvm,
@@ -182,6 +184,7 @@ fn missing_tool_is_skipped_and_failure_sets_exit_code() {
             manager: PackageManager::Brew,
             kind: PackageKind::Formula,
             name: "jq".into(),
+            mapped_from: None,
         }],
     );
     let out = run_script(&p, dir.path(), &[("PATH", "/usr/bin:/bin")]);

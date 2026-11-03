@@ -29,7 +29,10 @@
     "unreadable": "使用不可：ファイルを読み込めませんでした。",
     "differentOs": "使用不可：{os} でのみ動作します。",
     "shellUnsupported": "使用不可：移行先の OS では {shell} を使用できません。",
-    "noCounterpart": "使用不可：移行先の OS には {tool} に相当するツールがありません。"
+    "noCounterpart": "使用不可：移行先の OS には {tool} に相当するツールがありません。",
+    "noPackageManager": "利用不可: 移行先の OS に対応するパッケージマネージャーがありません。",
+    "notInPackageMap": "利用不可: Repot の対応表に、このパッケージの {manager} 名がまだありません。",
+    "noPackageInManager": "利用不可: このパッケージは {manager} にありません。"
   },
   "warning": {
     "unavailable": "{item} はスキップされます。{reason}",

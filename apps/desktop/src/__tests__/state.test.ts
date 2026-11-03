@@ -44,9 +44,11 @@ test("setTarget after scan unchecks, toggleItem ignores unavailable, restart kee
   let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "scanFinished", scan, avail: availMac });
   s = reducer(s, { type: "toggleReveal", id: "shell:file:.zshrc", line: 1 });
   s = reducer(s, { type: "setTarget", target: "windows", avail: availWin });
-  expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
-  s = reducer(s, { type: "toggleItem", id: "brew:formula:ripgrep" });
-  expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
+  expect(s.checked.has("brew:cask:rectangle")).toBe(false);
+  s = reducer(s, { type: "toggleItem", id: "brew:cask:rectangle" });
+  expect(s.checked.has("brew:cask:rectangle")).toBe(false);
+  // A package mapped to a Windows manager stays selectable.
+  expect(s.checked.has("brew:formula:ripgrep")).toBe(true);
   s = reducer(s, { type: "restart" });
   expect(s).toEqual({ ...initialState, source: "macOs", target: "windows" });
 });

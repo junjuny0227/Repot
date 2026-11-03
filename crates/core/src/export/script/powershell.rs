@@ -221,6 +221,9 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         }
         writeln!(out, "if (Test-Tool {}) {{", q(t.0)).unwrap();
         for step in group {
+            if let Some(origin) = step.mapped_origin() {
+                writeln!(out, "  # from {origin}").unwrap();
+            }
             let (check, output_check, install) = commands(step);
             let label = q(&step.label(h.target));
             if output_check {

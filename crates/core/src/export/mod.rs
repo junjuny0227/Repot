@@ -3,7 +3,7 @@ pub mod meta;
 pub use meta::ExportMeta;
 
 use crate::{
-    Env, Item, ItemDetails, Selection,
+    Env, Item, ItemDetails, Selection, Target,
     availability::{Availability, UnavailableReason, availability},
     os::Os,
 };
@@ -21,7 +21,7 @@ pub struct ExportRequest<'a> {
     pub items: &'a [Item],
     pub selection: &'a Selection,
     pub source: Os,
-    pub target: Os,
+    pub target: Target,
     pub format: Format,
     pub meta: ExportMeta,
 }
@@ -55,6 +55,8 @@ pub struct ExportBundle {
 pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
     let selected: HashSet<_> = req.selection.items.iter().collect();
     let mut targets = HashSet::new();
+    let mut package_targets = HashSet::new();
+    let mut taps = HashSet::new();
     let mut warnings = vec![];
     let mut payloads = vec![];
     let mut steps = vec![];
@@ -82,7 +84,7 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
                 .filter(|(id, _)| id == &item.id)
                 .map(|(_, line)| *line)
                 .collect();
-            let file = payload::prepare_config(item, &content, &reveal, req.source, req.target);
+            let file = payload::prepare_config(item, &content, &reveal, req.source, req.target.os);
             payloads.push(OutputFile {
                 path: format!("files/{}", file.path),
                 contents: file.contents,
@@ -113,13 +115,44 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
                 continue;
             }
         }
-        steps.extend(step::steps_for(item, req.target));
+        let item_steps = step::steps_for_target(item, req.source, req.target);
+        if let Some(step::Step::InstallPackage {
+            manager,
+            kind,
+            name,
+            mapped_from: Some(_),
+            ..
+        }) = item_steps
+            .iter()
+            .find(|s| matches!(s, step::Step::InstallPackage { .. }))
+        {
+            let normalized = if *manager == crate::PackageManager::Scoop {
+                name.strip_prefix("main/").unwrap_or(name)
+            } else {
+                name
+            };
+            if !package_targets.insert((*manager, *kind, normalized.to_ascii_lowercase())) {
+                warnings.push(ExportWarning::DuplicateTarget { item_id });
+                continue;
+            }
+        }
+        // Validate mapped names as well as source values before rendering.
+        if item_steps.iter().any(|s| matches!(s, step::Step::InstallPackage { name, .. } | step::Step::AddTap { name, .. } if !step::is_safe_value(name))) {
+            warnings.push(ExportWarning::InvalidValue { item_id });
+            continue;
+        }
+        steps.extend(item_steps.into_iter().filter(|s| match s {
+            step::Step::AddTap { manager, name } if req.source != req.target.os => {
+                taps.insert((*manager, name.to_ascii_lowercase()))
+            }
+            _ => true,
+        }));
     }
     step::sort_steps(&mut steps);
     let header = ScriptHeader {
         repot_version: req.meta.repot_version.clone(),
         source: req.source,
-        target: req.target,
+        target: req.target.os,
         generated_at: req.meta.generated_at.clone(),
     };
     let mut files = match req.format {
@@ -131,8 +164,9 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
                 masked,
                 notes,
             };
-            let windows = req.target == Os::Windows;
-            vec![OutputFile {
+            let windows = req.target.os == Os::Windows;
+            let mappings = manifest::mapped_packages(&plan.steps);
+            let mut files = vec![OutputFile {
                 path: if windows { "restore.ps1" } else { "restore.sh" }.into(),
                 contents: if windows {
                     script::powershell::render_powershell(&plan)
@@ -140,7 +174,11 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
                     script::bash::render_bash(&plan)
                 },
                 executable: !windows,
-            }]
+            }];
+            if !mappings.is_empty() {
+                files.push(OutputFile { path: "README.md".into(), contents: format!("# Repot export\n\nReview the restore script before running it. Install the required package managers first.\n{mappings}"), executable: false });
+            }
+            files
         }
     };
     payloads.sort_by(|a, b| a.path.cmp(&b.path));

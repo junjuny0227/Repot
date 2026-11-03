@@ -21,6 +21,7 @@ fn pkg(manager: PackageManager, kind: PackageKind, name: &str) -> Step {
         manager,
         kind,
         name: name.into(),
+        mapped_from: None,
     }
 }
 fn rt(runtime: &str, version: &str, set_default: bool) -> Step {

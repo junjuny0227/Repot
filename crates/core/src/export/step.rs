@@ -1,6 +1,12 @@
 use crate::{availability::counterpart, model::*, os::Os};
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct MappedFrom {
+    pub manager: PackageManager,
+    pub kind: PackageKind,
+    pub name: String,
+}
+#[derive(Debug, Clone, PartialEq)]
 pub enum Step {
     AddTap {
         manager: PackageManager,
@@ -10,6 +16,7 @@ pub enum Step {
         manager: PackageManager,
         kind: PackageKind,
         name: String,
+        mapped_from: Option<MappedFrom>,
     },
     InstallRuntime {
         tool: RuntimeTool,
@@ -66,6 +73,7 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
             manager: *manager,
             kind: *kind,
             name: item.name.clone(),
+            mapped_from: None,
         },
         ItemDetails::Runtime {
             tool,
@@ -101,6 +109,50 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
         },
     };
     vec![step]
+}
+/// Apply availability before generating steps; unknown or absent mappings never leak through.
+pub fn steps_for_target(item: &Item, source: Os, target: Target) -> Vec<Step> {
+    use crate::{
+        availability::{Availability, availability},
+        package_map::{Lookup, embedded},
+    };
+    match availability(item, source, target) {
+        Availability::Unavailable(_) => vec![],
+        Availability::Available => steps_for(item, target.os),
+        Availability::Mapped { manager, name } => {
+            let ItemDetails::Package {
+                manager: original,
+                kind: original_kind,
+            } = item.details
+            else {
+                return vec![];
+            };
+            let Lookup::Found { kind, .. } =
+                embedded().lookup(original, original_kind, &item.name, manager)
+            else {
+                return vec![];
+            };
+            let mut steps = vec![];
+            if manager == PackageManager::Scoop {
+                let bucket = name.split_once('/').map_or("main", |(bucket, _)| bucket);
+                steps.push(Step::AddTap {
+                    manager,
+                    name: bucket.into(),
+                });
+            }
+            steps.push(Step::InstallPackage {
+                manager,
+                kind,
+                name,
+                mapped_from: Some(MappedFrom {
+                    manager: original,
+                    kind: original_kind,
+                    name: item.name.clone(),
+                }),
+            });
+            steps
+        }
+    }
 }
 /// Stable ordering preserves discovery order within each section.
 pub fn sort_steps(steps: &mut [Step]) {

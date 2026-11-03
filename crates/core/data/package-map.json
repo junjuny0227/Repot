@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "packages": {
+    "firefox": {
+      "brewCask": "firefox",
+      "winget": "Mozilla.Firefox",
+      "scoop": "extras/firefox",
+      "choco": "firefox",
+      "apt": null,
+      "dnf": "firefox",
+      "pacman": "firefox"
+    },
+    "git": {
+      "brew": "git",
+      "winget": "Git.Git",
+      "scoop": "git",
+      "choco": "git",
+      "apt": "git",
+      "dnf": "git",
+      "pacman": "git"
+    },
+    "rectangle": {
+      "brewCask": "rectangle",
+      "winget": null,
+      "scoop": null,
+      "choco": null,
+      "apt": null,
+      "dnf": null,
+      "pacman": null
+    },
+    "ripgrep": {
+      "brew": "ripgrep",
+      "winget": "BurntSushi.ripgrep.MSVC",
+      "scoop": "ripgrep",
+      "choco": "ripgrep",
+      "apt": "ripgrep",
+      "dnf": "ripgrep",
+      "pacman": "ripgrep"
+    }
+  }
+}

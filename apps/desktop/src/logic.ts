@@ -4,7 +4,7 @@ import { TARGET_OPTIONS, itemDescription } from "./strings";
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
 
 export function isAvailable(a: Availability | undefined): boolean {
-  return a === "available";
+  return a === "available" || (typeof a === "object" && "mapped" in a);
 }
 
 export function initialChecked(items: Item[], avail: AvailabilityMap): Set<string> {

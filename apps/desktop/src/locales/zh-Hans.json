@@ -29,7 +29,10 @@
     "unreadable": "不可用：无法读取文件。",
     "differentOs": "不可用：仅适用于 {os}。",
     "shellUnsupported": "不可用：目标系统不支持 {shell}。",
-    "noCounterpart": "不可用：目标系统上没有与 {tool} 对应的工具。"
+    "noCounterpart": "不可用：目标系统上没有与 {tool} 对应的工具。",
+    "noPackageManager": "不可用：目标系统没有受支持的软件包管理器。",
+    "notInPackageMap": "不可用：Repot 对照表中还没有此软件包的 {manager} 名称。",
+    "noPackageInManager": "不可用：{manager} 中没有此软件包。"
   },
   "warning": {
     "unavailable": "将跳过 {item}。{reason}",

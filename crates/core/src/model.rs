@@ -1,6 +1,40 @@
-use crate::os::Shell;
+use crate::os::{LinuxFamily, Os, Shell};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
+/// Destination OS and its chosen package manager. Commands validate before use.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Target {
+    pub os: Os,
+    pub packages: Option<PackageManager>,
+}
+impl Target {
+    pub fn default_for(os: Os) -> Self {
+        let packages = match os {
+            Os::MacOs => Some(PackageManager::Brew),
+            Os::Windows => Some(PackageManager::Winget),
+            Os::Linux(LinuxFamily::Debian) => Some(PackageManager::Apt),
+            Os::Linux(LinuxFamily::Fedora) => Some(PackageManager::Dnf),
+            Os::Linux(LinuxFamily::Arch) => Some(PackageManager::Pacman),
+            Os::Linux(LinuxFamily::Other) => None,
+        };
+        Self { os, packages }
+    }
+    pub fn validate(self) -> Result<(), &'static str> {
+        if self == Self::default_for(self.os)
+            || (self.os == Os::Windows
+                && matches!(
+                    self.packages,
+                    Some(PackageManager::Winget | PackageManager::Scoop | PackageManager::Choco)
+                ))
+        {
+            Ok(())
+        } else {
+            Err("invalid package manager for destination OS")
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -46,6 +80,7 @@ pub enum Origin {
 pub enum Portability {
     Any,
     SameOs,
+    Package,
     SameShell(Shell),
     Mapped(RuntimeTool),
 }

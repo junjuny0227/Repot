@@ -32,7 +32,8 @@ fn maps_items_to_steps() {
         vec![Step::InstallPackage {
             manager: Brew,
             kind: Cask,
-            name: "code".into()
+            name: "code".into(),
+            mapped_from: None,
         }]
     );
     let rt = |tool| {
@@ -113,6 +114,7 @@ fn sorts_by_section_with_taps_first_stably() {
         manager: PackageManager::Brew,
         kind: PackageKind::Formula,
         name: name.into(),
+        mapped_from: None,
     };
     let copy = Step::CopyFile {
         src: "home/.zshrc".into(),

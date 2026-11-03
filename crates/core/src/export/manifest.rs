@@ -53,6 +53,26 @@ fn restore_command(path: &str, windows: bool) -> String {
     }
 }
 
+pub(crate) fn mapped_packages(steps: &[Step]) -> String {
+    let mut text = String::new();
+    for step in steps {
+        if let (Some(origin), Step::InstallPackage { manager, name, .. }) =
+            (step.mapped_origin(), step)
+        {
+            if text.is_empty() {
+                text.push_str("\n## Mapped packages\n\nNames come from the embedded package map. Verify them before restoring.\n\n");
+            }
+            writeln!(
+                text,
+                "- {origin} -> {}: {name}",
+                super::script::package_cmd(*manager).trim_end_matches("-get")
+            )
+            .unwrap();
+        }
+    }
+    text
+}
+
 pub fn render_manifests(
     header: &ScriptHeader,
     steps: &[Step],
@@ -75,6 +95,7 @@ pub fn render_manifests(
             manager: PackageManager::Brew,
             kind,
             name,
+            ..
         } = s
         {
             writeln!(
@@ -292,6 +313,7 @@ pub fn render_manifests(
     if !clones.is_empty() {
         write!(readme, "\n### oh-my-zsh plugins\n\nInstall oh-my-zsh first: https://ohmyz.sh\n\n```{fence}\n{}\n```\n", clones.join("\n")).unwrap();
     }
+    readme.push_str(&mapped_packages(steps));
     if !masked.is_empty() {
         readme.push_str("\n## Masked secrets\n\nFill in these masked secrets:\n");
         for m in masked {

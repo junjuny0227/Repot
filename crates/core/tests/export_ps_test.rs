@@ -24,16 +24,19 @@ fn windows_plan() -> ScriptPlan {
                 manager: PackageManager::Winget,
                 kind: PackageKind::Package,
                 name: "Git.Git".into(),
+                mapped_from: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Scoop,
                 kind: PackageKind::Package,
                 name: "extras/vlc".into(),
+                mapped_from: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Choco,
                 kind: PackageKind::Package,
                 name: "7zip".into(),
+                mapped_from: None,
             },
             Step::InstallRuntime {
                 tool: RuntimeTool::NvmWindows,

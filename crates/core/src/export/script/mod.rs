@@ -94,6 +94,19 @@ pub(crate) fn note_text(n: &ExportNote) -> String {
     }
 }
 impl Step {
+    pub fn mapped_origin(&self) -> Option<String> {
+        match self {
+            Self::InstallPackage {
+                mapped_from: Some(from),
+                ..
+            } => Some(format!(
+                "{}: {}",
+                package_cmd(from.manager).trim_end_matches("-get"),
+                from.name
+            )),
+            _ => None,
+        }
+    }
     pub fn label(&self, target: Os) -> String {
         match self {
             Self::AddTap { manager, name } => format!(
@@ -109,6 +122,7 @@ impl Step {
                 manager,
                 kind,
                 name,
+                ..
             } => format!(
                 "{} install {}{name}",
                 package_cmd(*manager),

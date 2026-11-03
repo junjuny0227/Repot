@@ -2,7 +2,7 @@ use repot_core::availability::{Availability, availability_map};
 use repot_core::export::{
     ExportBundle, ExportMeta, ExportRequest, Format, build_export, write_export,
 };
-use repot_core::{Env, PROVIDER_TIMEOUT, Selection, default_providers};
+use repot_core::{Env, PROVIDER_TIMEOUT, Selection, Target, default_providers};
 use repot_core::{os::Os, scan::ScanResult};
 use std::{
     collections::HashMap,
@@ -29,10 +29,11 @@ impl AppState {
     fn preview(
         &self,
         selection: &Selection,
-        target: Os,
+        target: Target,
         format: Format,
         meta: ExportMeta,
     ) -> Result<ExportBundle, String> {
+        target.validate().map_err(str::to_owned)?;
         let scan = self.scan_result()?;
         Ok(build_export(
             self.env.as_ref(),
@@ -68,8 +69,9 @@ pub async fn scan(app: AppHandle, state: State<'_, AppState>) -> Result<ScanResu
 #[tauri::command]
 pub fn availability_for(
     state: State<AppState>,
-    target: Os,
+    target: Target,
 ) -> Result<HashMap<String, Availability>, String> {
+    target.validate().map_err(str::to_owned)?;
     Ok(availability_map(
         &state.scan_result()?.items,
         state.source,
@@ -80,7 +82,7 @@ pub fn availability_for(
 pub fn preview_export(
     state: State<AppState>,
     selection: Selection,
-    target: Os,
+    target: Target,
     format: Format,
 ) -> Result<ExportBundle, String> {
     state.preview(&selection, target, format, ExportMeta::now())
@@ -89,7 +91,7 @@ pub fn preview_export(
 pub fn export(
     state: State<AppState>,
     selection: Selection,
-    target: Os,
+    target: Target,
     format: Format,
     parent: String,
 ) -> Result<String, String> {

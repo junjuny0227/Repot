@@ -98,7 +98,7 @@ fn request<'a>(
         items,
         selection,
         source,
-        target,
+        target: Target::default_for(target),
         format,
         meta: ExportMeta {
             repot_version: "0.1.0".into(),

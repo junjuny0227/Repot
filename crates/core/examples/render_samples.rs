@@ -44,6 +44,7 @@ fn sample_plan(target: Os) -> ScriptPlan {
                 PackageKind::Package
             },
             name: "ripgrep".into(),
+            mapped_from: None,
         });
     }
     if target == Os::MacOs {
@@ -51,6 +52,7 @@ fn sample_plan(target: Os) -> ScriptPlan {
             manager: PackageManager::Brew,
             kind: PackageKind::Cask,
             name: "visual-studio-code".into(),
+            mapped_from: None,
         });
     }
     let runtimes: &[RuntimeTool] = if target == Os::Windows {

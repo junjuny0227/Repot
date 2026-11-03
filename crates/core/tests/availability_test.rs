@@ -28,7 +28,11 @@ fn availability_map_covers_every_item() {
     a.id = "a".into();
     let mut b = item(Portability::Any, vec![]);
     b.id = "b".into();
-    let map = repot_core::availability::availability_map(&[a, b], Os::MacOs, Os::Windows);
+    let map = repot_core::availability::availability_map(
+        &[a, b],
+        Os::MacOs,
+        repot_core::Target::default_for(Os::Windows),
+    );
     assert_eq!(map.len(), 2);
     assert_eq!(map["b"], Availability::Available);
     assert!(matches!(
@@ -71,13 +75,20 @@ fn counterpart_table() {
 fn same_os_requires_same_linux_family() {
     let it = item(Portability::SameOs, vec![]);
     let deb = Os::Linux(LinuxFamily::Debian);
-    assert_eq!(availability(&it, deb, deb), Availability::Available);
     assert_eq!(
-        availability(&it, deb, Os::Linux(LinuxFamily::Fedora)),
+        availability(&it, deb, repot_core::Target::default_for(deb)),
+        Availability::Available
+    );
+    assert_eq!(
+        availability(
+            &it,
+            deb,
+            repot_core::Target::default_for(Os::Linux(LinuxFamily::Fedora))
+        ),
         Availability::Unavailable(UnavailableReason::DifferentOs { source: deb })
     );
     assert_eq!(
-        availability(&it, Os::MacOs, Os::Windows),
+        availability(&it, Os::MacOs, repot_core::Target::default_for(Os::Windows)),
         Availability::Unavailable(UnavailableReason::DifferentOs { source: Os::MacOs })
     );
 }
@@ -85,18 +96,26 @@ fn same_os_requires_same_linux_family() {
 fn same_shell_and_mapped_and_any() {
     let zsh = item(Portability::SameShell(Shell::Zsh), vec![]);
     assert_eq!(
-        availability(&zsh, Os::MacOs, Os::Linux(LinuxFamily::Debian)),
+        availability(
+            &zsh,
+            Os::MacOs,
+            repot_core::Target::default_for(Os::Linux(LinuxFamily::Debian))
+        ),
         Availability::Available
     );
     assert_eq!(
-        availability(&zsh, Os::MacOs, Os::Windows),
+        availability(
+            &zsh,
+            Os::MacOs,
+            repot_core::Target::default_for(Os::Windows)
+        ),
         Availability::Unavailable(UnavailableReason::ShellUnsupported(Shell::Zsh))
     );
     assert_eq!(
         availability(
             &item(Portability::Mapped(RuntimeTool::Sdkman), vec![]),
             Os::MacOs,
-            Os::Windows
+            repot_core::Target::default_for(Os::Windows)
         ),
         Availability::Unavailable(UnavailableReason::NoCounterpart(RuntimeTool::Sdkman))
     );
@@ -106,7 +125,11 @@ fn same_shell_and_mapped_and_any() {
         Portability::SameShell(Shell::PowerShell),
     ] {
         assert_eq!(
-            availability(&item(portability, vec![]), Os::MacOs, Os::Windows),
+            availability(
+                &item(portability, vec![]),
+                Os::MacOs,
+                repot_core::Target::default_for(Os::Windows)
+            ),
             Availability::Available
         );
     }
@@ -127,7 +150,7 @@ fn unreadable_is_never_available() {
             }],
         );
         assert_eq!(
-            availability(&it, Os::MacOs, Os::Windows),
+            availability(&it, Os::MacOs, repot_core::Target::default_for(Os::Windows)),
             Availability::Unavailable(UnavailableReason::Unreadable)
         );
     }

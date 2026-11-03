@@ -52,7 +52,7 @@ fn smoke_bundle(os: Os) -> ExportBundle {
             items: &items,
             selection: &selection,
             source: os,
-            target: os,
+            target: repot_core::Target::default_for(os),
             format: Format::Script,
             meta: ExportMeta::now(),
         },
