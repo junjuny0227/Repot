@@ -1,0 +1,5 @@
+{
+  "formula": [{"name":"tool","oldnames":["old-tool"],"homepage":"https://github.com/acme/tool","urls":{"stable":{"url":"https://github.com/acme/tool/archive/v1.tar.gz"}}}],
+  "cask": [{"token":"tool-desktop","name":["Tool Desktop"],"homepage":"https://example.org","url":"https://example.org/tool.dmg","artifacts":[{"binary":["tool"]}]},{"token":"gui","name":["GUI"],"homepage":"https://example.org/gui","artifacts":[{"app":["GUI.app"]}]}],
+  "scoop": {"homepage":"https://example.org/tool","architecture":{"64bit":{"url":"https://github.com/acme/tool/releases/tool.zip","bin":"tool.exe"}},"shortcuts":[["tool.exe","Tool"]]}
+}
