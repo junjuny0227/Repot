@@ -72,7 +72,13 @@ restore script you review before running. It never changes your device.
 | Git | User configuration and the global ignore file |
 | Shell | zsh, Bash, fish and PowerShell profiles, oh-my-zsh custom plugins and themes, Starship |
 
-Package-manager entries move only to the same OS (and Linux distribution family).
+Within the same OS (and Linux distribution family), package-manager entries keep
+their original manager and name. For a different OS, Repot uses only the package map
+built into the app (about 150 developer tools and apps): macOS destinations use
+Homebrew, Windows destinations use the **Package manager** you pick (winget by
+default, Scoop or Chocolatey), and Linux destinations use apt, dnf or pacman for the
+distribution family. Packages without a name in the map, Homebrew taps, and Linux
+distributions outside these families stay unavailable; names are never guessed.
 Runtime managers are mapped between operating systems.
 
 ## Principles
@@ -162,7 +168,11 @@ selection.
 - apt and dnf's manually installed lists may include base-system packages.
 - winget and Cargo entries have no local descriptions.
 - Cross-manager duplicates are detected only by identical names (case-insensitive),
-  not automatically removed; package names are not mapped between operating systems.
+  not automatically removed.
+- The cross-OS package map covers about 150 packages, each checked against the
+  destination manager's default repositories (official Scoop buckets included).
+  Other packages cannot move to a different OS. Check mapped names before you run
+  the restore.
 - Pattern-based secret detection cannot find every secret. Always review exports,
   especially if you choose to reveal a detected secret.
 - WSL and Git Bash environments are not supported.
