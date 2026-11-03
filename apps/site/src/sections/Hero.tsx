@@ -1,10 +1,11 @@
 import appIcon from "../../../desktop/app-icon-macos.svg";
-import { C } from "../content";
+import { useContent } from "../content";
 import { RELEASE_URL, VERSION, downloadsFor, type Platform } from "../downloads";
 import { DownloadArrow, WarningTriangle } from "../icons";
 import { Screenshot } from "./Screenshot";
 
 function Buttons({ platform, macArch }: { platform: Platform; macArch: "mac-arm" | "mac-intel" }) {
+  const C = useContent();
   if (platform === "unknown") {
     return (
       <div className="downloads">
@@ -46,6 +47,7 @@ function Buttons({ platform, macArch }: { platform: Platform; macArch: "mac-arm"
 }
 
 export function Hero({ platform, macArch }: { platform: Platform; macArch: "mac-arm" | "mac-intel" }) {
+  const C = useContent();
   return (
     <section className="hero" id="top" aria-labelledby="hero-title">
       <img className="hero-icon" src={appIcon} alt="" width={128} height={128} />
@@ -61,7 +63,7 @@ export function Hero({ platform, macArch }: { platform: Platform; macArch: "mac-
       </p>
       <p className="beta">
         <WarningTriangle />
-        <span><strong>{C.hero.beta}.</strong> {C.hero.betaNote} <a href="#install">{C.hero.howToOpen}</a></span>
+        <span><strong>{C.hero.beta}</strong>{C.gap}{C.hero.betaNote}{C.gap}<a href="#install">{C.hero.howToOpen}</a></span>
       </p>
       <div className="hero-shot">
         <Screenshot name="review" alt={C.hero.screenshotAlt} sizes="(min-width: 1148px) 1100px, calc(100vw - 48px)" eager />

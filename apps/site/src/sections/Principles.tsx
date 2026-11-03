@@ -1,7 +1,8 @@
-import { C } from "../content";
+import { useContent } from "../content";
 import { SymbolTile, type PrincipleKey } from "../icons";
 
 export function Principles() {
+  const C = useContent();
   return (
     <section className="section" id="principles" aria-labelledby="principles-title">
       <div className="section-head">

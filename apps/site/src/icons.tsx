@@ -89,3 +89,11 @@ export const DownloadArrow = () => (
     <path d="M8 2.5v8M4.6 7.4L8 10.8l3.4-3.4M3 13.2h10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const Globe = () => (
+  <svg className="symbol" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <ellipse cx="8" cy="8" rx="2.7" ry="6.4" fill="none" stroke="currentColor" strokeWidth="1.1" />
+    <path d="M1.8 8h12.4M2.9 4.8h10.2M2.9 11.2h10.2" fill="none" stroke="currentColor" strokeWidth="1.1" />
+  </svg>
+);
