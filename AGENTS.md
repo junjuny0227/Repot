@@ -23,7 +23,7 @@
 | `pnpm --filter @repot/site typecheck` / `test` / `build` | verified (exit 0, 2026-11-03) | 계획 6 Task 1 |
 | `node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs` | verified (exit 0, 2026-11-03) | 계획 10 (fixture와 가짜 fetch만 쓴다) |
 | `pnpm package-map:gen candidates` / `run` | verified (2026-11-03, 보고할 문제가 있으면 exit 1) | 계획 10 (로컬 전용, 네트워크와 `JEB_AI_HUB_KEY` 필요, CI에서 돌리지 않는다) |
-| `pnpm package-map:gen apply-review` (에이전트 결정은 `--reviewer agent`, provenance `agent-review`) | unverified (테스트로만 확인) | 계획 10 |
+| `pnpm package-map:gen apply-review` (에이전트 결정은 `--reviewer agent`, provenance `agent-review`) | verified (2026-11-03, `--reviewer agent`로 실제 반영) | 계획 10 |
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.
 - `repot-desktop`(Tauri)은 컴파일 시점에 `apps/desktop/dist`가 필요하다. 워크스페이스 전체를 `cargo`로 돌리기 전에 프론트엔드를 먼저 빌드한다.
