@@ -1,0 +1,72 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/site/**
+      - apps/desktop/src/styles/tokens.css
+      - apps/desktop/src-tauri/tauri.conf.json
+      - apps/desktop/app-icon-macos.svg
+      - pnpm-lock.yaml
+      - .github/workflows/pages.yml
+  # Publishing a release makes its download links valid, so redeploy then.
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check the published release
+        # The site links to v<app version> assets. If that release is still a draft
+        # or misses a file, fail here and keep the previous deployment live.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(jq -r .version apps/desktop/src-tauri/tauri.conf.json)
+          release=$(gh release view "v$version" --repo "$GITHUB_REPOSITORY" --json isDraft,assets)
+          if [ "$(jq -r .isDraft <<<"$release")" != false ]; then
+            echo "::error::Release v$version is not published"
+            exit 1
+          fi
+          jq -r --arg v "$version" '.[].file | gsub("\\{version\\}"; $v)' apps/site/src/assets.json |
+            while read -r file; do
+              if ! jq -e --arg f "$file" '.assets | any(.name == $f)' <<<"$release" >/dev/null; then
+                echo "::error::Release v$version has no asset $file"
+                exit 1
+              fi
+            done
+      - run: pnpm --filter @repot/site test
+      - run: pnpm --filter @repot/site build
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
