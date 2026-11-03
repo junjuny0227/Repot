@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Repot — move your dev environment to a new machine",
-    "description": "Repot scans your dev machine read-only and exports a readable restore script or native manifests. Secrets masked, no network, you review before you run.",
+    "description": "Repot scans your dev machine read-only and exports readable restore scripts or native manifests. Secrets masked; networking only for optional app updates.",
     "noscript": "Repot moves your dev environment to a new machine.",
     "noscriptLink": "Download from GitHub Releases"
   },
@@ -61,16 +61,16 @@
     "title": "Built to be trusted with your machine",
     "items": {
       "readonly": {
-        "title": "Never changes your machine",
-        "text": "Scans are read-only, and Repot writes only to the export folder you choose. Whether to run the restore script is up to you."
+        "title": "Read-only scans",
+        "text": "Scans only read your device; exports write to your chosen folder. Only an app update you approve replaces Repot itself. You decide whether to run restore scripts."
       },
       "secrets": {
         "title": "Secrets masked",
         "text": "Detected secrets are replaced with <REDACTED> unless you allow the original value. Detection is pattern-based, so review exports before sharing."
       },
       "network": {
-        "title": "No network",
-        "text": "The app uses local data and built-in descriptions. The restore scripts you run separately can download packages through their respective tools."
+        "title": "Updates only",
+        "text": "The app connects to GitHub only to check for and download signed app updates. Automatic checks can be turned off in Settings. Scan data never leaves your machine. Restore scripts run separately can download packages."
       },
       "review": {
         "title": "Review before you run",
@@ -96,7 +96,7 @@
   },
   "install": {
     "title": "Install and first launch",
-    "lead": "0.x builds are unsigned betas: they are not code-signed or notarized, and there are no automatic updates yet, so your OS warns on first launch. Continue only after verifying that you trust the download.",
+    "lead": "0.x builds are not code-signed or notarized, so your OS warns on first launch. App updates use a separate signature for verification. Automatic update checks are on by default and can be turned off in Settings. Linux .deb/.rpm users should update with their package manager or download again. Version 0.1.0 users must install an updater-enabled version manually once.",
     "osLabel": "Operating system",
     "downloads": "Downloads",
     "firstLaunch": "First launch",

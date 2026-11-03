@@ -1,3 +1,4 @@
+import { UpdateSettings } from "../UpdateSettings";
 import { LOCALES, setLocale, useLocale, type Locale } from "../i18n";
 import { S } from "../strings";
 import { Chevrons, Globe } from "./icons";
@@ -6,7 +7,7 @@ import { Chevrons, Globe } from "./icons";
 export function LanguageSelect({ className = "" }: { className?: string }) {
   const locale = useLocale();
   return (
-    <label className={`popup-field language-field ${className}`}>
+    <div className="app-preferences"><label className={`popup-field language-field ${className}`}>
       <Globe />
       <span className="visually-hidden">{S.language}</span>
       <span className="popup">
@@ -15,6 +16,6 @@ export function LanguageSelect({ className = "" }: { className?: string }) {
         </select>
         <Chevrons />
       </span>
-    </label>
+    </label><UpdateSettings /></div>
   );
 }

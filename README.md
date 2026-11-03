@@ -30,12 +30,15 @@ unavailable items are disabled rather than guessed.
 
 - **Explains everything:** shows local descriptions and portability warnings, or
   honestly says when no description is available.
-- **Never changes your machine:** scans read-only and writes only to your chosen
-  export folder; you decide whether to run the generated restore script.
+- **Read-only scans:** scans only read your device; exports write to your chosen
+  folder. Only an app update you approve replaces Repot itself. You decide whether
+  to run the generated restore script.
 - **Conservative by default:** masks detected secrets, backs up changed destination
   files, and never installs package managers for you.
-- **No network:** the app uses local data and built-in descriptions. The restore
-  scripts you run separately can download packages through their respective tools.
+- **Networking only for app updates:** Repot connects to GitHub to check for and
+  download signed app updates. Automatic checks can be turned off in Settings.
+  Scan data never leaves your machine. The restore scripts you run separately can
+  download packages through their respective tools.
 - **Review before you run:** preview the files before saving and read the exported
   script before executing it.
 
@@ -43,8 +46,8 @@ unavailable items are disabled rather than guessed.
 
 Download an installer for your OS from [GitHub Releases](https://github.com/junjuny0227/Repot/releases)
 when a release is available. 0.x builds are unsigned betas: they are not
-code-signed or notarized, and there are no automatic updates yet, so your OS warns
-on first launch.
+code-signed or notarized, so your OS warns on first launch. Update bundles are
+verified with a separate updater signature; this is not Apple/Windows code signing.
 
 First launch after verifying that you trust the download:
 
@@ -60,6 +63,20 @@ First launch after verifying that you trust the download:
 - **Linux:** make the downloaded AppImage executable with
   `chmod +x Repot_*.AppImage`, then open it, or install the `.deb` using your
   distribution's package installer.
+
+### App updates
+
+Repot checks GitHub for updates once on launch by default. Open **Settings** next
+to the language picker to turn off **Check for updates automatically** or use
+**Check now**. A new version is offered only on the start or done screen, never
+during a scan or export. Choose **Install and Restart**, or **Later**; downloads
+show progress and the signed update is verified before installation.
+
+Linux automatic updates require an **AppImage**. For `.deb`/`.rpm`, use your
+package manager or download the latest installer from the site. Users of
+**0.1.0 must install an updater-enabled version manually once**. Update checks
+use the latest published full release; `latest.json` is not available while its
+release is still a draft.
 
 ## Using an export
 
