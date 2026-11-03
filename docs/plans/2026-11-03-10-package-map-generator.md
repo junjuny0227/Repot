@@ -14,7 +14,7 @@
 - **앱·CI에서 생성하지 않는다.** 생성기는 개발자 로컬에서만 네트워크와 jeb를 쓴다. `repot-core`는 계속 네트워크를 쓰지 않는다. CI에는 네트워크 없는 생성기 단위 테스트만 더하고, 기존 `package-map` 작업으로 결과를 검증한다. 앱 네트워크 권한·Rust/TS 모델은 바꾸지 않는다.
 - **출발은 Homebrew, 목적지는 winget·Scoop뿐.** 출발 키는 formula의 `brew`, cask의 `brewCask`다. Scoop은 공식 `main`, `extras`, `versions`, `java`, `nerd-fonts`만 쓴다. 정확도를 측정하지 않은 choco·apt·dnf·pacman 키는 생성하지 않고 기존 값은 보존한다.
 - **키는 비밀이다.** `JEB_AI_HUB_KEY` 환경변수를 우선하고, 없을 때만 저장소 루트 `.env`에서 의존성 없이 읽는다. 키·Authorization 헤더·`.env`를 로그, 오류, 캐시, fixture, PR, 커밋에 남기지 않는다. 셸로 `.env`를 실행하지 않는다. `.env`, `.cache/`는 gitignore 대상이다.
-- **자동 `null` 금지.** 후보 없음, jeb의 "none of these", 오류·중단은 부재 확인이 아니다. 해당 키를 추가하지 않는다. 사람이 review의 `decision`에 `none`을 쓴 경우에만 확인된 부재로 `null`을 넣는다.
+- **자동 `null` 금지.** 후보 없음, jeb의 "none of these", 오류·중단은 부재 확인이 아니다. 해당 키를 추가하지 않는다. 검토자(사람 또는 아래 규칙을 따르는 에이전트)가 review의 `decision`에 `none`을 쓴 경우에만 확인된 부재로 `null`을 넣는다.
 - **기존 값을 덮어쓰지 않는다.** 기존 문자열과 `null` 모두 보존한다. §10 이름 패턴(`^[A-Za-z0-9@._+/:-]+$`), 매니저별 대소문자 무시 유일성(Scoop은 생략 bucket을 `main`으로 비교), 알파벳 키 정렬을 지킨다. 새 공통 id는 brew token 소문자이며 `[a-z0-9-]+`에 맞지 않거나 충돌하면 건너뛰고 보고한다. 버전 표기를 임의로 지워 id를 만들지 않는다.
 - **정확한 근거만 후보로 쓴다.** fuzzy/유사 이름 검색과 패키지별 예외는 넣지 않는다. HIGH 판정은 후보를 자르거나 필터링하기 전의 저장소 중복까지 고려한다.
 - 코드 주석·CLI 출력은 영어, 문서는 한국어다. AGENTS.md·CLAUDE.md는 고치지 않고 권장 문구만 PR 본문에 남긴다.
@@ -33,9 +33,14 @@ flash-next의 선택된 paired positive에서는 두 모드 모두 31/34였고, 
 
 **측정의 한계.** 근거는 spike의 `eval-SUMMARY.md`, `eval-jeb-filtered/RESULTS.md`, 독립 재계산 기록 `eval-jeb-filtered/VERIFY.md`다. 검증 기록은 184/184 완료, 신규 요청 33, 재사용 138, 빈 목록의 결정적 none 13, 잃은 정답 2, 키 유출 검사 통과를 확인했다. positive 106쌍(formula 48/cask 58)과 인공 negative 30쌍은 작고 손으로 고른 **in-sample** 집합이며 threshold도 같은 집합에서 골랐다. HIGH-only 48/48 정답은 별도 sanity 집합이지 positive 106에 더할 표본이 아니다. 재사용 응답은 새 반복 실험이 아니다. 특히 최종 정책인 "채널 제거 + kind 표시"의 전체 성능을 "채널·kind 모두 제거"의 78/106·0/30과 같다고 주장하지 않는다. held-out 정밀도, 실사용 오승인율, 무인 승인 안전성은 아직 검증하지 못했다. HIGH 우회도 48/48의 관측을 근거로 한 정책이지 보증이 아니다. 실험 원본·캐시·개인 경로는 저장소에 복사하지 않는다.
 
-**왜 provenance sidecar인가.** `package-map.json`은 앱에 이름만 주는 기존 형식을 유지한다. 추가된 값별로 `high-tier | jeb | human` 방법, 확률, tier, 카탈로그 snapshot 날짜를 `package-map.provenance.json`에 기록하면 근거를 추적하면서 Rust/TS 모델과 소비자를 바꾸지 않아도 된다. 모델 확률이 없는 HIGH/human은 확률을 만들어내지 않고 `null`로 기록한다(이것은 대응표의 부재 `null`과 다르다). 기존 수동 데이터의 근거를 소급해서 꾸며 쓰지 않는다.
+**왜 provenance sidecar인가.** `package-map.json`은 앱에 이름만 주는 기존 형식을 유지한다. 추가된 값별로 `high-tier | jeb | human | agent-review` 방법, 확률, tier, 카탈로그 snapshot 날짜를 `package-map.provenance.json`에 기록하면 근거를 추적하면서 Rust/TS 모델과 소비자를 바꾸지 않아도 된다. 모델 확률이 없는 HIGH/human/agent-review는 확률을 만들어내지 않고 `null`로 기록한다(이것은 대응표의 부재 `null`과 다르다). 기존 수동 데이터의 근거를 소급해서 꾸며 쓰지 않는다.
 
 **왜 파일 검토인가.** 터미널에서 즉시 선택하는 방식보다 후보 메타데이터·선택·확률을 나란히 읽고 diff로 남기는 방식이 실수를 줄인다. gitignored review 파일의 빈 `decision`을 사람이 채우고 `apply-review`로 적용한다. 빈 결정이나 `skip`은 아무것도 쓰지 않으며, `none`만 확인된 부재를 뜻한다.
+
+**누가 review를 결정하는가.** 사람이 기본이다. 사용자가 맡기면 에이전트도 같은 파일을 채울 수 있고, 이때는 `apply-review --reviewer agent`로 적용해 provenance 방법을 `agent-review`로 남긴다. 기본 `--reviewer human`은 `human`이다. 두 방법은 섞지 않으므로 나중에 에이전트 결정만 골라 다시 확인하거나 되돌릴 수 있다. 각 항목에 선택적 `evidence` 문자열(확인한 URL·카탈로그 필드)을 쓰면 provenance에 그대로 복사한다. `none`은 두 검토자 모두 쓸 수 있다. 에이전트 검토 규칙은 다음과 같다.
+- 후보 id는 Homebrew 패키지와 **같은 소프트웨어**일 때만 고른다. 같은 제품·같은 벤더 또는 같은 upstream 프로젝트(같은 GitHub 저장소, upstream이 직접 낸 공식 Windows 빌드)이고 같은 stable 채널이어야 한다. 출발이 버전 고정이 아니면 버전 고정판도 고르지 않는다. 확신이 높을 때만 고른다.
+- 다른 저자의 포트·포크, 기능이 비슷한 대체품(nvm → nvm-windows), 비공식 클라이언트·래퍼, 라이브러리와 전체 툴체인, 패치 변형(nerd-font와 원본 글꼴), 다른 배포판·버전 고정판, beta/nightly/insider, 근거 부족은 모두 `skip`이다.
+- `none`은 제품에 공식 Windows 버전이 아예 없고(macOS 전용이라고 upstream이 밝히는 등) 후보 중에도 없을 때만 쓴다. Scoop은 공식 bucket main/extras/versions/java/nerd-fonts까지 확인한다. 애매하면 `skip`이다.
 
 ## 파이프라인
 
@@ -45,7 +50,7 @@ flash-next의 선택된 paired positive에서는 두 모드 모두 31/34였고, 
 4. **사전 필터:** 식별자 경계로 `nightly`, `beta`, `alpha`, `preview`, `dev`, `canary`, `prerelease`, `insider(s)`, `unstable`, `snapshot`, `edge`, 후행 `-git`을 감지한다. insider/insiders는 같은 label이며 빈 집합은 stable/unlabelled다. 출발·후보 label 집합이 다르면 제거한다. 설명·URL·버전으로 채널을 추측하지 않는다. formula=cli, cask=gui이나 binaries 선언이 있으면 mixed다. 확정 CLI/GUI 불일치는 flag만 단다.
 5. **판정:** 유일한 HIGH이면서 kind flag가 없으면 jeb를 호출하지 않고 auto다. 나머지는 `(출발, 목적지)`당 요청 하나를 `POST https://jeb.https.gsmsv.site/v1/systemone`에 Bearer 인증으로 보낸다. 후보별 동일한 형식의 선택지와 마지막 `none of these`를 쓴다. 하루 1000요청, 동시 최대 2개, 503은 backoff 재시도다. HTTP 시도(재시도 포함)는 `--max-requests`로 제한하고 `x-ratelimit-remaining-credits`가 기본 floor 100 미만이면 새 요청을 멈춘다. 할당량 헤더가 없거나 판독 불가하면 안전하게 중단한다. 요청 해시로 응답을 캐시하고 checkpoint로 재개한다. 키는 해시 입력·캐시에 포함하지 않는다. offline에서는 캐시 없는 jeb 요청을 보내지 않는다.
 6. **분류:** jeb가 후보를 고르고 확률 ≥ 기본 0.95이며 그 후보에 kind flag가 없으면 auto, 후보가 있지만 저확률·kind flag 선택·none이면 review, 후보 자체가 없으면 no-candidate다. 실패·잘못된 응답·할당량 중단은 미완료로 남겨 재개하며 auto나 부재로 처리하지 않는다.
-7. **출력·검토:** auto를 `package-map.json`과 provenance에 함께 반영한다. review는 `.cache/package-map-gen/review.json`에 출발·목적지, 후보와 메타데이터, jeb 선택/확률, 빈 `decision`을 쓴다. 사람은 후보 id / `none` / `skip`을 적고 `pnpm package-map:gen apply-review`로 적용한다. 후보에 없는 id·잘못된 결정은 오류다. 적용 직전에 최신 대응표의 기존 값·id 충돌·유일성·패턴을 다시 검사한다. 적용한 값의 provenance 방법은 `human`이다.
+7. **출력·검토:** auto를 `package-map.json`과 provenance에 함께 반영한다. review는 `.cache/package-map-gen/review.json`에 출발·목적지, 후보와 메타데이터, jeb 선택/확률, 빈 `decision`을 쓴다. 사람은 후보 id / `none` / `skip`을 적고 `pnpm package-map:gen apply-review`로 적용한다. 후보에 없는 id·잘못된 결정은 오류다. 적용 직전에 최신 대응표의 기존 값·id 충돌·유일성·패턴을 다시 검사한다. 적용한 값의 provenance 방법은 `human`이고, `--reviewer agent`면 `agent-review`다. 항목의 `evidence` 문자열은 provenance에 복사한다.
 8. **데이터 PR:** auto/review/no-candidate/미완료/충돌 수와 실제 추가 수를 나눠 보고한다. 데이터·provenance diff를 확인하고 기존 CI `package-map` 작업으로 실제 이름 존재를 검사한 뒤 merge commit으로 병합한다. CI의 존재 확인을 의미적 동일성 확인으로 표현하지 않는다.
 
 ## 파일 구조

@@ -8,6 +8,7 @@ pnpm package-map:gen run --names brew:tool,brewCask:app --dry-run --max-requests
 pnpm package-map:gen run --from-analytics 10 --threshold 0.95 --credit-floor 100
 pnpm package-map:gen apply-review --dry-run
 pnpm package-map:gen apply-review
+pnpm package-map:gen apply-review --reviewer agent
 ```
 
 - `--from-scan scan.json`, `--from-analytics N`, `--names a,b`는 합쳐 선택한다.
@@ -31,8 +32,11 @@ pnpm package-map:gen apply-review
 `review.json`의 `items`는 출발 token·종류, 목적지, 전체 후보 메타데이터, jeb 선택·확률, snapshot 날짜와 빈 문자열 `decision`을 갖는다. `--review-file path`로 다른 파일을 쓸 수 있다.
 
 - 빈 문자열 또는 `skip`: 무변경
-- 목록의 후보 id: 사람이 고른 대응
-- `none`: 사람이 확인한 부재, 대응표에 null
+- 목록의 후보 id: 검토자가 고른 대응
+- `none`: 검토자가 확인한 부재, 대응표에 null
+- 선택적 `evidence`: 확인한 근거 문자열. 적용한 값의 provenance에 복사한다
+
+`--reviewer human`(기본)은 provenance 방법 `human`, `--reviewer agent`는 `agent-review`로 기록한다. 에이전트 결정 규칙은 계획 10의 "누가 review를 결정하는가"를 따른다.
 
 다른 값은 전체 적용 전에 오류다. 같은 근거로 재실행하면 편집한 결정을 보존하고, 근거가 바뀌면 그 쌍의 결정을 빈 값으로 초기화한다. 이번 실행에 안 나온 이전 항목은 보존한다. 검토 이후 대응표가 바뀌어도 apply는 최신 파일을 다시 읽고 기존 문자열/null과 case-insensitive 유일성을 지킨다. 재적용은 멱등적이다.
 
@@ -50,13 +54,20 @@ pnpm package-map:gen apply-review
         "probability": 0.9,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T00:00:00.000Z"
+      },
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T00:00:00.000Z",
+        "evidence": "Same upstream repo: https://github.com/example/example"
       }
     }
   }
 }
 ```
 
-`method`는 `high-tier | jeb | human`이다. HIGH·human의 probability는 모델 확률이 없으므로 null이며 jeb만 선택 확률을 갖는다. tier는 선택한 후보의 `HIGH | MEDIUM | LOW`, human none처럼 후보가 없으면 null이다. `catalogSnapshot`은 원본 카탈로그의 snapshot 날짜이며 적용 시각을 대신 쓰지 않는다. 공통 id와 provenance 매니저 키는 정렬한다.
+`method`는 `high-tier | jeb | human | agent-review`다. HIGH·human·agent-review의 probability는 모델 확률이 없으므로 null이며 jeb만 선택 확률을 갖는다. tier는 선택한 후보의 `HIGH | MEDIUM | LOW`, human none처럼 후보가 없으면 null이다. `evidence`는 review 항목에 비어 있지 않은 문자열이 있을 때만 생긴다. `catalogSnapshot`은 원본 카탈로그의 snapshot 날짜이며 적용 시각을 대신 쓰지 않는다. 공통 id와 provenance 매니저 키는 정렬한다.
 
 자동 none·후보 없음·실패는 대응표 null을 만들지 않는다. 새 공통 id가 token 소문자 `[a-z0-9-]+`에 맞지 않거나 충돌하면 건너뛰어 보고한다. 잘못된 이름·전체 유일성 검증 실패는 두 파일을 쓰기 전에 오류다. 두 파일의 임시 파일을 먼저 만들고 rename하며, 두 번째 rename 실패는 sidecar를 복구한다. 프로세스/전원 강제 종료까지 두 파일의 원자적 transaction을 보장하는 것은 아니므로 데이터 PR의 두 diff를 함께 확인한다.
 

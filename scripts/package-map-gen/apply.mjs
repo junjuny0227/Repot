@@ -25,7 +25,8 @@ export function mergeDecisions(original, previous = { version: 1, packages: {} }
   const map = structuredClone(original), provenance = structuredClone(previous), added = [], skipped = [];
   for (const row of rows) {
     if (!['auto', 'human'].includes(row.status)) continue;
-    const human = row.status === 'human' && row.method === 'human';
+    // Reviewed decisions: a person (`human`) or an agent following the review rules (`agent-review`).
+    const human = row.status === 'human' && ['human', 'agent-review'].includes(row.method);
     if (!['formula', 'cask'].includes(row.sourceKind) || !['winget', 'scoop'].includes(row.target)) throw new Error('Invalid decision source or target');
     if (row.picked === 'none' && !human) continue;
     if (row.picked !== 'none' && !validName(row.picked)) throw new Error('Invalid target package name');
@@ -50,7 +51,7 @@ export function mergeDecisions(original, previous = { version: 1, packages: {} }
     if (!Object.hasOwn(map.packages, id)) map.packages[id] = { [manager]: row.source };
     map.packages[id][row.target] = value;
     if (!Object.hasOwn(provenance.packages, id)) provenance.packages[id] = {};
-    provenance.packages[id][row.target] = { method: human ? 'human' : row.method, probability, tier, catalogSnapshot: row.catalogSnapshot };
+    provenance.packages[id][row.target] = { method: row.method, probability, tier, catalogSnapshot: row.catalogSnapshot, ...(human && typeof row.evidence === 'string' && row.evidence.trim() ? { evidence: row.evidence.trim() } : {}) };
     added.push({ id, target: row.target, value });
   }
   map.packages = sorted(map.packages); provenance.packages = sorted(provenance.packages);
