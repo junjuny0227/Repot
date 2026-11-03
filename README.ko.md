@@ -13,7 +13,7 @@ Repot은 기기에 설치된 것을 읽어 항목마다 설명하고, 실행 전
 [![CI](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml/badge.svg)](https://github.com/junjuny0227/Repot/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-[**다운로드**](https://junjuny0227.github.io/Repot/ko/) · [English](README.md) · [릴리스](https://github.com/junjuny0227/Repot/releases/latest) · [설계 문서](docs/specs/2026-11-02-repot-mvp-design.md)
+[**다운로드**](https://junjuny0227.github.io/Repot/ko/) · [English](README.md) · [日本語](README.ja.md) · [简体中文](README.zh-Hans.md) · [릴리스](https://github.com/junjuny0227/Repot/releases/latest) · [설계 문서](docs/specs/2026-11-02-repot-mvp-design.md)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="apps/site/public/screenshots/review-dark.webp">
