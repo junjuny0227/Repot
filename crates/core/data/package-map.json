@@ -1,6 +1,235 @@
 {
   "version": 1,
   "packages": {
+    "alacritty": {
+      "brewCask": "alacritty",
+      "winget": "Alacritty.Alacritty",
+      "scoop": "extras/alacritty",
+      "apt": "alacritty",
+      "dnf": "alacritty",
+      "pacman": "alacritty"
+    },
+    "ansible": {
+      "brew": "ansible",
+      "apt": "ansible",
+      "dnf": "ansible",
+      "pacman": "ansible"
+    },
+    "aria2": {
+      "brew": "aria2",
+      "apt": "aria2",
+      "dnf": "aria2",
+      "pacman": "aria2"
+    },
+    "audacity": {
+      "brewCask": "audacity",
+      "winget": "Audacity.Audacity",
+      "scoop": "extras/audacity",
+      "choco": "audacity",
+      "apt": "audacity",
+      "dnf": "audacity",
+      "pacman": "audacity"
+    },
+    "autoconf": {
+      "brew": "autoconf",
+      "apt": "autoconf",
+      "dnf": "autoconf",
+      "pacman": "autoconf"
+    },
+    "automake": {
+      "brew": "automake",
+      "apt": "automake",
+      "dnf": "automake",
+      "pacman": "automake"
+    },
+    "awscli": {
+      "brew": "awscli"
+    },
+    "bat": {
+      "brew": "bat",
+      "apt": "bat",
+      "dnf": "bat",
+      "pacman": "bat",
+      "winget": "sharkdp.bat",
+      "scoop": "bat",
+      "choco": "bat"
+    },
+    "bitwarden": {
+      "brewCask": "bitwarden",
+      "winget": "Bitwarden.Bitwarden",
+      "scoop": "extras/bitwarden",
+      "choco": "bitwarden"
+    },
+    "blender": {
+      "brewCask": "blender",
+      "winget": "BlenderFoundation.Blender",
+      "scoop": "extras/blender",
+      "choco": "blender",
+      "apt": "blender",
+      "dnf": "blender",
+      "pacman": "blender"
+    },
+    "bottom": {
+      "brew": "bottom",
+      "pacman": "bottom",
+      "winget": "Clement.bottom",
+      "scoop": "bottom",
+      "choco": "bottom"
+    },
+    "brave-browser": {
+      "brewCask": "brave-browser",
+      "winget": "Brave.Brave",
+      "scoop": "extras/brave",
+      "choco": "brave"
+    },
+    "btop": {
+      "brew": "btop",
+      "apt": "btop",
+      "dnf": "btop",
+      "pacman": "btop",
+      "scoop": "btop"
+    },
+    "calibre": {
+      "brewCask": "calibre",
+      "winget": "calibre.calibre",
+      "scoop": "extras/calibre",
+      "choco": "calibre",
+      "apt": "calibre",
+      "dnf": "calibre",
+      "pacman": "calibre"
+    },
+    "ccache": {
+      "brew": "ccache",
+      "apt": "ccache",
+      "dnf": "ccache",
+      "pacman": "ccache"
+    },
+    "chromium": {
+      "brewCask": "chromium",
+      "scoop": "extras/chromium",
+      "apt": "chromium",
+      "dnf": "chromium",
+      "pacman": "chromium"
+    },
+    "cmake": {
+      "brew": "cmake",
+      "apt": "cmake",
+      "dnf": "cmake",
+      "pacman": "cmake",
+      "winget": "Kitware.CMake",
+      "scoop": "cmake",
+      "choco": "cmake"
+    },
+    "coreutils": {
+      "brew": "coreutils",
+      "apt": "coreutils",
+      "dnf": "coreutils",
+      "pacman": "coreutils"
+    },
+    "curl": {
+      "brew": "curl",
+      "apt": "curl",
+      "dnf": "curl",
+      "pacman": "curl",
+      "winget": "cURL.cURL",
+      "scoop": "curl",
+      "choco": "curl"
+    },
+    "cyberduck": {
+      "brewCask": "cyberduck",
+      "winget": "iterate.Cyberduck",
+      "scoop": "extras/cyberduck",
+      "choco": "cyberduck"
+    },
+    "dbeaver-community": {
+      "brewCask": "dbeaver-community",
+      "winget": "dbeaver.dbeaver",
+      "scoop": "extras/dbeaver",
+      "choco": "dbeaver"
+    },
+    "direnv": {
+      "brew": "direnv",
+      "apt": "direnv",
+      "dnf": "direnv",
+      "pacman": "direnv",
+      "winget": "direnv.direnv",
+      "scoop": "direnv"
+    },
+    "discord": {
+      "brewCask": "discord",
+      "winget": "Discord.Discord",
+      "scoop": "extras/discord",
+      "choco": "discord"
+    },
+    "dos2unix": {
+      "brew": "dos2unix",
+      "apt": "dos2unix",
+      "dnf": "dos2unix",
+      "pacman": "dos2unix",
+      "winget": "waterlan.dos2unix",
+      "scoop": "dos2unix",
+      "choco": "dos2unix"
+    },
+    "duckdb": {
+      "brew": "duckdb",
+      "apt": "duckdb",
+      "dnf": "duckdb",
+      "pacman": "duckdb"
+    },
+    "dust": {
+      "brew": "dust",
+      "pacman": "dust"
+    },
+    "element": {
+      "brewCask": "element",
+      "winget": "Element.Element",
+      "scoop": "extras/element",
+      "choco": "element-desktop"
+    },
+    "emacs": {
+      "brew": "emacs",
+      "apt": "emacs",
+      "dnf": "emacs",
+      "pacman": "emacs"
+    },
+    "eza": {
+      "brew": "eza",
+      "pacman": "eza",
+      "winget": "eza-community.eza",
+      "scoop": "eza"
+    },
+    "fastfetch": {
+      "brew": "fastfetch",
+      "apt": "fastfetch",
+      "dnf": "fastfetch",
+      "pacman": "fastfetch",
+      "winget": "Fastfetch-cli.Fastfetch",
+      "scoop": "fastfetch"
+    },
+    "fd": {
+      "brew": "fd",
+      "apt": "fd-find",
+      "dnf": "fd-find",
+      "pacman": "fd",
+      "winget": "sharkdp.fd",
+      "scoop": "fd",
+      "choco": "fd"
+    },
+    "ffmpeg": {
+      "brew": "ffmpeg",
+      "apt": "ffmpeg",
+      "dnf": "ffmpeg",
+      "pacman": "ffmpeg",
+      "winget": "Gyan.FFmpeg",
+      "scoop": "ffmpeg",
+      "choco": "ffmpeg"
+    },
+    "findutils": {
+      "brew": "findutils",
+      "apt": "findutils",
+      "dnf": "findutils",
+      "pacman": "findutils"
+    },
     "firefox": {
       "brewCask": "firefox",
       "winget": "Mozilla.Firefox",
@@ -9,6 +238,66 @@
       "apt": null,
       "dnf": "firefox",
       "pacman": "firefox"
+    },
+    "fish": {
+      "brew": "fish",
+      "apt": "fish",
+      "dnf": "fish",
+      "pacman": "fish"
+    },
+    "flameshot": {
+      "brewCask": "flameshot",
+      "winget": "Flameshot.Flameshot",
+      "scoop": "extras/flameshot",
+      "choco": "flameshot",
+      "apt": "flameshot",
+      "dnf": "flameshot",
+      "pacman": "flameshot"
+    },
+    "fnm": {
+      "brew": "fnm",
+      "winget": "Schniz.fnm",
+      "scoop": "fnm",
+      "choco": "fnm"
+    },
+    "fzf": {
+      "brew": "fzf",
+      "apt": "fzf",
+      "dnf": "fzf",
+      "pacman": "fzf",
+      "winget": "junegunn.fzf",
+      "scoop": "fzf",
+      "choco": "fzf"
+    },
+    "gawk": {
+      "brew": "gawk",
+      "apt": "gawk",
+      "dnf": "gawk",
+      "pacman": "gawk"
+    },
+    "gcc": {
+      "brew": "gcc",
+      "apt": "gcc",
+      "dnf": "gcc",
+      "pacman": "gcc"
+    },
+    "gh": {
+      "brew": "gh",
+      "apt": "gh",
+      "dnf": "gh",
+      "pacman": "gh",
+      "winget": "GitHub.cli",
+      "scoop": "gh",
+      "choco": "gh"
+    },
+    "gimp": {
+      "brewCask": "gimp",
+      "winget": "GIMP.GIMP.3",
+      "scoop": "extras/gimp",
+      "choco": "gimp",
+      "apt": "gimp",
+      "dnf": "gimp",
+      "pacman": "gimp"
     },
     "git": {
       "brew": "git",
@@ -19,6 +308,419 @@
       "dnf": "git",
       "pacman": "git"
     },
+    "git-lfs": {
+      "brew": "git-lfs",
+      "apt": "git-lfs",
+      "dnf": "git-lfs",
+      "pacman": "git-lfs",
+      "winget": "GitHub.GitLFS",
+      "scoop": "git-lfs",
+      "choco": "git-lfs"
+    },
+    "glab": {
+      "brew": "glab",
+      "winget": "GLab.GLab",
+      "scoop": "glab"
+    },
+    "glances": {
+      "brew": "glances",
+      "apt": "glances",
+      "dnf": "glances",
+      "pacman": "glances"
+    },
+    "gnu-sed": {
+      "brew": "gnu-sed"
+    },
+    "gnu-tar": {
+      "brew": "gnu-tar"
+    },
+    "gnupg": {
+      "brew": "gnupg",
+      "apt": "gnupg",
+      "dnf": "gnupg2",
+      "pacman": "gnupg"
+    },
+    "go": {
+      "brew": "go",
+      "apt": "golang",
+      "dnf": "golang",
+      "pacman": "go",
+      "winget": "GoLang.Go",
+      "scoop": "go",
+      "choco": "golang"
+    },
+    "google-chrome": {
+      "brewCask": "google-chrome",
+      "winget": "Google.Chrome",
+      "scoop": "extras/googlechrome",
+      "choco": "googlechrome"
+    },
+    "graphviz": {
+      "brew": "graphviz",
+      "apt": "graphviz",
+      "dnf": "graphviz",
+      "pacman": "graphviz",
+      "winget": "Graphviz.Graphviz",
+      "scoop": "graphviz",
+      "choco": "graphviz"
+    },
+    "grep": {
+      "brew": "grep",
+      "apt": "grep",
+      "dnf": "grep",
+      "pacman": "grep"
+    },
+    "gzip": {
+      "brew": "gzip",
+      "apt": "gzip",
+      "dnf": "gzip",
+      "pacman": "gzip"
+    },
+    "helm": {
+      "brew": "helm",
+      "winget": "Helm.Helm",
+      "scoop": "helm",
+      "choco": "kubernetes-helm"
+    },
+    "htop": {
+      "brew": "htop",
+      "apt": "htop",
+      "dnf": "htop",
+      "pacman": "htop"
+    },
+    "httpie": {
+      "brew": "httpie",
+      "apt": "httpie",
+      "dnf": "httpie",
+      "pacman": "httpie"
+    },
+    "hugo": {
+      "brew": "hugo",
+      "apt": "hugo",
+      "dnf": "hugo",
+      "pacman": "hugo",
+      "winget": "Hugo.Hugo.Extended",
+      "scoop": "hugo",
+      "choco": "hugo-extended"
+    },
+    "hyperfine": {
+      "brew": "hyperfine",
+      "apt": "hyperfine",
+      "dnf": "hyperfine",
+      "pacman": "hyperfine",
+      "winget": "sharkdp.hyperfine",
+      "scoop": "hyperfine"
+    },
+    "imagemagick": {
+      "brew": "imagemagick",
+      "apt": "imagemagick",
+      "dnf": "imagemagick",
+      "pacman": "imagemagick"
+    },
+    "inkscape": {
+      "brewCask": "inkscape",
+      "winget": "Inkscape.Inkscape",
+      "scoop": "extras/inkscape",
+      "choco": "inkscape",
+      "apt": "inkscape",
+      "dnf": "inkscape",
+      "pacman": "inkscape"
+    },
+    "iperf3": {
+      "brew": "iperf3",
+      "apt": "iperf3",
+      "dnf": "iperf3",
+      "pacman": "iperf3"
+    },
+    "iterm2": {
+      "brewCask": "iterm2"
+    },
+    "jq": {
+      "brew": "jq",
+      "apt": "jq",
+      "dnf": "jq",
+      "pacman": "jq",
+      "winget": "jqlang.jq",
+      "scoop": "jq",
+      "choco": "jq"
+    },
+    "just": {
+      "brew": "just",
+      "apt": "just",
+      "dnf": "just",
+      "pacman": "just",
+      "winget": "Casey.Just",
+      "scoop": "just",
+      "choco": "just"
+    },
+    "keepassxc": {
+      "brewCask": "keepassxc",
+      "winget": "KeePassXCTeam.KeePassXC",
+      "scoop": "extras/keepassxc",
+      "choco": "keepassxc",
+      "apt": "keepassxc",
+      "dnf": "keepassxc",
+      "pacman": "keepassxc"
+    },
+    "kitty": {
+      "brewCask": "kitty",
+      "apt": "kitty",
+      "dnf": "kitty",
+      "pacman": "kitty"
+    },
+    "lazygit": {
+      "brew": "lazygit",
+      "winget": "JesseDuffield.lazygit",
+      "scoop": "lazygit",
+      "choco": "lazygit"
+    },
+    "less": {
+      "brew": "less",
+      "apt": "less",
+      "dnf": "less",
+      "pacman": "less"
+    },
+    "lftp": {
+      "brew": "lftp",
+      "apt": "lftp",
+      "dnf": "lftp",
+      "pacman": "lftp"
+    },
+    "libreoffice": {
+      "brewCask": "libreoffice",
+      "winget": "TheDocumentFoundation.LibreOffice",
+      "scoop": "extras/libreoffice",
+      "choco": "libreoffice-fresh",
+      "apt": "libreoffice",
+      "dnf": "libreoffice",
+      "pacman": "libreoffice"
+    },
+    "llvm": {
+      "brew": "llvm",
+      "apt": "llvm",
+      "dnf": "llvm",
+      "pacman": "llvm"
+    },
+    "lsof": {
+      "brew": "lsof",
+      "apt": "lsof",
+      "dnf": "lsof",
+      "pacman": "lsof"
+    },
+    "lua": {
+      "brew": "lua",
+      "apt": "lua5.4",
+      "dnf": "lua",
+      "pacman": "lua"
+    },
+    "luarocks": {
+      "brew": "luarocks",
+      "apt": "luarocks",
+      "dnf": "luarocks",
+      "pacman": "luarocks"
+    },
+    "make": {
+      "brew": "make",
+      "apt": "make",
+      "dnf": "make",
+      "pacman": "make",
+      "scoop": "make",
+      "choco": "make"
+    },
+    "maven": {
+      "brew": "maven",
+      "apt": "maven",
+      "dnf": "maven",
+      "pacman": "maven",
+      "winget": "Apache.Maven",
+      "scoop": "maven",
+      "choco": "maven"
+    },
+    "meld": {
+      "brewCask": "meld",
+      "winget": "Meld.Meld",
+      "scoop": "extras/meld",
+      "choco": "meld",
+      "apt": "meld",
+      "dnf": "meld",
+      "pacman": "meld"
+    },
+    "meson": {
+      "brew": "meson",
+      "apt": "meson",
+      "dnf": "meson",
+      "pacman": "meson"
+    },
+    "minikube": {
+      "brew": "minikube"
+    },
+    "mise": {
+      "brew": "mise"
+    },
+    "mosh": {
+      "brew": "mosh",
+      "apt": "mosh",
+      "dnf": "mosh",
+      "pacman": "mosh"
+    },
+    "nano": {
+      "brew": "nano",
+      "apt": "nano",
+      "dnf": "nano",
+      "pacman": "nano"
+    },
+    "ncdu": {
+      "brew": "ncdu",
+      "apt": "ncdu",
+      "dnf": "ncdu",
+      "pacman": "ncdu"
+    },
+    "neovim": {
+      "brew": "neovim",
+      "apt": "neovim",
+      "dnf": "neovim",
+      "pacman": "neovim",
+      "winget": "Neovim.Neovim",
+      "scoop": "neovim",
+      "choco": "neovim"
+    },
+    "ninja": {
+      "brew": "ninja",
+      "apt": "ninja",
+      "dnf": "ninja",
+      "pacman": "ninja",
+      "winget": "Ninja-build.Ninja",
+      "scoop": "ninja",
+      "choco": "ninja"
+    },
+    "nmap": {
+      "brew": "nmap",
+      "apt": "nmap",
+      "dnf": "nmap",
+      "pacman": "nmap",
+      "winget": "Insecure.Nmap",
+      "scoop": "nmap",
+      "choco": "nmap"
+    },
+    "node": {
+      "brew": "node",
+      "apt": "node",
+      "dnf": "node",
+      "pacman": "node",
+      "winget": "OpenJS.NodeJS",
+      "scoop": "nodejs",
+      "choco": "nodejs"
+    },
+    "nushell": {
+      "brew": "nushell",
+      "pacman": "nushell",
+      "winget": "Nushell.Nushell",
+      "scoop": "nu",
+      "choco": "nushell"
+    },
+    "obs": {
+      "brewCask": "obs",
+      "winget": "OBSProject.OBSStudio",
+      "scoop": "extras/obs-studio",
+      "choco": "obs-studio",
+      "apt": "obs-studio",
+      "dnf": "obs-studio",
+      "pacman": "obs-studio"
+    },
+    "obsidian": {
+      "brewCask": "obsidian",
+      "winget": "Obsidian.Obsidian",
+      "scoop": "extras/obsidian",
+      "choco": "obsidian"
+    },
+    "openssh": {
+      "brew": "openssh",
+      "apt": "openssh",
+      "dnf": "openssh",
+      "pacman": "openssh"
+    },
+    "openssl-3": {
+      "brew": "openssl@3"
+    },
+    "p7zip": {
+      "brew": "p7zip"
+    },
+    "pandoc": {
+      "brew": "pandoc",
+      "apt": "pandoc",
+      "dnf": "pandoc",
+      "pacman": "pandoc",
+      "winget": "JohnMacFarlane.Pandoc",
+      "scoop": "pandoc",
+      "choco": "pandoc"
+    },
+    "parallel": {
+      "brew": "parallel",
+      "apt": "parallel",
+      "dnf": "parallel",
+      "pacman": "parallel"
+    },
+    "pigz": {
+      "brew": "pigz",
+      "apt": "pigz",
+      "dnf": "pigz",
+      "pacman": "pigz"
+    },
+    "pipx": {
+      "brew": "pipx",
+      "apt": "pipx",
+      "dnf": "pipx",
+      "pacman": "pipx"
+    },
+    "pkgconf": {
+      "brew": "pkgconf",
+      "apt": "pkgconf",
+      "dnf": "pkgconf",
+      "pacman": "pkgconf"
+    },
+    "pnpm": {
+      "brew": "pnpm",
+      "winget": "pnpm.pnpm",
+      "scoop": "pnpm",
+      "choco": "pnpm"
+    },
+    "poetry": {
+      "brew": "poetry",
+      "apt": "poetry",
+      "dnf": "poetry",
+      "pacman": "poetry"
+    },
+    "postman": {
+      "brewCask": "postman",
+      "winget": "Postman.Postman",
+      "scoop": "extras/postman",
+      "choco": "postman"
+    },
+    "procs": {
+      "brew": "procs",
+      "pacman": "procs"
+    },
+    "protobuf": {
+      "brew": "protobuf",
+      "apt": "protobuf-compiler",
+      "dnf": "protobuf-compiler",
+      "pacman": "protobuf"
+    },
+    "pv": {
+      "brew": "pv",
+      "apt": "pv",
+      "dnf": "pv",
+      "pacman": "pv"
+    },
+    "rclone": {
+      "brew": "rclone",
+      "apt": "rclone",
+      "dnf": "rclone",
+      "pacman": "rclone",
+      "winget": "Rclone.Rclone",
+      "scoop": "rclone",
+      "choco": "rclone"
+    },
     "rectangle": {
       "brewCask": "rectangle",
       "winget": null,
@@ -28,6 +730,21 @@
       "dnf": null,
       "pacman": null
     },
+    "redis": {
+      "brew": "redis",
+      "apt": "redis",
+      "dnf": "redis",
+      "pacman": "redis"
+    },
+    "restic": {
+      "brew": "restic",
+      "apt": "restic",
+      "dnf": "restic",
+      "pacman": "restic",
+      "winget": "restic.restic",
+      "scoop": "restic",
+      "choco": "restic"
+    },
     "ripgrep": {
       "brew": "ripgrep",
       "winget": "BurntSushi.ripgrep.MSVC",
@@ -36,6 +753,270 @@
       "apt": "ripgrep",
       "dnf": "ripgrep",
       "pacman": "ripgrep"
+    },
+    "rsync": {
+      "brew": "rsync",
+      "apt": "rsync",
+      "dnf": "rsync",
+      "pacman": "rsync"
+    },
+    "ruby": {
+      "brew": "ruby",
+      "apt": "ruby",
+      "dnf": "ruby",
+      "pacman": "ruby"
+    },
+    "rust": {
+      "brew": "rust",
+      "apt": "rustc",
+      "dnf": "rust",
+      "pacman": "rust"
+    },
+    "scc": {
+      "brew": "scc",
+      "pacman": "scc"
+    },
+    "shellcheck": {
+      "brew": "shellcheck",
+      "apt": "shellcheck",
+      "dnf": "shellcheck",
+      "pacman": "shellcheck",
+      "winget": "koalaman.shellcheck",
+      "scoop": "shellcheck",
+      "choco": "shellcheck"
+    },
+    "shfmt": {
+      "brew": "shfmt",
+      "apt": "shfmt",
+      "dnf": "shfmt",
+      "pacman": "shfmt",
+      "winget": "mvdan.shfmt",
+      "scoop": "shfmt",
+      "choco": "shfmt"
+    },
+    "signal": {
+      "brewCask": "signal",
+      "winget": "OpenWhisperSystems.Signal",
+      "scoop": "extras/signal",
+      "choco": "signal"
+    },
+    "sl": {
+      "brew": "sl",
+      "apt": "sl",
+      "dnf": "sl",
+      "pacman": "sl"
+    },
+    "slack": {
+      "brewCask": "slack",
+      "winget": "SlackTechnologies.Slack",
+      "scoop": "extras/slack",
+      "choco": "slack"
+    },
+    "spotify": {
+      "brewCask": "spotify",
+      "winget": "Spotify.Spotify",
+      "scoop": "extras/spotify",
+      "choco": "spotify"
+    },
+    "sqlite": {
+      "brew": "sqlite",
+      "apt": "sqlite3",
+      "dnf": "sqlite",
+      "pacman": "sqlite"
+    },
+    "starship": {
+      "brew": "starship",
+      "apt": "starship",
+      "dnf": "starship",
+      "pacman": "starship",
+      "winget": "Starship.Starship",
+      "scoop": "starship",
+      "choco": "starship"
+    },
+    "stow": {
+      "brew": "stow",
+      "apt": "stow",
+      "dnf": "stow",
+      "pacman": "stow"
+    },
+    "sublime-text": {
+      "brewCask": "sublime-text",
+      "winget": "SublimeHQ.SublimeText.4",
+      "scoop": "extras/sublime-text",
+      "choco": "sublimetext4"
+    },
+    "syncthing": {
+      "brew": "syncthing",
+      "apt": "syncthing",
+      "dnf": "syncthing",
+      "pacman": "syncthing",
+      "winget": "Syncthing.Syncthing",
+      "scoop": "syncthing",
+      "choco": "syncthing"
+    },
+    "task": {
+      "brew": "task",
+      "apt": "task",
+      "dnf": "task",
+      "pacman": "task"
+    },
+    "telegram": {
+      "brewCask": "telegram",
+      "winget": "Telegram.TelegramDesktop",
+      "scoop": "extras/telegram",
+      "choco": "telegram"
+    },
+    "thunderbird": {
+      "brewCask": "thunderbird",
+      "winget": "Mozilla.Thunderbird",
+      "scoop": "extras/thunderbird",
+      "choco": "thunderbird",
+      "apt": "thunderbird",
+      "dnf": "thunderbird",
+      "pacman": "thunderbird"
+    },
+    "tig": {
+      "brew": "tig",
+      "apt": "tig",
+      "dnf": "tig",
+      "pacman": "tig"
+    },
+    "tmux": {
+      "brew": "tmux",
+      "apt": "tmux",
+      "dnf": "tmux",
+      "pacman": "tmux"
+    },
+    "transmission": {
+      "brewCask": "transmission",
+      "winget": "Transmission.Transmission",
+      "scoop": "extras/transmission",
+      "choco": "transmission",
+      "apt": "transmission",
+      "dnf": "transmission",
+      "pacman": "transmission"
+    },
+    "tree": {
+      "brew": "tree",
+      "apt": "tree",
+      "dnf": "tree",
+      "pacman": "tree"
+    },
+    "unzip": {
+      "brew": "unzip",
+      "apt": "unzip",
+      "dnf": "unzip",
+      "pacman": "unzip"
+    },
+    "uv": {
+      "brew": "uv",
+      "winget": "astral-sh.uv",
+      "scoop": "uv",
+      "choco": "uv"
+    },
+    "vim": {
+      "brew": "vim",
+      "apt": "vim",
+      "dnf": "vim",
+      "pacman": "vim",
+      "winget": "vim.vim",
+      "scoop": "vim",
+      "choco": "vim"
+    },
+    "visual-studio-code": {
+      "brewCask": "visual-studio-code",
+      "winget": "Microsoft.VisualStudioCode",
+      "scoop": "extras/vscode",
+      "choco": "vscode"
+    },
+    "vlc": {
+      "brewCask": "vlc",
+      "winget": "VideoLAN.VLC",
+      "scoop": "extras/vlc",
+      "choco": "vlc",
+      "apt": "vlc",
+      "dnf": "vlc",
+      "pacman": "vlc"
+    },
+    "vscodium": {
+      "brewCask": "vscodium",
+      "winget": "VSCodium.VSCodium",
+      "scoop": "extras/vscodium",
+      "choco": "vscodium"
+    },
+    "watch": {
+      "brew": "watch",
+      "apt": "watch",
+      "dnf": "watch",
+      "pacman": "watch"
+    },
+    "watchexec": {
+      "brew": "watchexec",
+      "pacman": "watchexec"
+    },
+    "wezterm": {
+      "brewCask": "wezterm",
+      "winget": "wez.wezterm",
+      "scoop": "extras/wezterm"
+    },
+    "wget": {
+      "brew": "wget",
+      "apt": "wget",
+      "dnf": "wget",
+      "pacman": "wget",
+      "scoop": "wget",
+      "choco": "wget"
+    },
+    "xz": {
+      "brew": "xz",
+      "apt": "xz",
+      "dnf": "xz",
+      "pacman": "xz"
+    },
+    "yazi": {
+      "brew": "yazi",
+      "winget": "sxyazi.yazi",
+      "scoop": "yazi"
+    },
+    "yq": {
+      "brew": "yq",
+      "pacman": "yq"
+    },
+    "yt-dlp": {
+      "brew": "yt-dlp",
+      "apt": "yt-dlp",
+      "dnf": "yt-dlp",
+      "pacman": "yt-dlp",
+      "winget": "yt-dlp.yt-dlp",
+      "scoop": "yt-dlp",
+      "choco": "yt-dlp"
+    },
+    "zotero": {
+      "brewCask": "zotero",
+      "winget": "DigitalScholar.Zotero",
+      "scoop": "extras/zotero",
+      "choco": "zotero"
+    },
+    "zoxide": {
+      "brew": "zoxide",
+      "apt": "zoxide",
+      "dnf": "zoxide",
+      "pacman": "zoxide",
+      "winget": "ajeetdsouza.zoxide",
+      "scoop": "zoxide",
+      "choco": "zoxide"
+    },
+    "zsh": {
+      "brew": "zsh",
+      "apt": "zsh",
+      "dnf": "zsh",
+      "pacman": "zsh"
+    },
+    "zstd": {
+      "brew": "zstd",
+      "apt": "zstd",
+      "dnf": "zstd",
+      "pacman": "zstd"
     }
   }
 }
