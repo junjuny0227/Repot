@@ -1,7 +1,7 @@
 # Repot MVP 설계
 
 - 작성일: 2026-11-02
-- 상태: 확정 (구현 계획 `docs/plans/2026-11-02-0[1-5]-*.md`에서 바뀐 결정 반영)
+- 상태: 확정 (구현 계획 `docs/plans/2026-11-02-0[1-5]-*.md`, 계획 6·7(`docs/plans/2026-11-03-0[6-7]-*.md`)에서 바뀐 결정 반영)
 
 ## 1. 개요
 
@@ -73,7 +73,7 @@ Repot/
 │           ├── env.rs            # 명령 실행·파일 읽기 추상화
 │           ├── scan.rs           # Provider 병렬 실행, 타임아웃, 결과 취합
 │           ├── availability.rs   # 목적지 OS 기준 항목 사용 가능 여부 판정
-│           ├── catalog.rs        # 내장 설명 데이터 (도구·설정 파일 설명, 영어 한 문장)
+│           ├── catalog.rs        # 내장 설명 데이터 (안정된 id + 영어 한 문장)
 │           ├── providers/        # 도구별 스캐너, 도구 하나당 파일 하나
 │           ├── secrets.rs        # 비밀정보 감지·마스킹
 │           └── export/
@@ -83,14 +83,14 @@ Repot/
 └── apps/
     ├── desktop/
     │   ├── src-tauri/            # Tauri 명령: core를 호출하는 얇은 층
-    │   └── src/                  # React + TypeScript + Vite
-    └── site/                     # 정적 제품 사이트 (GitHub Pages, 계획 6)
+    │   └── src/                  # React + TypeScript + Vite, locales/<locale>.json (계획 7)
+    └── site/                     # 정적 제품 사이트 (GitHub Pages, 계획 6), 로캘별 페이지 (계획 7)
 ```
 
 ### 계층 경계
 
 - `core`는 Tauri, UI를 모른다. 단위 테스트와 향후 CLI 재사용이 가능하다.
-- `core`는 사람이 읽는 문장을 만들지 않는다. Finding과 판정 이유는 구조화된 데이터로 돌려주고 UI가 문장으로 바꾼다. 예외는 `catalog`의 내장 설명(영어 한 문장)뿐이다.
+- `core`는 사람이 읽는 문장을 만들지 않는다. Finding과 판정 이유는 구조화된 데이터로 돌려주고 UI가 문장으로 바꾼다. 예외는 `catalog`의 내장 설명(영어 한 문장)뿐이다. 내장 설명에는 안정된 id(`runtime:node`, `file:zshrc` …)가 있어 `Item.catalog_id`로 함께 넘기고, UI는 이 id로 번역을 찾는다. 번역이 없으면 core의 영어 문장(`Item.description`)을 그대로 보여준다.
 - `src-tauri`는 `core` 호출, 직렬화, 진행 이벤트 전달만 한다.
 - 프론트엔드에는 **shell 권한을 주지 않는다.** 모든 명령 실행은 Rust 쪽에서만 일어난다. 프론트엔드 권한은 저장 위치 선택 대화상자(`core:default`, `dialog:allow-open`)뿐이다.
 
@@ -122,7 +122,8 @@ pub struct Item {
     pub category: Category,
     pub name: String,
     pub version: Option<String>,
-    pub description: Option<String>,
+    pub description: Option<String>,  // 로컬 도구가 준 설명 또는 catalog 영어 문장
+    pub catalog_id: Option<String>,   // 설명이 catalog에서 왔을 때 그 id (UI 번역 키)
     pub origin: Origin,             // Command(String) | Path(PathBuf): 어떤 명령/경로에서 얻었는지
     pub portability: Portability,
     pub details: ItemDetails,       // 종류별 정보. 복원에 필요한 정보는 모두 여기에 담는다
@@ -285,7 +286,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - 선택된 항목 중 목적지 OS에서 사용할 수 없는 항목은 내보내지 않는다.
 - 스크립트·매니페스트에 들어가는 값(패키지 이름, 런타임 버전, 확장 ID, URL)은 허용 패턴(`^[A-Za-z0-9@._+/:-]+$`)에 맞아야 한다. 패키지·전역 패키지·확장은 최신 버전으로 설치하므로 스캔한 버전은 검사하지 않는다(예: brew cask 버전의 쉼표). 맞지 않으면 내보내지 않고 경고한다. 렌더러는 모든 값을 셸 규칙에 맞게 따옴표로 감싼다.
 - 설정 파일 내용은 스크립트에 넣지 않고 `files/` 아래에만 둔다.
-- 생성 파일(스크립트 출력 문구, README)은 영어로 쓴다. 오픈소스 배포물이라 UI 언어와 별개로 통일한다.
+- 생성 파일(스크립트 출력 문구, 매니페스트, README)은 영어로 쓴다. 터미널에서 읽는 배포물이라 UI 언어와 상관없이 통일하고, 내보내기 명령은 로캘을 받지 않는다.
 - 스크립트 종료 코드는 실패한 단계가 하나라도 있으면 1, 아니면 0이다.
 
 ### Step
@@ -355,7 +356,12 @@ repot-export-2026-11-02/
 ## 11. UI
 
 - 스택: React + TypeScript + Vite. 상태는 React 내장 기능(`useReducer`, Context)으로 시작한다. UI 라이브러리(컴포넌트 킷, 상태 관리 라이브러리)는 쓰지 않는다.
-- UI 문구는 `src/strings.ts` 한 파일에 모은다. MVP는 영어이고, 다른 언어는 이 파일만 바꾸면 되게 한다.
+- 다국어 UI(계획 7): 영어(원본), 한국어(`ko`), 일본어(`ja`), 중국어 간체(`zh-Hans`). i18n 라이브러리 없이 로캘마다 JSON 파일 하나(`src/locales/<locale>.json`)에 메시지를 두고, 타입은 `en.json`에서 끌어낸다. 자리표시자는 `{name}`, 복수형은 `Intl.PluralRules` 범주를 키로 쓰는 객체, 숫자는 `Intl.NumberFormat`. 문장 조각을 이어 붙이지 않고 문장 전체를 메시지 하나로 둔다. 언어를 더하는 일은 JSON 파일 하나와 로캘 목록 한 줄이다.
+- 화면 컴포넌트는 `src/strings.ts`의 함수와 `S`로 문구를 얻고, `strings.ts`가 현재 로캘 메시지를 읽는다.
+- 로캘 결정: 앱에서 고른 언어(`localStorage`) > `navigator.languages`에서 처음 맞는 언어 > 영어. `ko*` → 한국어, `ja*` → 일본어, 간체 문자권 중국어(`zh`, `zh-CN`, `zh-SG`, `zh-Hans-*`) → 중국어 간체. 번체(`zh-TW`, `zh-HK`, `zh-Hant-*`)는 아직 지원하지 않아 맞는 언어로 치지 않는다. 고른 로캘은 `<html lang>`에 쓴다.
+- 언어 선택은 시작 화면 아래와 검토 화면 사이드바 맨 아래의 팝업 버튼이다. 각 언어 이름은 그 언어로 쓴다.
+- 영어로 남는 것: 내보내는 파일(§10), 로컬 도구가 준 패키지 설명, Provider 실패 메시지와 stderr 원문, 앱 이름과 도구·파일 이름, 실행 명령.
+- 글꼴은 시스템 글꼴만 쓴다. `:lang()`별로 macOS(Apple SD Gothic Neo, Hiragino, PingFang SC)와 Windows·Linux(Malgun Gothic, Yu Gothic UI, Microsoft YaHei UI, Noto Sans CJK) 글꼴을 고른다.
 - 화면 4개: 시작, 스캔 진행, 검토, 내보내기(+완료).
 - 디자인: macOS 기본 앱(시스템 설정·Finder) 스타일. 시스템 색·글꼴·컨트롤 모양을 따르고 다크 모드를 지원한다. macOS에서는 제목 표시줄을 콘텐츠와 합치고(overlay) 사이드바에 시스템 반투명 재질을 쓴다(`tauri.macos.conf.json`). Windows·Linux는 같은 배치를 불투명 배경과 기본 제목 표시줄로 보여준다. 투명도 줄이기 설정에서도 불투명으로 바뀐다.
 
@@ -404,6 +410,7 @@ repot-export-2026-11-02/
 - 코드 서명이 없으므로 README에 첫 실행 방법(macOS "확인 없이 열기", Windows "추가 정보 → 실행")을 안내한다.
 - 라이선스: Apache-2.0 (저장소의 `LICENSE`)
 - 제품 사이트: `apps/site`의 정적 페이지를 GitHub Pages(`https://junjuny0227.github.io/Repot/`)에 올린다. 다운로드 링크는 빌드 시점에 앱 버전으로 만든 릴리스 자산 URL이고, 사이트도 런타임 네트워크 호출을 하지 않는다. (계획 6)
+- 사이트는 로캘마다 정적 페이지가 있다: `/Repot/`(영어), `/Repot/ko/`, `/Repot/ja/`, `/Repot/zh-Hans/`. 각 페이지는 맞는 `lang`, 번역된 제목·설명, canonical, hreflang 대체 링크와 `x-default`를 가진다. 자동 리디렉션은 하지 않고, `/Repot/`에 처음 왔을 때 브라우저가 다른 지원 언어를 원하면 닫을 수 있는 제안만 보여준다. (계획 7)
 
 ## 15. 알려진 한계
 
