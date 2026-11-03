@@ -1,0 +1,14 @@
+/* The app's macOS palette is the single source of truth; the site adds a web type scale. */
+@import "../../../desktop/src/styles/tokens.css";
+
+:root {
+  --site-body: 17px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--site-body);
+  color: var(--label);
+  background-color: var(--window);
+}
