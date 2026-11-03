@@ -203,6 +203,34 @@ importers:
         specifier: latest
         version: 5.0.5(vite@8.3.5)
 
+  apps/site:
+    dependencies:
+      react:
+        specifier: latest
+        version: 19.3.1
+      react-dom:
+        specifier: latest
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: latest
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: latest
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: latest
+        version: 6.1.2(vite@8.3.5)
+      typescript:
+        specifier: latest
+        version: 7.0.2
+      vite:
+        specifier: latest
+        version: 8.3.5
+      vitest:
+        specifier: latest
+        version: 5.0.5(vite@8.3.5)
+
 packages:
 
   '@jridgewell/resolve-uri@3.1.2':
