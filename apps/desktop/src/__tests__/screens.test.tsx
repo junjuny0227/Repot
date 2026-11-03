@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { initialState, reducer, type State } from "../state";
-import { S, categoryLabel, findingText, originText, osLabel, nextSteps, reasonText, statusText, warningText, withCount } from "../strings";
+import { S, categoryLabel, findingText, mappedTo, originText, osLabel, nextSteps, reasonText, statusText, warningText, withCount } from "../strings";
 import type { AvailabilityMap, ExportBundle, ScanResult } from "../types";
 import { StartScreen } from "../screens/StartScreen";
 import { ScanScreen } from "../screens/ScanScreen";
@@ -45,8 +45,8 @@ const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
 
-function reviewState(target: "macOs" | "windows"): State {
-  const s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "setTarget", target });
+function reviewState(target: "macOs" | "windows", source: "macOs" | "windows" = "macOs"): State {
+  const s = reducer(reducer(initialState, { type: "init", source }), { type: "setTarget", target });
   return reducer(s, { type: "scanFinished", scan, avail: target === "macOs" ? availMac : availWin });
 }
 const row = (html: string, id: string): string => html.match(new RegExp(`<li[^>]*data-id="${id}"[^>]*>(.*?)</li>`))?.[1] ?? "";
@@ -63,6 +63,50 @@ test("review marks unavailable and secret items and keeps them unchecked on anot
   expect(row(html, "npm:typescript")).toMatch(/checked=""/);
   expect(row(html, "npm:typescript")).toContain("Typed JavaScript tooling");
   expect(nextButton(html)).not.toContain("disabled");
+});
+
+const packagePicker = (html: string): string => html.match(/<label class="popup-field package-field[^"]*">.*?<\/label>/)?.[0] ?? "";
+
+test("review offers the Windows package manager only when moving to Windows from another OS", () => {
+  const html = packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows")} dispatch={noop} />));
+  expect(html).toContain(S.packageManager);
+  expect(html).toMatch(/<option value="winget" selected="">winget<\/option><option value="scoop">Scoop<\/option><option value="choco">Chocolatey<\/option>/);
+  const scoop = reducer(reviewState("windows"), { type: "setPackages", packages: "scoop", avail: availWin });
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={scoop} dispatch={noop} />))).toMatch(/<option value="scoop" selected="">/);
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("macOs")} dispatch={noop} />))).toBe("");
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows", "windows")} dispatch={noop} />))).toBe("");
+});
+
+test("mapped packages show the destination name in the list and the mapping in the detail panel", () => {
+  const s = reviewState("windows");
+  const html = renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} />);
+  const ripgrep = row(html, "brew:formula:ripgrep");
+  expect(ripgrep).toMatch(/<span class="item-mapped"[^>]*>→ BurntSushi\.ripgrep\.MSVC<\/span>/);
+  expect(ripgrep).toContain(`title="${mappedTo("winget", "BurntSushi.ripgrep.MSVC")}"`);
+  expect(row(html, "brew:cask:rectangle")).not.toContain("item-mapped");
+  expect(row(renderToStaticMarkup(<ReviewScreen state={reviewState("macOs")} dispatch={noop} />), "brew:formula:ripgrep")).not.toContain("item-mapped");
+
+  const item = scan.items.find((i) => i.id === "brew:formula:ripgrep")!;
+  const detail = renderToStaticMarkup(<DetailPanel item={item} state={s} dispatch={noop} />);
+  expect(detail.replace(/<[^>]+>/g, "")).toContain("brew ripgrep → winget BurntSushi.ripgrep.MSVC");
+  expect(detail).toContain(S.mappingNote);
+  expect(detail).toMatch(/class="availability ok"/);
+  const same = renderToStaticMarkup(<DetailPanel item={item} state={reviewState("macOs")} dispatch={noop} />);
+  expect(same).not.toContain(S.mappingNote);
+  expect(same).not.toContain("→");
+});
+
+test("unavailable packages say whether the map lacks them or the manager has none", () => {
+  const rectangle = scan.items.find((i) => i.id === "brew:cask:rectangle")!;
+  const s = reviewState("windows");
+  const confirmed = renderToStaticMarkup(<DetailPanel item={rectangle} state={s} dispatch={noop} />);
+  expect(confirmed).toContain(reasonText({ noPackageInManager: { manager: "winget" } }));
+  expect(confirmed).not.toContain(S.mappingNote);
+  const unknown = reducer(s, { type: "setPackages", packages: "scoop", avail: { ...s.avail, [rectangle.id]: { unavailable: { notInPackageMap: { manager: "scoop" } } } } });
+  // React escapes the apostrophe in "Repot's".
+  expect(renderToStaticMarkup(<DetailPanel item={rectangle} state={unknown} dispatch={noop} />)).toContain(reasonText({ notInPackageMap: { manager: "scoop" } }).replace(/'/g, "&#x27;"));
+  expect(reasonText({ notInPackageMap: { manager: "scoop" } })).not.toBe(reasonText({ noPackageInManager: { manager: "scoop" } }));
+  expect(reasonText("noPackageManager")).toBe("Unavailable: the destination OS has no supported package manager.");
 });
 
 test("items without a description say so", () => {

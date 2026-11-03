@@ -1,7 +1,7 @@
 import type { Dispatch } from "react";
-import { isAvailable, type Filter } from "../../logic";
+import { isAvailable, mapping, type Filter } from "../../logic";
 import type { Action, State } from "../../state";
-import { S, itemDescription } from "../../strings";
+import { S, itemDescription, mappedTo } from "../../strings";
 import type { Item } from "../../types";
 import { Duplicate, Magnifier, NoSign, WarningTriangle } from "../icons";
 
@@ -48,6 +48,7 @@ export function ItemList({ items, state, dispatch, filter, onFilter, selectedId,
           <ul className="group items">
             {items.map((item) => {
               const available = isAvailable(state.avail[item.id]);
+              const mapped = mapping(state.avail[item.id]);
               return (
                 <li key={item.id} data-id={item.id} className={`item ${item.id === selectedId ? "selected" : ""} ${available ? "" : "unavailable"}`}>
                   <input
@@ -61,6 +62,7 @@ export function ItemList({ items, state, dispatch, filter, onFilter, selectedId,
                     <span className="item-title">
                       <span className="item-name">{item.name}</span>
                       {item.version !== null && <span className="item-version">{item.version}</span>}
+                      {mapped !== null && <span className="item-mapped" title={mappedTo(mapped.manager, mapped.name)}>→ {mapped.name}</span>}
                       <span className="badges">
                         {hasKind(item, "secret") && <span className="badge" role="img" title={S.badgeSecret} aria-label={S.badgeSecret}><WarningTriangle className="symbol secret" /></span>}
                         {hasKind(item, "duplicate") && <span className="badge" role="img" title={S.badgeDuplicate} aria-label={S.badgeDuplicate}><Duplicate className="symbol duplicate" /></span>}

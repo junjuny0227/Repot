@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { availabilityFor, detectOs, runScan } from "./api";
 import { initialState, reducer } from "./state";
+import { currentTarget } from "./logic";
 import { errorMessage } from "./errors";
 import { S } from "./strings";
 import { useLocale } from "./i18n";
@@ -34,7 +35,7 @@ export default function App() {
     dispatch({ type: "scanStarted" });
     try {
       const scan = await runScan((report) => dispatch({ type: "progress", report }));
-      const target = latest.current.target ?? latest.current.source;
+      const target = currentTarget(latest.current);
       if (target === null) throw new Error(S.detectingOs);
       const avail = await availabilityFor(target);
       dispatch({ type: "scanFinished", scan, avail });

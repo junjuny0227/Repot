@@ -1,9 +1,11 @@
-import type { AvailabilityMap, Category, Format, Os, ProviderReport, ScanResult } from "./types";
-import { applyTarget, initialChecked, isAvailable, revealKey, setCategory } from "./logic";
+import type { AvailabilityMap, Category, Format, Os, PackageManager, ProviderReport, ScanResult } from "./types";
+import { applyTarget, defaultTarget, initialChecked, isAvailable, revealKey, setCategory } from "./logic";
 
 export type Screen = "start" | "scanning" | "review" | "export" | "done";
 export interface State {
   screen: Screen; source: Os | null; target: Os | null;
+  /** Destination package manager; reset to the destination's default whenever the destination changes. */
+  packages: PackageManager | null;
   providers: ProviderReport[]; scan: ScanResult | null; avail: AvailabilityMap;
   checked: Set<string>; revealed: Set<string>; format: Format;
   exportedPath: string | null; error: string | null;
@@ -11,6 +13,7 @@ export interface State {
 export type Action =
   | { type: "init"; source: Os }
   | { type: "setTarget"; target: Os; avail?: AvailabilityMap }
+  | { type: "setPackages"; packages: PackageManager; avail: AvailabilityMap }
   | { type: "scanStarted" }
   | { type: "progress"; report: ProviderReport }
   | { type: "scanFinished"; scan: ScanResult; avail: AvailabilityMap }
@@ -24,7 +27,7 @@ export type Action =
   | { type: "restart" };
 
 export const initialState: State = {
-  screen: "start", source: null, target: null,
+  screen: "start", source: null, target: null, packages: null,
   providers: [], scan: null, avail: {},
   checked: new Set(), revealed: new Set(), format: "script",
   exportedPath: null, error: null,
@@ -45,11 +48,15 @@ export function reducer(prev: State, action: Action): State {
   const state = prev.error === null ? prev : { ...prev, error: null };
   switch (action.type) {
     case "init":
-      return { ...state, source: action.source, target: action.source };
-    case "setTarget":
+      return { ...state, source: action.source, target: action.source, packages: defaultTarget(action.source).packages };
+    case "setTarget": {
+      const packages = defaultTarget(action.target).packages;
       return action.avail
-        ? { ...state, target: action.target, avail: action.avail, checked: applyTarget(state.checked, action.avail) }
-        : { ...state, target: action.target };
+        ? { ...state, target: action.target, packages, avail: action.avail, checked: applyTarget(state.checked, action.avail) }
+        : { ...state, target: action.target, packages };
+    }
+    case "setPackages":
+      return { ...state, packages: action.packages, avail: action.avail, checked: applyTarget(state.checked, action.avail) };
     case "scanStarted":
       return { ...state, screen: "scanning", providers: [] };
     case "progress": {
@@ -80,6 +87,6 @@ export function reducer(prev: State, action: Action): State {
     case "exported":
       return { ...state, screen: "done", exportedPath: action.path };
     case "restart":
-      return { ...initialState, checked: new Set(), revealed: new Set(), source: state.source, target: state.target };
+      return { ...initialState, checked: new Set(), revealed: new Set(), source: state.source, target: state.target, packages: state.packages };
   }
 }

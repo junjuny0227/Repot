@@ -1,0 +1,20 @@
+import { beforeEach, expect, test, vi } from "vitest";
+
+const invoke = vi.fn(async () => ({}));
+vi.mock("@tauri-apps/api/core", () => ({ invoke }));
+const { availabilityFor, exportTo, previewExport } = await import("../api");
+
+beforeEach(() => invoke.mockClear());
+
+test("availability, preview and export send the same Target", async () => {
+  const target = { os: "windows" as const, packages: "scoop" as const };
+  const selection = { items: ["brew:formula:ripgrep"], revealSecretLines: [] };
+  await availabilityFor(target);
+  await previewExport(selection, target, "script");
+  await exportTo(selection, target, "manifest", "/tmp/out");
+  expect(invoke.mock.calls).toEqual([
+    ["availability_for", { target }],
+    ["preview_export", { selection, target, format: "script" }],
+    ["export", { selection, target, format: "manifest", parent: "/tmp/out" }],
+  ]);
+});

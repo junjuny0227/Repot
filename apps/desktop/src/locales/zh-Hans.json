@@ -50,6 +50,7 @@
     "path": "文件：{path}"
   },
   "availableOn": "可在 {os} 上使用。",
+  "mappedTo": "将通过 {manager} 安装为 {name}",
   "withCount": "{label}（{count}）",
   "selectedCount": {
     "other": "已选择 {checked} 项，共 {total} 项"
@@ -79,6 +80,7 @@
   "ui": {
     "currentOs": "这台电脑",
     "targetOs": "目标系统",
+    "packageManager": "软件包管理器",
     "scanButton": "扫描这台电脑",
     "detectingOs": "正在检测…",
     "startIntro": "Repot 会读取你的开发环境，并为新电脑生成恢复脚本或软件包列表。不会对这台电脑做任何更改。",
@@ -124,6 +126,7 @@
     "openFolder": "打开文件夹",
     "startOver": "重新开始",
     "secretLimit": "敏感信息检测基于模式匹配，可能会有遗漏。分享前请检查文件。",
+    "mappingNote": "此名称根据 Repot 内置的对照表匹配。运行恢复前请检查。",
     "language": "语言"
   },
   "updates": {

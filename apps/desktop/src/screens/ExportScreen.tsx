@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch } from "react";
 import { chooseFolder, exportTo, previewExport } from "../api";
 import { errorMessage } from "../errors";
-import { buildSelection, fileTree, warningItemId } from "../logic";
+import { buildSelection, currentTarget, fileTree, warningItemId } from "../logic";
 import type { Action, State } from "../state";
 import { S, warningText, withCount } from "../strings";
 import type { ExportBundle, Format, OutputFile } from "../types";
@@ -13,7 +13,9 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
   const [saving, setSaving] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const selection = useMemo(() => buildSelection(state.checked, state.revealed), [state.checked, state.revealed]);
-  const { target, format } = state;
+  // The same Target the review screen judged with, so the preview and the saved files match it.
+  const target = useMemo(() => currentTarget({ target: state.target, packages: state.packages }), [state.target, state.packages]);
+  const { format } = state;
 
   useEffect(() => {
     if (target === null) return;

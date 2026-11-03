@@ -1,5 +1,5 @@
 import type { Dispatch } from "react";
-import { revealKey } from "../../logic";
+import { mapping, revealKey } from "../../logic";
 import type { Action, State } from "../../state";
 import { S, availableOn, categoryLabel, findingText, itemDescription, originText, reasonText, revealSecretLine } from "../../strings";
 import type { Finding, Item } from "../../types";
@@ -17,6 +17,8 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
   if (item === null) return <aside className="detail inspector empty-state"><p className="muted">{S.selectItem}</p></aside>;
   const a = state.avail[item.id];
   const reason = a !== undefined && typeof a === "object" && "unavailable" in a ? a.unavailable : null;
+  const mapped = mapping(a);
+  const source = "package" in item.details ? item.details.package.manager : null;
   const checked = state.checked.has(item.id);
   const description = itemDescription(item);
   const hasSecret = item.findings.some((f) => typeof f.kind === "object" && "secret" in f.kind);
@@ -43,6 +45,15 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
           {reason === null ? <CheckCircle /> : <NoSign />}
           <span>{reason === null ? (state.target ? availableOn(state.target) : S.available) : reasonText(reason)}</span>
         </p>
+        {mapped !== null && (
+          <>
+            {/* Tool and package names stay as they are typed (spec §11). */}
+            <p className="mapping selectable">
+              {source !== null && <>{source} <code>{item.name}</code> → </>}{mapped.manager} <code>{mapped.name}</code>
+            </p>
+            <p className="muted note mapping-note">{S.mappingNote}</p>
+          </>
+        )}
       </section>
       <section>
         <h3 className="inspector-heading">{S.findings}</h3>

@@ -50,6 +50,7 @@
     "path": "File: {path}"
   },
   "availableOn": "Available on {os}.",
+  "mappedTo": "Installs as {name} with {manager}",
   "withCount": "{label} ({count})",
   "selectedCount": {
     "one": "{checked} of {total} item selected",
@@ -80,6 +81,7 @@
   "ui": {
     "currentOs": "This machine",
     "targetOs": "Destination OS",
+    "packageManager": "Package manager",
     "scanButton": "Scan this machine",
     "detectingOs": "Detecting…",
     "startIntro": "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",
@@ -125,6 +127,7 @@
     "openFolder": "Open folder",
     "startOver": "Start over",
     "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
+    "mappingNote": "Matched using the package map built into Repot. Check it before you run the restore.",
     "language": "Language"
   },
   "updates": {
