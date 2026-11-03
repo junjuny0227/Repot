@@ -1,0 +1,126 @@
+{
+  "category": {
+    "packageManager": "패키지",
+    "runtime": "런타임",
+    "globalPackage": "전역 패키지",
+    "editor": "에디터",
+    "git": "Git",
+    "shell": "셸"
+  },
+  "os": {
+    "linux": "Linux ({family})",
+    "linuxOther": "기타"
+  },
+  "status": {
+    "running": "스캔 중…",
+    "notDetected": "감지되지 않음",
+    "timedOut": "시간 초과(60초)",
+    "found": "{count}개 찾음"
+  },
+  "finding": {
+    "atLine": "{line}번째 줄: {text}",
+    "unreadable": "이 파일을 읽을 수 없어 내보내지 않습니다.",
+    "secret": "비밀 정보로 보입니다. 원래 값을 허용하지 않으면 가린 채 내보냅니다.",
+    "secretNamed": "{name} 값은 비밀 정보로 보입니다. 원래 값을 허용하지 않으면 가린 채 내보냅니다.",
+    "osSpecificLine": "{key} 설정은 이 OS 전용이라 다른 OS에서는 주석 처리됩니다.",
+    "duplicate": "{provider}에서도 감지되었습니다."
+  },
+  "reason": {
+    "unreadable": "사용할 수 없음: 파일을 읽을 수 없습니다.",
+    "differentOs": "사용할 수 없음: {os}에서만 작동합니다.",
+    "shellUnsupported": "사용할 수 없음: 대상 OS에서는 {shell}을(를) 쓸 수 없습니다.",
+    "noCounterpart": "사용할 수 없음: 대상 OS에는 {tool}에 대응하는 도구가 없습니다."
+  },
+  "warning": {
+    "unavailable": "{item} 항목을 건너뜁니다. {reason}",
+    "invalidValue": "{item} 항목은 스크립트에 안전하지 않은 문자가 있어 건너뜁니다.",
+    "duplicateTarget": "{item} 항목은 다른 항목과 같은 파일에 쓰게 되어 건너뜁니다.",
+    "readFailed": "{item} 항목은 파일을 읽을 수 없어 건너뜁니다."
+  },
+  "nextSteps": {
+    "readme": "이 폴더의 README.md를 열고 안내에 따라 진행하십시오.",
+    "copy": "이 폴더를 새 기기로 복사하십시오.",
+    "run": "실행: {command}"
+  },
+  "origin": {
+    "command": "감지한 명령: {command}",
+    "path": "파일: {path}"
+  },
+  "availableOn": "{os}에서 사용할 수 있습니다.",
+  "withCount": "{label} ({count})",
+  "selectedCount": {
+    "other": "{total}개 중 {checked}개 선택됨"
+  },
+  "selectCategory": "{category} 모두 선택",
+  "revealSecretLine": "{line}번째 줄을 원래 값으로 내보내기",
+  "catalog": {
+    "runtime:node": "Node.js는 브라우저 밖에서 JavaScript를 실행합니다.",
+    "runtime:python": "Python은 범용 프로그래밍 언어입니다.",
+    "runtime:rust": "Rust 툴체인은 Rust 프로그램을 컴파일하고 빌드합니다.",
+    "runtime:sdkman": "SDKMAN 후보는 JVM 생태계의 SDK나 도구입니다.",
+    "file:gitconfig": "Git 설정은 사용자 정보와 저장소 동작을 정합니다.",
+    "file:gitignore-global": "전역 Git 무시 규칙은 모든 저장소에서 파일을 제외합니다.",
+    "file:zshrc": "Zsh 설정은 대화형 셸을 내게 맞게 바꿉니다.",
+    "file:zprofile": "Zsh 프로필은 로그인 셸을 설정합니다.",
+    "file:bashrc": "Bash 설정은 대화형 셸을 내게 맞게 바꿉니다.",
+    "file:bash-profile": "Bash 프로필은 로그인 셸을 설정합니다.",
+    "file:profile": "셸 프로필은 로그인 환경을 설정합니다.",
+    "file:fish-config": "Fish 설정은 셸 환경을 내게 맞게 바꿉니다.",
+    "file:powershell-profile": "PowerShell 프로필은 셸이 시작될 때의 동작을 정합니다.",
+    "file:starship": "Starship 설정은 여러 셸에서 함께 쓰는 프롬프트를 꾸밉니다.",
+    "file:vscode-settings": "에디터 설정은 앱 동작을 내게 맞게 바꿉니다.",
+    "file:vscode-keybindings": "에디터 키 바인딩은 키보드 단축키를 내게 맞게 바꿉니다.",
+    "file:vscode-snippet": "에디터 스니펫은 다시 쓸 수 있는 코드 틀을 제공합니다.",
+    "plugin:oh-my-zsh": "oh-my-zsh 확장은 Zsh의 동작이나 모양을 바꿉니다."
+  },
+  "ui": {
+    "currentOs": "이 기기",
+    "targetOs": "대상 OS",
+    "scanButton": "이 기기 스캔",
+    "detectingOs": "감지 중…",
+    "startIntro": "Repot은 이 기기의 개발 환경을 읽어 새 기기에서 쓸 복원 스크립트나 패키지 목록으로 만듭니다. 이 기기는 전혀 바꾸지 않습니다.",
+    "scanning": "이 기기를 스캔하는 중…",
+    "scanIntro": "도구마다 따로 확인합니다. 최대 60초 걸릴 수 있습니다.",
+    "errorTitle": "문제가 발생했습니다",
+    "available": "사용 가능",
+    "reviewTitle": "옮길 항목 검토",
+    "allItems": "모든 항목",
+    "noDescription": "설명 없음",
+    "noItems": "현재 필터에 맞는 항목이 없습니다.",
+    "selectItem": "항목을 선택하면 세부 정보가 표시됩니다.",
+    "description": "설명",
+    "origin": "출처",
+    "availability": "대상 기기에서",
+    "findings": "확인할 사항",
+    "noFindings": "주의할 사항이 없습니다.",
+    "badgeSecret": "비밀 정보 포함",
+    "badgeDuplicate": "다른 도구에서도 발견됨",
+    "badgeUnavailable": "대상 OS에서 사용할 수 없음",
+    "failedDetail": "세부 정보",
+    "search": "검색",
+    "onlyAvailable": "사용 가능한 항목만",
+    "onlyWarnings": "경고가 있는 항목만",
+    "revealSecret": "원래 값으로 내보내기",
+    "notDetected": "감지되지 않음",
+    "failed": "실패",
+    "nextExport": "다음: 내보내기",
+    "exportTitle": "내보내기",
+    "format": "형식",
+    "formatScript": "복원 스크립트",
+    "formatManifest": "네이티브 매니페스트",
+    "back": "뒤로",
+    "save": "폴더 선택 후 저장",
+    "saving": "저장 중…",
+    "previewLoading": "미리보기 준비 중…",
+    "previewFailed": "미리보기를 만들 수 없습니다. 형식을 바꾸거나 이전 화면으로 돌아가 다시 시도하십시오.",
+    "previewEmpty": "만들어질 파일이 없습니다.",
+    "warningsTitle": "일부 항목은 건너뜁니다",
+    "savedTo": "저장 위치",
+    "nextStepsTitle": "다음 단계",
+    "done": "내보내기 완료",
+    "openFolder": "폴더 열기",
+    "startOver": "처음으로",
+    "secretLimit": "비밀 정보 감지는 패턴 기반이라 일부를 놓칠 수 있습니다. 공유하기 전에 파일을 검토하십시오.",
+    "language": "언어"
+  }
+}
