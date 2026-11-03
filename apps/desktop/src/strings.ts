@@ -1,5 +1,5 @@
 import { format, messages, plural, type Messages } from "./i18n";
-import type { Category, ExportWarning, Finding, Format, Origin, Os, ProviderStatus, UnavailableReason } from "./types";
+import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, ProviderStatus, UnavailableReason } from "./types";
 
 // Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
 // these functions pick the message for the active locale and fill in the values.
@@ -23,6 +23,13 @@ export function osLabel(os: Os): string {
 }
 
 export const categoryLabel = (c: Category): string => messages().category[c];
+
+/** Built-in descriptions are translated by catalog id; tool-provided ones are shown as they are. */
+export function itemDescription(item: Item): string | null {
+  const catalog: Record<string, string> = messages().catalog;
+  if (item.catalogId !== null && Object.hasOwn(catalog, item.catalogId)) return catalog[item.catalogId];
+  return item.description;
+}
 
 export function statusText(s: ProviderStatus): string {
   const m = messages().status;

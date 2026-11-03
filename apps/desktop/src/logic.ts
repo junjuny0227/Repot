@@ -1,5 +1,5 @@
 import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, Selection } from "./types";
-import { TARGET_OPTIONS } from "./strings";
+import { TARGET_OPTIONS, itemDescription } from "./strings";
 
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
 
@@ -30,7 +30,8 @@ export interface Filter { query: string; onlyAvailable: boolean; onlyWarnings: b
 export function filterItems(items: Item[], avail: AvailabilityMap, f: Filter): Item[] {
   const q = f.query.trim().toLowerCase();
   return items.filter((i) =>
-    (!q || i.name.toLowerCase().includes(q) || (i.description ?? "").toLowerCase().includes(q)) &&
+    // Search what the user sees: the description in the current language.
+    (!q || i.name.toLowerCase().includes(q) || (itemDescription(i) ?? "").toLowerCase().includes(q)) &&
     (!f.onlyAvailable || isAvailable(avail[i.id])) &&
     (!f.onlyWarnings || i.findings.length > 0));
 }

@@ -20,7 +20,7 @@ export type FindingKind =
 export interface Finding { line: number | null; kind: FindingKind }
 export interface Item {
   id: string; provider: string; category: Category; name: string;
-  version: string | null; description: string | null; origin: Origin;
+  version: string | null; description: string | null; catalogId: string | null; origin: Origin;
   portability: Portability; details: ItemDetails; findings: Finding[];
 }
 export type ProviderStatus = "running" | "notDetected" | "timedOut" | { ok: { count: number } } | { failed: { message: string; detail: string } };

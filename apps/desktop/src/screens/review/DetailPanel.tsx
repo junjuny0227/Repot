@@ -1,7 +1,7 @@
 import type { Dispatch } from "react";
 import { revealKey } from "../../logic";
 import type { Action, State } from "../../state";
-import { S, availableOn, categoryLabel, findingText, originText, reasonText, revealSecretLine } from "../../strings";
+import { S, availableOn, categoryLabel, findingText, itemDescription, originText, reasonText, revealSecretLine } from "../../strings";
 import type { Finding, Item } from "../../types";
 import { CategoryIcon, CheckCircle, Duplicate, ExclamationCircle, InfoCircle, NoSign, WarningTriangle } from "../icons";
 
@@ -18,6 +18,7 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
   const a = state.avail[item.id];
   const reason = a === undefined || a === "available" ? null : a.unavailable;
   const checked = state.checked.has(item.id);
+  const description = itemDescription(item);
   const hasSecret = item.findings.some((f) => typeof f.kind === "object" && "secret" in f.kind);
   return (
     <aside className="detail inspector">
@@ -30,7 +31,7 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
       </header>
       <section>
         <h3 className="inspector-heading">{S.description}</h3>
-        <p className={`selectable ${item.description === null ? "muted" : ""}`}>{item.description ?? S.noDescription}</p>
+        <p className={`selectable ${description === null ? "muted" : ""}`}>{description ?? S.noDescription}</p>
       </section>
       <section>
         <h3 className="inspector-heading">{S.origin}</h3>
