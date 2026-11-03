@@ -2,6 +2,9 @@
 // Placeholders are {name}; plurals are objects keyed by Intl.PluralRules categories.
 import { useSyncExternalStore } from "react";
 import en from "./locales/en.json";
+import ja from "./locales/ja.json";
+import ko from "./locales/ko.json";
+import zhHans from "./locales/zh-Hans.json";
 
 /** Plural message: one entry per CLDR category the locale uses; `other` is always required. */
 export type PluralMessage = { [K in Intl.LDMLPluralRule]?: string } & { other: string };
@@ -9,12 +12,16 @@ type Widen<T> = T extends string ? string : T extends { other: string } ? Plural
 /** Shape of every locale file. Missing keys in a locale file are a type error. */
 export type Messages = Widen<typeof en>;
 
-const MESSAGES = { en } satisfies Record<string, Messages>;
+// Adding a language: add its JSON file, import it here, and list it in LOCALES.
+const MESSAGES = { en, ko, ja, "zh-Hans": zhHans } satisfies Record<string, Messages>;
 export type Locale = keyof typeof MESSAGES;
 
 /** Each language is named in its own language so people can find theirs. */
 export const LOCALES: readonly { code: Locale; name: string }[] = [
   { code: "en", name: "English" },
+  { code: "ko", name: "한국어" },
+  { code: "ja", name: "日本語" },
+  { code: "zh-Hans", name: "简体中文" },
 ];
 
 export const STORAGE_KEY = "repot.locale";

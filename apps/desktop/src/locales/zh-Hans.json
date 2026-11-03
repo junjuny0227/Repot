@@ -1,0 +1,126 @@
+{
+  "category": {
+    "packageManager": "软件包",
+    "runtime": "运行时",
+    "globalPackage": "全局软件包",
+    "editor": "编辑器",
+    "git": "Git",
+    "shell": "Shell"
+  },
+  "os": {
+    "linux": "Linux（{family}）",
+    "linuxOther": "其他"
+  },
+  "status": {
+    "running": "正在扫描…",
+    "notDetected": "未检测到",
+    "timedOut": "超时（60 秒）",
+    "found": "找到 {count} 项"
+  },
+  "finding": {
+    "atLine": "第 {line} 行：{text}",
+    "unreadable": "无法读取此文件，因此不会导出。",
+    "secret": "疑似敏感信息。除非允许导出原始值，否则会遮盖后再导出。",
+    "secretNamed": "{name} 疑似敏感信息。除非允许导出原始值，否则会遮盖后再导出。",
+    "osSpecificLine": "{key} 仅适用于当前系统，在其他系统上会被注释掉。",
+    "duplicate": "{provider} 也检测到了此项。"
+  },
+  "reason": {
+    "unreadable": "不可用：无法读取文件。",
+    "differentOs": "不可用：仅适用于 {os}。",
+    "shellUnsupported": "不可用：目标系统不支持 {shell}。",
+    "noCounterpart": "不可用：目标系统上没有与 {tool} 对应的工具。"
+  },
+  "warning": {
+    "unavailable": "将跳过 {item}。{reason}",
+    "invalidValue": "将跳过 {item}，因为它包含在脚本中不安全的字符。",
+    "duplicateTarget": "将跳过 {item}，因为另一个项目会写入同一个文件。",
+    "readFailed": "将跳过 {item}，因为无法读取该文件。"
+  },
+  "nextSteps": {
+    "readme": "打开此文件夹中的 README.md，并按说明操作。",
+    "copy": "将此文件夹复制到新电脑。",
+    "run": "运行：{command}"
+  },
+  "origin": {
+    "command": "检测命令：{command}",
+    "path": "文件：{path}"
+  },
+  "availableOn": "可在 {os} 上使用。",
+  "withCount": "{label}（{count}）",
+  "selectedCount": {
+    "other": "已选择 {checked} 项，共 {total} 项"
+  },
+  "selectCategory": "全选“{category}”",
+  "revealSecretLine": "以原始值导出第 {line} 行",
+  "catalog": {
+    "runtime:node": "Node.js 用于在浏览器之外运行 JavaScript。",
+    "runtime:python": "Python 是一种通用编程语言。",
+    "runtime:rust": "Rust 工具链用于编译和构建 Rust 程序。",
+    "runtime:sdkman": "SDKMAN 候选项是 JVM 生态中的 SDK 或工具。",
+    "file:gitconfig": "Git 配置决定用户身份和仓库的行为。",
+    "file:gitignore-global": "全局 Git 忽略规则会在所有仓库中排除指定文件。",
+    "file:zshrc": "Zsh 配置用于自定义交互式 Shell。",
+    "file:zprofile": "Zsh profile 用于配置登录 Shell。",
+    "file:bashrc": "Bash 配置用于自定义交互式 Shell。",
+    "file:bash-profile": "Bash profile 用于配置登录 Shell。",
+    "file:profile": "Shell profile 用于配置登录环境。",
+    "file:fish-config": "Fish 配置用于自定义 Shell 环境。",
+    "file:powershell-profile": "PowerShell 配置文件用于自定义 Shell 的启动行为。",
+    "file:starship": "Starship 配置用于自定义可跨 Shell 使用的命令提示符。",
+    "file:vscode-settings": "编辑器设置用于自定义应用的行为。",
+    "file:vscode-keybindings": "编辑器键绑定用于自定义键盘快捷键。",
+    "file:vscode-snippet": "编辑器代码片段提供可复用的代码模板。",
+    "plugin:oh-my-zsh": "oh-my-zsh 扩展用于自定义 Zsh 的行为或外观。"
+  },
+  "ui": {
+    "currentOs": "这台电脑",
+    "targetOs": "目标系统",
+    "scanButton": "扫描这台电脑",
+    "detectingOs": "正在检测…",
+    "startIntro": "Repot 会读取你的开发环境，并为新电脑生成恢复脚本或软件包列表。不会对这台电脑做任何更改。",
+    "scanning": "正在扫描这台电脑…",
+    "scanIntro": "每个工具都会单独检查，最多可能需要 60 秒。",
+    "errorTitle": "出现问题",
+    "available": "可用",
+    "reviewTitle": "检查要迁移的内容",
+    "allItems": "所有项目",
+    "noDescription": "无描述",
+    "noItems": "没有符合当前筛选条件的项目。",
+    "selectItem": "选择一个项目以查看详细信息。",
+    "description": "描述",
+    "origin": "来源",
+    "availability": "在目标系统上",
+    "findings": "检查结果",
+    "noFindings": "没有需要注意的问题。",
+    "badgeSecret": "包含敏感信息",
+    "badgeDuplicate": "其他工具也找到了此项",
+    "badgeUnavailable": "在目标系统上不可用",
+    "failedDetail": "详细信息",
+    "search": "搜索",
+    "onlyAvailable": "仅显示可用项",
+    "onlyWarnings": "仅显示有警告的项",
+    "revealSecret": "导出原始值",
+    "notDetected": "未检测到",
+    "failed": "失败",
+    "nextExport": "下一步：导出",
+    "exportTitle": "导出",
+    "format": "格式",
+    "formatScript": "恢复脚本",
+    "formatManifest": "原生清单",
+    "back": "返回",
+    "save": "选择文件夹并保存",
+    "saving": "正在保存…",
+    "previewLoading": "正在准备预览…",
+    "previewFailed": "无法生成预览。请更换格式，或返回上一步后重试。",
+    "previewEmpty": "不会生成任何文件。",
+    "warningsTitle": "部分项目将被跳过",
+    "savedTo": "已保存到",
+    "nextStepsTitle": "后续步骤",
+    "done": "导出完成",
+    "openFolder": "打开文件夹",
+    "startOver": "重新开始",
+    "secretLimit": "敏感信息检测基于模式匹配，可能会有遗漏。分享前请检查文件。",
+    "language": "语言"
+  }
+}

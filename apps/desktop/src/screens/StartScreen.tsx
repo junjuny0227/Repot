@@ -1,6 +1,7 @@
 import type { Dispatch } from "react";
 import type { Action, State } from "../state";
 import { S, osLabel } from "../strings";
+import { LanguageSelect } from "./LanguageSelect";
 import { TargetSelect } from "./TargetSelect";
 import appIcon from "../../app-icon.svg?raw";
 
@@ -27,6 +28,9 @@ export function StartScreen({ state, dispatch, onScan }: { state: State; dispatc
           <button className="primary large" disabled={!ready} onClick={onScan}>{S.scanButton}</button>
         </div>
       </div>
+      <footer className="start-footer">
+        <LanguageSelect />
+      </footer>
     </section>
   );
 }

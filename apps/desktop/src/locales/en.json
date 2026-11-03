@@ -121,6 +121,7 @@
     "done": "Export complete",
     "openFolder": "Open folder",
     "startOver": "Start over",
-    "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing."
+    "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
+    "language": "Language"
   }
 }

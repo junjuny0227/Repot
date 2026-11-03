@@ -5,6 +5,7 @@ import { filterItems, type Filter } from "../logic";
 import { canExport, type Action, type State } from "../state";
 import { S, selectedCount, statusText, withCount } from "../strings";
 import type { Category, Os } from "../types";
+import { LanguageSelect } from "./LanguageSelect";
 import { TargetSelect } from "./TargetSelect";
 import { Sidebar } from "./review/Sidebar";
 import { ItemList } from "./review/ItemList";
@@ -59,6 +60,9 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
             </ul>
           </details>
         </footer>
+        <div className="sidebar-language">
+          <LanguageSelect />
+        </div>
       </aside>
       <div className="review-main">
         <header className="toolbar" data-tauri-drag-region="deep">

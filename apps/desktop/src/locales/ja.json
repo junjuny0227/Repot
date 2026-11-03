@@ -1,0 +1,126 @@
+{
+  "category": {
+    "packageManager": "パッケージ",
+    "runtime": "ランタイム",
+    "globalPackage": "グローバルパッケージ",
+    "editor": "エディタ",
+    "git": "Git",
+    "shell": "シェル"
+  },
+  "os": {
+    "linux": "Linux（{family}）",
+    "linuxOther": "その他"
+  },
+  "status": {
+    "running": "スキャン中…",
+    "notDetected": "未検出",
+    "timedOut": "タイムアウト（60秒）",
+    "found": "{count}件検出"
+  },
+  "finding": {
+    "atLine": "{line}行目：{text}",
+    "unreadable": "このファイルは読み込めなかったため、書き出しません。",
+    "secret": "機密情報のようです。元の値を許可しない限り、マスクして書き出します。",
+    "secretNamed": "{name} は機密情報のようです。元の値を許可しない限り、マスクして書き出します。",
+    "osSpecificLine": "{key} はこの OS 固有の設定のため、別の OS ではコメントアウトされます。",
+    "duplicate": "{provider} でも検出されました。"
+  },
+  "reason": {
+    "unreadable": "使用不可：ファイルを読み込めませんでした。",
+    "differentOs": "使用不可：{os} でのみ動作します。",
+    "shellUnsupported": "使用不可：移行先の OS では {shell} を使用できません。",
+    "noCounterpart": "使用不可：移行先の OS には {tool} に相当するツールがありません。"
+  },
+  "warning": {
+    "unavailable": "{item} はスキップされます。{reason}",
+    "invalidValue": "{item} にはスクリプトで安全に扱えない文字が含まれているため、スキップされます。",
+    "duplicateTarget": "{item} は別の項目と同じファイルに書き込むため、スキップされます。",
+    "readFailed": "{item} はファイルを読み込めなかったため、スキップされます。"
+  },
+  "nextSteps": {
+    "readme": "このフォルダ内の README.md を開き、手順に従ってください。",
+    "copy": "このフォルダを新しいコンピュータにコピーしてください。",
+    "run": "実行：{command}"
+  },
+  "origin": {
+    "command": "検出したコマンド：{command}",
+    "path": "ファイル：{path}"
+  },
+  "availableOn": "{os} で使用できます。",
+  "withCount": "{label}（{count}）",
+  "selectedCount": {
+    "other": "{total}項目中 {checked}項目を選択"
+  },
+  "selectCategory": "{category}をすべて選択",
+  "revealSecretLine": "{line}行目を元の値で書き出す",
+  "catalog": {
+    "runtime:node": "Node.js はブラウザの外で JavaScript を実行します。",
+    "runtime:python": "Python は汎用プログラミング言語です。",
+    "runtime:rust": "Rust ツールチェーンは Rust プログラムをコンパイル・ビルドします。",
+    "runtime:sdkman": "SDKMAN の候補は、JVM エコシステムの SDK やツールです。",
+    "file:gitconfig": "Git の設定は、ユーザー情報とリポジトリの動作を決めます。",
+    "file:gitignore-global": "Git のグローバル除外ルールは、すべてのリポジトリでファイルを除外します。",
+    "file:zshrc": "Zsh の設定は、対話シェルをカスタマイズします。",
+    "file:zprofile": "Zsh のプロファイルは、ログインシェルを設定します。",
+    "file:bashrc": "Bash の設定は、対話シェルをカスタマイズします。",
+    "file:bash-profile": "Bash のプロファイルは、ログインシェルを設定します。",
+    "file:profile": "シェルのプロファイルは、ログイン環境を設定します。",
+    "file:fish-config": "Fish の設定は、シェル環境をカスタマイズします。",
+    "file:powershell-profile": "PowerShell のプロファイルは、シェル起動時の動作をカスタマイズします。",
+    "file:starship": "Starship の設定は、複数のシェルで共通のプロンプトをカスタマイズします。",
+    "file:vscode-settings": "エディタの設定は、アプリの動作をカスタマイズします。",
+    "file:vscode-keybindings": "エディタのキーバインドは、キーボードショートカットをカスタマイズします。",
+    "file:vscode-snippet": "エディタのスニペットは、再利用できるコードのひな形です。",
+    "plugin:oh-my-zsh": "oh-my-zsh の拡張機能は、Zsh の動作や見た目をカスタマイズします。"
+  },
+  "ui": {
+    "currentOs": "このコンピュータ",
+    "targetOs": "移行先の OS",
+    "scanButton": "このコンピュータをスキャン",
+    "detectingOs": "検出中…",
+    "startIntro": "Repot は開発環境を読み取り、新しいコンピュータ用の復元スクリプトやパッケージリストを作成します。このコンピュータには一切変更を加えません。",
+    "scanning": "このコンピュータをスキャン中…",
+    "scanIntro": "ツールごとに個別に確認します。最大 60 秒かかることがあります。",
+    "errorTitle": "問題が発生しました",
+    "available": "使用可能",
+    "reviewTitle": "移行する項目を確認",
+    "allItems": "すべての項目",
+    "noDescription": "説明なし",
+    "noItems": "現在のフィルタに一致する項目はありません。",
+    "selectItem": "項目を選択すると詳細が表示されます。",
+    "description": "説明",
+    "origin": "取得元",
+    "availability": "移行先",
+    "findings": "確認事項",
+    "noFindings": "注意事項はありません。",
+    "badgeSecret": "機密情報を含む",
+    "badgeDuplicate": "別のツールでも検出",
+    "badgeUnavailable": "移行先の OS では使用不可",
+    "failedDetail": "詳細",
+    "search": "検索",
+    "onlyAvailable": "使用可能のみ",
+    "onlyWarnings": "警告ありのみ",
+    "revealSecret": "元の値で書き出す",
+    "notDetected": "未検出",
+    "failed": "失敗",
+    "nextExport": "次へ：書き出し",
+    "exportTitle": "書き出し",
+    "format": "形式",
+    "formatScript": "復元スクリプト",
+    "formatManifest": "ネイティブマニフェスト",
+    "back": "戻る",
+    "save": "フォルダを選択して保存",
+    "saving": "保存中…",
+    "previewLoading": "プレビューを準備中…",
+    "previewFailed": "プレビューを作成できませんでした。形式を変更するか、前の画面に戻ってもう一度お試しください。",
+    "previewEmpty": "作成されるファイルはありません。",
+    "warningsTitle": "一部の項目はスキップされます",
+    "savedTo": "保存先",
+    "nextStepsTitle": "次のステップ",
+    "done": "書き出しが完了しました",
+    "openFolder": "フォルダを開く",
+    "startOver": "最初に戻る",
+    "secretLimit": "機密情報の検出はパターンに基づくため、見落としがある場合があります。共有する前にファイルを確認してください。",
+    "language": "言語"
+  }
+}

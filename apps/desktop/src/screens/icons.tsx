@@ -71,6 +71,14 @@ export const NoSign = ({ className = "symbol" }: { className?: string }) => (
   </Svg>
 );
 
+export const Globe = () => (
+  <Svg className="symbol globe">
+    <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <ellipse cx="8" cy="8" rx="2.7" ry="6.4" fill="none" stroke="currentColor" strokeWidth="1.1" />
+    <path d="M1.8 8h12.4M2.9 4.8h10.2M2.9 11.2h10.2" fill="none" stroke="currentColor" strokeWidth="1.1" />
+  </Svg>
+);
+
 export const Magnifier = () => (
   <Svg>
     <circle cx="6.8" cy="6.8" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.5" />
