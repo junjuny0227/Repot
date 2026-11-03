@@ -1,5 +1,6 @@
 /target
 node_modules/
+.cache/
 
 # Local secrets (API keys for offline tools). Never commit.
 .env

@@ -34,7 +34,7 @@ test('catalog acquisition records hashes; offline reuses snapshot with zero tran
   let fetches = 0, clones = 0;
   try {
     const fetch = async url => { fetches++; return new Response(url.endsWith('formula.json') ? JSON.stringify(fixture.formula) : url.endsWith('cask.json') ? JSON.stringify(fixture.cask) : gzipSync(tar(manifests))); };
-    const git = async (_cmd, args) => { clones++; const target = args.at(-1); await mkdir(join(target, 'bucket'), { recursive: true }); await writeFile(join(target, 'bucket/tool.json'), JSON.stringify(fixture.scoop)); };
+    const git = async (_cmd, args) => { clones++; if (args.at(-2).includes('nerd-fonts')) assert.equal(args.at(-2), 'https://github.com/matthewjberger/scoop-nerd-fonts.git'); const target = args.at(-1); await mkdir(join(target, 'bucket'), { recursive: true }); await writeFile(join(target, 'bucket/tool.json'), JSON.stringify(fixture.scoop)); };
     const online = await loadCatalogs({ cacheDir: dir, fetch, git });
     assert.equal(fetches, 3); assert.equal(clones, BUCKETS.length);
     assert.equal(online.scoop.length, 5);

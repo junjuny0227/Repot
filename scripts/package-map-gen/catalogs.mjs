@@ -126,7 +126,9 @@ export async function loadCatalogs({ cacheDir = '.cache/package-map-gen', offlin
   const winget = await parseWinget(createReadStream(wingetPath).pipe(createGunzip()));
   const scoop = [];
   for (const bucket of BUCKETS) {
-    const url = `https://github.com/ScoopInstaller/${bucket}.git`, path = join(cacheDir, `scoop-${bucket}`);
+    // Official Scoop buckets.json lists nerd-fonts under its maintainer, not ScoopInstaller.
+    const url = bucket === 'nerd-fonts' ? 'https://github.com/matthewjberger/scoop-nerd-fonts.git' : `https://github.com/ScoopInstaller/${bucket}.git`;
+    const path = join(cacheDir, `scoop-${bucket}`);
     // A failed prior acquisition may leave an incomplete clone, never use it as a snapshot.
     await rm(path, { recursive: true, force: true });
     await git('git', ['clone', '--depth', '1', '--quiet', url, path]);
