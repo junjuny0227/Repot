@@ -569,6 +569,15 @@
         "evidence": "https://formulae.brew.sh/api/cask/font-jetbrains-mono-nerd-font.json v3.5.1 from ryanoasis/nerd-fonts JetBrainsMono.tar.xz; https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/JetBrainsMono-NF.json v3.5.1 from ryanoasis/nerd-fonts JetBrainsMono.zip (same upstream release; Mono/Propo are separate packages)."
       }
     },
+    "font-meslo-lg-nerd-font": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/font-meslo-lg-nerd-font.json v3.5.1 from ryanoasis/nerd-fonts Meslo.tar.xz; https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/Meslo-NF.json v3.5.1 from ryanoasis/nerd-fonts Meslo.zip (same upstream release, installs the MesloLG Nerd Font family; added by hand because the exact-name font rule compares meslo-lg with Meslo)."
+      }
+    },
     "freecad": {
       "scoop": {
         "method": "agent-review",

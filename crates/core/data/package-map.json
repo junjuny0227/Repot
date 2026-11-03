@@ -447,6 +447,10 @@
       "brewCask": "font-jetbrains-mono-nerd-font",
       "scoop": "nerd-fonts/JetBrainsMono-NF"
     },
+    "font-meslo-lg-nerd-font": {
+      "brewCask": "font-meslo-lg-nerd-font",
+      "scoop": "nerd-fonts/Meslo-NF"
+    },
     "freecad": {
       "brewCask": "freecad",
       "scoop": "extras/freecad",
