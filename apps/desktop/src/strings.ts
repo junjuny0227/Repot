@@ -1,6 +1,8 @@
+import { format, messages, plural, type Messages } from "./i18n";
 import type { Category, ExportWarning, Finding, Format, Origin, Os, ProviderStatus, UnavailableReason } from "./types";
 
-// Every user-facing sentence lives here so the UI can be translated by replacing this file.
+// Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
+// these functions pick the message for the active locale and fill in the values.
 
 export const TARGET_OPTIONS: Os[] = [
   "macOs",
@@ -10,118 +12,83 @@ export const TARGET_OPTIONS: Os[] = [
   { linux: "arch" },
 ];
 
-const LINUX_LABELS = { debian: "Debian/Ubuntu", fedora: "Fedora", arch: "Arch", other: "other" } as const;
+// Product and distribution names are not translated.
+const LINUX_NAMES = { debian: "Debian/Ubuntu", fedora: "Fedora", arch: "Arch" } as const;
 
 export function osLabel(os: Os): string {
   if (os === "macOs") return "macOS";
   if (os === "windows") return "Windows";
-  return `Linux (${LINUX_LABELS[os.linux]})`;
+  const m = messages().os;
+  return format(m.linux, { family: os.linux === "other" ? m.linuxOther : LINUX_NAMES[os.linux] });
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  packageManager: "Packages",
-  runtime: "Runtimes",
-  globalPackage: "Global packages",
-  editor: "Editors",
-  git: "Git",
-  shell: "Shell",
-};
-export const categoryLabel = (c: Category): string => CATEGORY_LABELS[c];
+export const categoryLabel = (c: Category): string => messages().category[c];
 
 export function statusText(s: ProviderStatus): string {
-  if (s === "running") return "Scanning…";
-  if (s === "notDetected") return "Not detected";
-  if (s === "timedOut") return "Timed out (60 s)";
-  if ("ok" in s) return `Found ${s.ok.count}`;
+  const m = messages().status;
+  if (s === "running") return m.running;
+  if (s === "notDetected") return m.notDetected;
+  if (s === "timedOut") return m.timedOut;
+  if ("ok" in s) return format(m.found, { count: s.ok.count });
   return s.failed.message;
 }
 
-export function findingText(f: Finding): string {
-  const at = f.line === null ? "" : `Line ${f.line}: `;
+function findingBody(f: Finding): string {
+  const m = messages().finding;
   const k = f.kind;
-  if (k === "unreadable") return `${at}This file could not be read, so it will not be exported.`;
-  if ("secret" in k) return `${at}Looks like a secret${k.secret.name ? ` (${k.secret.name})` : ""}. It will be masked unless you allow the original value.`;
-  if ("osSpecificLine" in k) return `${at}${k.osSpecificLine.key} is specific to this OS and will be commented out on a different OS.`;
-  return `${at}Also detected by ${k.duplicate.otherProvider}.`;
+  if (k === "unreadable") return m.unreadable;
+  if ("secret" in k) return k.secret.name ? format(m.secretNamed, { name: k.secret.name }) : m.secret;
+  if ("osSpecificLine" in k) return format(m.osSpecificLine, { key: k.osSpecificLine.key });
+  return format(m.duplicate, { provider: k.duplicate.otherProvider });
+}
+
+export function findingText(f: Finding): string {
+  const text = findingBody(f);
+  // Line numbers are identifiers, so they are not grouped like counts (1234, not 1,234).
+  return f.line === null ? text : format(messages().finding.atLine, { line: String(f.line), text });
 }
 
 export function reasonText(r: UnavailableReason): string {
-  if (r === "unreadable") return "Unavailable: the file could not be read.";
-  if ("differentOs" in r) return `Unavailable: only works on ${osLabel(r.differentOs.source)}.`;
-  if ("shellUnsupported" in r) return `Unavailable: ${r.shellUnsupported} is not available on the destination OS.`;
-  return `Unavailable: ${r.noCounterpart} has no counterpart on the destination OS.`;
+  const m = messages().reason;
+  if (r === "unreadable") return m.unreadable;
+  if ("differentOs" in r) return format(m.differentOs, { os: osLabel(r.differentOs.source) });
+  if ("shellUnsupported" in r) return format(m.shellUnsupported, { shell: r.shellUnsupported });
+  return format(m.noCounterpart, { tool: r.noCounterpart });
 }
 
 export function warningText(w: ExportWarning, itemName: string): string {
-  if ("unavailable" in w) return `${itemName} was skipped. ${reasonText(w.unavailable.reason)}`;
-  if ("invalidValue" in w) return `${itemName} was skipped because it contains characters that are unsafe in a script.`;
-  if ("duplicateTarget" in w) return `${itemName} was skipped because another item writes to the same file.`;
-  return `${itemName} was skipped because the file could not be read.`;
+  const m = messages().warning;
+  if ("unavailable" in w) return format(m.unavailable, { item: itemName, reason: reasonText(w.unavailable.reason) });
+  if ("invalidValue" in w) return format(m.invalidValue, { item: itemName });
+  if ("duplicateTarget" in w) return format(m.duplicateTarget, { item: itemName });
+  return format(m.readFailed, { item: itemName });
 }
 
-export function nextSteps(target: Os, format: Format): string[] {
-  if (format === "manifest") return ["Open README.md in this folder and follow the steps."];
-  if (target === "windows") return ["Copy this folder to the new machine.", "Run: powershell -ExecutionPolicy Bypass -File restore.ps1"];
-  return ["Copy this folder to the new machine.", "Run: ./restore.sh"];
+// The commands stay as they are: people type them into a terminal.
+export function nextSteps(target: Os, exportFormat: Format): string[] {
+  const m = messages().nextSteps;
+  if (exportFormat === "manifest") return [m.readme];
+  const command = target === "windows" ? "powershell -ExecutionPolicy Bypass -File restore.ps1" : "./restore.sh";
+  return [m.copy, format(m.run, { command })];
 }
 
 export function originText(o: Origin): string {
-  return "command" in o ? `Detected with: ${o.command}` : `File: ${o.path}`;
+  const m = messages().origin;
+  return "command" in o ? format(m.command, { command: o.command }) : format(m.path, { path: o.path });
 }
 
-export const availableOn = (target: Os): string => `Available on ${osLabel(target)}.`;
-export const withCount = (label: string, n: number): string => `${label} (${n})`;
-export const selectedCount = (checked: number, total: number): string => `${checked} of ${total} items selected`;
-export const selectCategory = (label: string): string => `Select all in ${label}`;
-export const revealLine = (line: number): string => `Line ${line}`;
+export const availableOn = (target: Os): string => format(messages().availableOn, { os: osLabel(target) });
+export const withCount = (label: string, n: number): string => format(messages().withCount, { label, count: n });
+export const selectedCount = (checked: number, total: number): string => plural(messages().selectedCount, total, { checked, total });
+export const selectCategory = (label: string): string => format(messages().selectCategory, { category: label });
+export const revealSecretLine = (line: number): string => format(messages().revealSecretLine, { line: String(line) });
 
-export const S = {
-  appTitle: "Repot",
-  currentOs: "This machine",
-  targetOs: "Destination OS",
-  scanButton: "Scan this machine",
-  detectingOs: "Detecting…",
-  startIntro: "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",
-  scanning: "Scanning this machine…",
-  scanIntro: "Each tool is checked separately. This can take up to 60 seconds.",
-  errorTitle: "Something went wrong",
-  available: "Available",
-  reviewTitle: "Review what to move",
-  allItems: "All items",
-  noDescription: "No description",
-  noItems: "No items match the current filters.",
-  selectItem: "Select an item to see its details.",
-  description: "Description",
-  origin: "Source",
-  availability: "On the destination",
-  findings: "Findings",
-  noFindings: "Nothing to warn about.",
-  badgeSecret: "Contains a secret",
-  badgeDuplicate: "Also found by another tool",
-  badgeUnavailable: "Unavailable on the destination OS",
-  failedDetail: "Details",
-  search: "Search",
-  onlyAvailable: "Available only",
-  onlyWarnings: "With warnings only",
-  revealSecret: "Export original value",
-  notDetected: "Not detected",
-  failed: "Failed",
-  nextExport: "Next: Export",
-  exportTitle: "Export",
-  format: "Format",
-  formatScript: "Restore script",
-  formatManifest: "Native manifests",
-  back: "Back",
-  save: "Choose folder and save",
-  saving: "Saving…",
-  previewLoading: "Preparing preview…",
-  previewFailed: "The preview could not be created. Change the format or go back and try again.",
-  previewEmpty: "No files will be created.",
-  warningsTitle: "Some items will be skipped",
-  savedTo: "Saved to",
-  nextStepsTitle: "Next steps",
-  done: "Export complete",
-  openFolder: "Open folder",
-  startOver: "Start over",
-  secretLimit: "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
-} as const;
+type UiText = Readonly<Messages["ui"]> & { readonly appTitle: string };
+
+/** Simple labels for the active locale. Each property is a getter, so it follows locale changes. */
+export const S: UiText = Object.defineProperties(
+  { appTitle: "Repot" },
+  Object.fromEntries(
+    Object.keys(messages().ui).map((key) => [key, { enumerable: true, get: () => messages().ui[key as keyof Messages["ui"]] }]),
+  ),
+) as UiText;

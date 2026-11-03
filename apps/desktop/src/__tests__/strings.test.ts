@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { osLabel, TARGET_OPTIONS, S, categoryLabel, statusText, findingText, reasonText, warningText, nextSteps } from "../strings";
+import { osLabel, TARGET_OPTIONS, S, categoryLabel, statusText, findingText, reasonText, warningText, nextSteps, selectedCount, revealSecretLine } from "../strings";
 test("labels all targets and structured reports", () => {
   expect(TARGET_OPTIONS.map(osLabel)).toEqual(["macOS", "Windows", "Linux (Debian/Ubuntu)", "Linux (Fedora)", "Linux (Arch)"]);
   expect(categoryLabel("globalPackage")).toBe("Global packages");
@@ -18,4 +18,10 @@ test("next steps use destination format and OS", () => {
 test("scan timeout copy matches the 60-second provider limit", () => {
   expect(S.scanIntro).toContain("60 seconds");
   expect(statusText("timedOut")).toBe("Timed out (60 s)");
+});
+
+test("counts use the plural form for the total", () => {
+  expect(selectedCount(1, 1)).toBe("1 of 1 item selected");
+  expect(selectedCount(2, 12)).toBe("2 of 12 items selected");
+  expect(revealSecretLine(4)).toBe("Export the original value of line 4");
 });

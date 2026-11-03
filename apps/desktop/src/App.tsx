@@ -3,6 +3,7 @@ import { availabilityFor, detectOs, runScan } from "./api";
 import { initialState, reducer } from "./state";
 import { errorMessage } from "./errors";
 import { S } from "./strings";
+import { useLocale } from "./i18n";
 import { StartScreen } from "./screens/StartScreen";
 import { ScanScreen } from "./screens/ScanScreen";
 import { ReviewScreen } from "./screens/ReviewScreen";
@@ -10,8 +11,9 @@ import { ExportScreen } from "./screens/ExportScreen";
 import { DoneScreen } from "./screens/DoneScreen";
 import { ExclamationCircle } from "./screens/icons";
 
-
 export default function App() {
+  // Subscribing re-renders every screen when the language changes.
+  useLocale();
   const [state, dispatch] = useReducer(reducer, initialState);
   // The scan is async; read the destination at the moment it finishes, not when it started.
   const latest = useRef(state);
