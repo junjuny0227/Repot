@@ -17,11 +17,16 @@ permissions:
   contents: read
 
 jobs:
-  package-map-changes:
-    if: github.event_name != 'push'
+  # Decides which jobs a change needs. A change that touches only the product site
+  # (apps/site/**) and docs runs `frontend` alone: site copy and locale JSON are
+  # checked by the site typecheck, tests and build, not by Rust or restore jobs.
+  # The package-map jobs run only when the map, its checker or this file changes,
+  # and on the weekly schedule. Scheduled runs always run everything.
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      enabled: ${{ steps.paths.outputs.enabled }}
+      package_map: ${{ steps.paths.outputs.package_map }}
+      site_only: ${{ steps.paths.outputs.site_only }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -30,17 +35,35 @@ jobs:
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
-          if [[ "$EVENT" == schedule ]] || git diff --name-only "$BASE" "$HEAD" | grep -Eq '^(crates/core/data/package-map.json|scripts/check-package-map[^/]*\.mjs|\.github/workflows/ci\.yml)$'; then
-            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          if [[ "$EVENT" == schedule ]]; then
+            echo 'package_map=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$EVENT" == pull_request ]]; then
+            base="$PR_BASE" head="$PR_HEAD"
+          else
+            base="$PUSH_BEFORE" head="$GITHUB_SHA"
+          fi
+          # A new branch or a force push has no usable base: run everything.
+          if ! changed=$(git diff --name-only "$base" "$head" 2>/dev/null) || [[ -z "$changed" ]]; then
+            exit 0
+          fi
+          printf 'Changed files:\n%s\n' "$changed"
+          if [[ "$EVENT" == pull_request ]] && grep -Eq '^(crates/core/data/package-map\.json|scripts/check-package-map[^/]*\.mjs|\.github/workflows/ci\.yml)$' <<< "$changed"; then
+            echo 'package_map=true' >> "$GITHUB_OUTPUT"
+          fi
+          if ! grep -Evq '^(apps/site/|docs/)|\.md$|^LICENSE$' <<< "$changed"; then
+            echo 'site_only=true' >> "$GITHUB_OUTPUT"
           fi
 
   package-map:
     name: Package map (${{ matrix.manager }})
-    needs: package-map-changes
-    if: needs.package-map-changes.outputs.enabled == 'true'
+    needs: changes
+    if: needs.changes.outputs.package_map == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
@@ -154,8 +177,8 @@ jobs:
 
   package-map-linux:
     name: Package map (${{ matrix.manager }})
-    needs: package-map-changes
-    if: needs.package-map-changes.outputs.enabled == 'true'
+    needs: changes
+    if: needs.changes.outputs.package_map == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -186,6 +209,8 @@ jobs:
           path: package-map-*.json
 
   rust:
+    needs: changes
+    if: needs.changes.outputs.site_only != 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -327,6 +352,8 @@ jobs:
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   linux-provider-scans:
+    needs: changes
+    if: needs.changes.outputs.site_only != 'true'
     name: Real scan (${{ matrix.provider }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -367,6 +394,8 @@ jobs:
       - run: cargo test -p repot-core --test real_scan -- --ignored --nocapture
 
   restore-e2e:
+    needs: changes
+    if: needs.changes.outputs.site_only != 'true'
     name: Restore E2E (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -527,6 +556,8 @@ jobs:
       - run: pnpm --filter @repot/site build
 
   scripts:
+    needs: changes
+    if: needs.changes.outputs.site_only != 'true'
     strategy:
       fail-fast: false
       matrix:
