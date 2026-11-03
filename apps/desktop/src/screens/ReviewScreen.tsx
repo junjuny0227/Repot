@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState, type Dispatch } from "react";
 import { availabilityFor } from "../api";
 import { errorMessage } from "../errors";
-import { filterItems, type Filter } from "../logic";
+import { choosesPackages, defaultTarget, filterItems, type Filter } from "../logic";
 import { canExport, type Action, type State } from "../state";
 import { S, selectedCount, statusText, withCount } from "../strings";
-import type { Category, Os } from "../types";
+import type { AvailabilityMap, Category, Os, PackageManager, Target } from "../types";
 import { LanguageSelect } from "./LanguageSelect";
-import { TargetSelect } from "./TargetSelect";
+import { PackageSelect, TargetSelect } from "./TargetSelect";
 import { Sidebar } from "./review/Sidebar";
 import { ItemList } from "./review/ItemList";
 import { DetailPanel } from "./review/DetailPanel";
@@ -25,12 +25,17 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
   const notDetected = state.providers.filter((p) => p.status === "notDetected");
   const failed = state.providers.filter((p) => p.status === "timedOut" || (typeof p.status === "object" && "failed" in p.status));
 
-  const changeTarget = (target: Os) => {
-    // Only the latest request may update the state if the user changes the target quickly.
+  // Re-judge against the new destination. Only the latest request may update the state if the user changes it quickly.
+  const rejudge = (target: Target, apply: (avail: AvailabilityMap) => Action) => {
     const id = ++request.current;
     availabilityFor(target)
-      .then((avail) => { if (id === request.current) dispatch({ type: "setTarget", target, avail }); })
+      .then((avail) => { if (id === request.current) dispatch(apply(avail)); })
       .catch((e: unknown) => dispatch({ type: "error", message: errorMessage(e) }));
+  };
+  // A new destination starts again from its default package manager.
+  const changeTarget = (target: Os) => rejudge(defaultTarget(target), (avail) => ({ type: "setTarget", target, avail }));
+  const changePackages = (packages: PackageManager) => {
+    if (state.target !== null) rejudge({ os: state.target, packages }, (avail) => ({ type: "setPackages", packages, avail }));
   };
 
   return (
@@ -72,6 +77,7 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
           </div>
           <div className="spacer" />
           <TargetSelect value={state.target} onChange={changeTarget} />
+          {choosesPackages(state.source, state.target) && <PackageSelect value={state.packages} onChange={changePackages} />}
           <button className="primary" disabled={!canExport(state)} onClick={() => dispatch({ type: "goExport" })}>{S.nextExport}</button>
         </header>
         <div className="review-body">

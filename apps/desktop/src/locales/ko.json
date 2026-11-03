@@ -79,6 +79,7 @@
   "ui": {
     "currentOs": "이 기기",
     "targetOs": "대상 OS",
+    "packageManager": "패키지 매니저",
     "scanButton": "이 기기 스캔",
     "detectingOs": "감지 중…",
     "startIntro": "Repot은 이 기기의 개발 환경을 읽어 새 기기에서 쓸 복원 스크립트나 패키지 목록으로 만듭니다. 이 기기는 전혀 바꾸지 않습니다.",

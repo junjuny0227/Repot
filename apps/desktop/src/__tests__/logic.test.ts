@@ -4,7 +4,7 @@ const fixture = (await import("../__fixtures__/scan.json")).default;
 const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
-import { applyTarget, buildSelection, categoryCounts, fileTree, filterItems, warningItemId, initialChecked, isAvailable, osKey, revealKey, secretLines, setCategory, targetOptions } from "../logic";
+import { WINDOWS_PACKAGE_MANAGERS, applyTarget, buildSelection, choosesPackages, currentTarget, defaultTarget, categoryCounts, fileTree, filterItems, warningItemId, initialChecked, isAvailable, osKey, revealKey, secretLines, setCategory, targetOptions } from "../logic";
 import { TARGET_OPTIONS } from "../strings";
 
 test("initialChecked selects only available items", () => {
@@ -66,4 +66,27 @@ test("warningItemId reads the item of every warning kind", () => {
   expect(warningItemId({ invalidValue: { itemId: "b" } })).toBe("b");
   expect(warningItemId({ duplicateTarget: { itemId: "c" } })).toBe("c");
   expect(warningItemId({ readFailed: { itemId: "d" } })).toBe("d");
+});
+
+test("defaultTarget picks the destination's package manager", () => {
+  expect(defaultTarget("macOs")).toEqual({ os: "macOs", packages: "brew" });
+  expect(defaultTarget("windows")).toEqual({ os: "windows", packages: "winget" });
+  expect(defaultTarget({ linux: "debian" })).toEqual({ os: { linux: "debian" }, packages: "apt" });
+  expect(defaultTarget({ linux: "arch" })).toEqual({ os: { linux: "arch" }, packages: "pacman" });
+  expect(defaultTarget({ linux: "other" })).toEqual({ os: { linux: "other" }, packages: null });
+});
+
+test("the package manager is chosen only for Windows from another OS", () => {
+  expect(WINDOWS_PACKAGE_MANAGERS).toEqual(["winget", "scoop", "choco"]);
+  expect(choosesPackages("macOs", "windows")).toBe(true);
+  expect(choosesPackages({ linux: "fedora" }, "windows")).toBe(true);
+  expect(choosesPackages("windows", "windows")).toBe(false);
+  expect(choosesPackages("macOs", "macOs")).toBe(false);
+  expect(choosesPackages("macOs", { linux: "debian" })).toBe(false);
+  expect(choosesPackages(null, "windows")).toBe(false);
+});
+
+test("currentTarget pairs the destination with the chosen manager", () => {
+  expect(currentTarget({ target: null, packages: null })).toBeNull();
+  expect(currentTarget({ target: "windows", packages: "scoop" })).toEqual({ os: "windows", packages: "scoop" });
 });

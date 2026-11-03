@@ -21,6 +21,7 @@
 .toolbar .spacer { flex: 1; }
 .toolbar .popup-field { display: flex; align-items: center; gap: 8px; }
 .toolbar .popup-label { color: var(--label-2); }
+.toolbar .package-field .popup select { min-width: 112px; }
 
 /* Title bar strip for screens without a toolbar: draggable, no chrome. */
 .titlebar { flex: none; height: var(--toolbar-height); }

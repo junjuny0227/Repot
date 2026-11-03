@@ -1,7 +1,25 @@
-import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, Selection } from "./types";
+import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, PackageManager, Selection, Target } from "./types";
 import { TARGET_OPTIONS, itemDescription } from "./strings";
 
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
+
+/** The package manager a destination uses unless the user picks another (spec §9). */
+export function defaultTarget(os: Os): Target {
+  const packages = os === "macOs" ? "brew" : os === "windows" ? "winget"
+    : ({ debian: "apt", fedora: "dnf", arch: "pacman", other: null } as const)[os.linux];
+  return { os, packages };
+}
+
+export const WINDOWS_PACKAGE_MANAGERS: PackageManager[] = ["winget", "scoop", "choco"];
+
+/** Only a Windows destination offers a choice, and only from another OS: same-OS moves keep the original managers. */
+export const choosesPackages = (source: Os | null, target: Os | null): boolean =>
+  target === "windows" && source !== null && source !== "windows";
+
+/** The destination sent to core for judging, previewing and exporting. */
+export function currentTarget(s: { target: Os | null; packages: PackageManager | null }): Target | null {
+  return s.target === null ? null : { os: s.target, packages: s.packages };
+}
 
 export function isAvailable(a: Availability | undefined): boolean {
   return a === "available" || (typeof a === "object" && "mapped" in a);

@@ -79,6 +79,7 @@
   "ui": {
     "currentOs": "这台电脑",
     "targetOs": "目标系统",
+    "packageManager": "软件包管理器",
     "scanButton": "扫描这台电脑",
     "detectingOs": "正在检测…",
     "startIntro": "Repot 会读取你的开发环境，并为新电脑生成恢复脚本或软件包列表。不会对这台电脑做任何更改。",

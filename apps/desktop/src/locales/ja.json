@@ -79,6 +79,7 @@
   "ui": {
     "currentOs": "このコンピュータ",
     "targetOs": "移行先の OS",
+    "packageManager": "パッケージマネージャー",
     "scanButton": "このコンピュータをスキャン",
     "detectingOs": "検出中…",
     "startIntro": "Repot は開発環境を読み取り、新しいコンピュータ用の復元スクリプトやパッケージリストを作成します。このコンピュータには一切変更を加えません。",

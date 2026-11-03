@@ -50,5 +50,37 @@ test("setTarget after scan unchecks, toggleItem ignores unavailable, restart kee
   // A package mapped to a Windows manager stays selectable.
   expect(s.checked.has("brew:formula:ripgrep")).toBe(true);
   s = reducer(s, { type: "restart" });
-  expect(s).toEqual({ ...initialState, source: "macOs", target: "windows" });
+  expect(s).toEqual({ ...initialState, source: "macOs", target: "windows", packages: "winget" });
+});
+
+test("init and setTarget use the destination's default package manager", () => {
+  let s = reducer(initialState, { type: "init", source: "macOs" });
+  expect(s.packages).toBe("brew");
+  s = reducer(s, { type: "setTarget", target: { linux: "fedora" } });
+  expect(s.packages).toBe("dnf");
+  s = reducer(s, { type: "setTarget", target: { linux: "other" } });
+  expect(s.packages).toBeNull();
+});
+
+test("changing the destination resets the Windows package manager", () => {   // Review Focus 5
+  let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "setTarget", target: "windows" });
+  s = reducer(s, { type: "scanFinished", scan, avail: availWin });
+  s = reducer(s, { type: "setPackages", packages: "scoop", avail: availWin });
+  expect(s.packages).toBe("scoop");
+  s = reducer(s, { type: "setTarget", target: "macOs", avail: availMac });
+  s = reducer(s, { type: "setTarget", target: "windows", avail: availWin });
+  expect(s.packages).toBe("winget");
+});
+
+test("changing the package manager re-judges and unchecks newly unavailable items", () => {   // Review Focus 5
+  let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "setTarget", target: "windows" });
+  s = reducer(s, { type: "scanFinished", scan, avail: availWin });
+  expect(s.checked.has("brew:formula:ripgrep")).toBe(true);
+  const choco: AvailabilityMap = { ...availWin, "brew:formula:ripgrep": { unavailable: { notInPackageMap: { manager: "choco" } } } };
+  s = reducer(s, { type: "setPackages", packages: "choco", avail: choco });
+  expect(s.packages).toBe("choco");
+  expect(s.avail).toBe(choco);
+  expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
+  s = reducer(s, { type: "toggleItem", id: "brew:formula:ripgrep" });
+  expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
 });

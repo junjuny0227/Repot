@@ -80,6 +80,7 @@
   "ui": {
     "currentOs": "This machine",
     "targetOs": "Destination OS",
+    "packageManager": "Package manager",
     "scanButton": "Scan this machine",
     "detectingOs": "Detecting…",
     "startIntro": "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",

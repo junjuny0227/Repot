@@ -45,8 +45,8 @@ const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
 
-function reviewState(target: "macOs" | "windows"): State {
-  const s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "setTarget", target });
+function reviewState(target: "macOs" | "windows", source: "macOs" | "windows" = "macOs"): State {
+  const s = reducer(reducer(initialState, { type: "init", source }), { type: "setTarget", target });
   return reducer(s, { type: "scanFinished", scan, avail: target === "macOs" ? availMac : availWin });
 }
 const row = (html: string, id: string): string => html.match(new RegExp(`<li[^>]*data-id="${id}"[^>]*>(.*?)</li>`))?.[1] ?? "";
@@ -63,6 +63,18 @@ test("review marks unavailable and secret items and keeps them unchecked on anot
   expect(row(html, "npm:typescript")).toMatch(/checked=""/);
   expect(row(html, "npm:typescript")).toContain("Typed JavaScript tooling");
   expect(nextButton(html)).not.toContain("disabled");
+});
+
+const packagePicker = (html: string): string => html.match(/<label class="popup-field package-field[^"]*">.*?<\/label>/)?.[0] ?? "";
+
+test("review offers the Windows package manager only when moving to Windows from another OS", () => {
+  const html = packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows")} dispatch={noop} />));
+  expect(html).toContain(S.packageManager);
+  expect(html).toMatch(/<option value="winget" selected="">winget<\/option><option value="scoop">Scoop<\/option><option value="choco">Chocolatey<\/option>/);
+  const scoop = reducer(reviewState("windows"), { type: "setPackages", packages: "scoop", avail: availWin });
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={scoop} dispatch={noop} />))).toMatch(/<option value="scoop" selected="">/);
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("macOs")} dispatch={noop} />))).toBe("");
+  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows", "windows")} dispatch={noop} />))).toBe("");
 });
 
 test("items without a description say so", () => {
