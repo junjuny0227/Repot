@@ -30,6 +30,7 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - 스캔 카테고리 A~F (§7)
 - 비밀정보 감지·마스킹 (§8)
 - 공식 Tauri updater를 통한 서명된 앱 자동 업데이트 (계획 8)
+- 앱에 내장한 대응표를 통한 OS 간 패키지 이름 대응. Windows 목적지는 winget·Scoop·Chocolatey 중 고른다 (계획 9, §9)
 
 ### 제외 (MVP 이후 검토)
 
@@ -39,7 +40,7 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - Flatpak, Snap
 - 스캔 결과 저장, 앱 전용 JSON 매니페스트
 - 패키지 매니저 간 자동 중복 제거
-- brew ↔ winget ↔ apt 같은 OS 간 패키지 이름 매핑
+- 이름 유사도나 온라인 조회로 하는 패키지 대응 (대응은 내장 표에 적힌 것만 쓴다)
 - Apple/Windows 코드 서명·공증 (업데이트 자산 서명과는 별개)
 
 ## 3. 핵심 원칙
@@ -47,7 +48,7 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 1. **설명한다.** 모든 항목은 그것이 무엇이고 왜 옮길 수 있는지/없는지를 보여준다. 설명이 없으면 "설명 없음"이라고 솔직하게 표시한다.
 2. **기기를 바꾸지 않는다.** 앱은 스캔(읽기)과 내보내기 폴더 쓰기만 한다. 예외는 사용자가 동의한 앱 자체 업데이트 설치뿐이다. 시스템에 설치하거나 설정을 바꾸는 일은 사용자가 직접 실행하는 스크립트만 한다.
 3. **의심스러우면 보수적으로.** 비밀정보는 기본으로 가리고, 설정 파일을 덮어쓰기 전에는 반드시 백업하며, 패키지 매니저 자체를 대신 설치하지 않는다.
-4. **업데이트 외 네트워크 통신 없음.** 앱의 네트워크 기능은 GitHub의 업데이트 확인·다운로드 한 종류이며 자동 확인은 설정에서 끌 수 있다. 설명은 로컬 정보와 앱 내장 데이터만 쓰고 스캔 데이터는 기기를 떠나지 않는다.
+4. **업데이트 외 네트워크 통신 없음.** 앱의 네트워크 기능은 GitHub의 업데이트 확인·다운로드 한 종류이며 자동 확인은 설정에서 끌 수 있다. 설명과 패키지 대응은 로컬 정보와 앱 내장 데이터만 쓰고 스캔 데이터는 기기를 떠나지 않는다.
 5. **사용자가 실행 전에 검토할 수 있다.** 스크립트는 읽을 수 있는 형태로 만들고, 저장 전에 미리보기를 보여준다.
 
 ## 4. 사용자 흐름
@@ -145,6 +146,12 @@ pub enum Portability {
     SameOs,               // 같은 OS(Linux는 같은 배포판 계열)로만
     SameShell(Shell),     // 목적지 OS에서 그 셸을 쓸 수 있을 때만
     Mapped(RuntimeTool),  // 목적지 OS에 대응 도구가 있을 때만 (런타임, §9)
+    Package,              // 같은 OS면 원래 매니저, 다른 OS면 패키지 대응표 (§9)
+}
+
+pub struct Target {                 // 목적지
+    pub os: Os,
+    pub packages: Option<PackageManager>, // 목적지 패키지 매니저. macOS→Brew, Windows→Winget(기본)·Scoop·Choco, Linux 계열→Apt·Dnf·Pacman, Other→None
 }
 
 pub struct Finding {
@@ -250,7 +257,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 
 ## 9. 목적지 OS별 사용 가능 판정
 
-`availability(item, target) -> Available | Unavailable(reason)`가 판정하고, UI는 사용할 수 없는 항목을 비활성화하며 이유를 표시한다.
+`availability(item, source, target: Target) -> Available | Mapped { manager, name } | Unavailable(reason)`가 판정하고, UI는 사용할 수 없는 항목을 비활성화하며 이유를 표시한다. `Mapped`는 다른 OS의 매니저 이름으로 바뀌어 사용할 수 있다는 뜻이다.
 
 | Portability | 판정 |
 |---|---|
@@ -258,6 +265,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 | SameOs | 출발 OS와 목적지 OS가 같아야 함. Linux는 배포판 계열까지 같아야 함 |
 | SameShell(s) | 목적지 OS에서 셸 s를 쓸 수 있어야 함. zsh·bash·fish는 macOS·Linux만, PowerShell은 모든 OS(`pwsh`) |
 | Mapped | 아래 대응표에 목적지 OS용 도구가 있어야 함 |
+| Package | 같은 OS(Linux는 같은 계열)면 원래 매니저로 가능. 다른 OS면 아래 패키지 대응표에 목적지 매니저 이름이 있어야 함. tap·bucket 항목은 같은 OS만 |
 
 ### 런타임 대응표
 
@@ -271,6 +279,15 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 | sdkman | sdkman | 없음 → 사용 불가 |
 
 런타임 항목은 "Node 20.11.0"처럼 버전 단위로 다루며, 내보낼 때 대응 도구의 명령으로 바꾼다.
+
+### 패키지 대응표 (계획 9)
+
+- 데이터는 `crates/core/data/package-map.json`에 두고 빌드에 포함한다. 공통 id마다 매니저별 이름(`brew`, `brewCask`, `winget`, `scoop`, `choco`, `apt`, `dnf`, `pacman`)을 적는다. `null`은 그 매니저에 없음을 확인했다는 뜻이고, 키가 없으면 아직 모른다는 뜻이다.
+- 목적지 매니저는 `Target.packages`다. Windows 목적지에서만 사용자가 winget(기본)·Scoop·Chocolatey 중 고르고, 출발도 Windows면 고르지 않는다. Linux는 계열이 정하고, `Other`는 매니저가 없어 다른 OS 패키지를 받지 않는다. Linux brew는 목적지로 쓰지 않는다.
+- 같은 OS 이동은 대응표를 쓰지 않는다. 대응은 원래 매니저를 쓸 수 없을 때만 쓴다.
+- 대응 이름은 목적지 매니저의 기본 소스에 있어야 한다. Scoop은 공식 bucket까지 허용하고, 별도 apt 저장소·COPR·AUR·사용자 tap에만 있는 패키지는 대응하지 않는다.
+- 이름 유사도로 추측하지 않는다. 표에 없으면 `NotInPackageMap`, `null`이면 `NoPackageInManager`, 목적지에 매니저가 없으면 `NoPackageManager`로 사용 불가다.
+- CI가 대응표의 이름을 각 러너의 실제 매니저로 확인한다(대응표가 바뀐 PR과 주 1회).
 
 ### OS 간 이동 시 설정 파일 변환
 
@@ -297,7 +314,8 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 ```rust
 pub enum Step {
     AddTap { manager: PackageManager, name: String },     // brew tap, scoop bucket
-    InstallPackage { manager: PackageManager, kind: PackageKind, name: String },
+    InstallPackage { manager: PackageManager, kind: PackageKind, name: String,
+                     mapped_from: Option<MappedFrom> },             // 대응된 경우 원래 매니저·종류·이름
     InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool },
     InstallGlobal { manager: GlobalManager, name: String },
     InstallExtension { editor: Editor, id: String },
@@ -306,7 +324,7 @@ pub enum Step {
 }
 ```
 
-`export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다.
+`export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다. 다른 OS 패키지는 §9 패키지 대응표의 이름으로 바꾸고 `mapped_from`에 원래 이름을 남긴다. 렌더러는 그 단계 위에 `# from brew: ripgrep` 같은 영어 주석을 달고, 대응에 Scoop bucket이 필요하면 `AddTap`을 먼저 만든다. 두 출발 항목이 같은 목적지 이름으로 대응되면 첫 항목만 내보내고 경고한다. 내보내기 README에는 대응된 패키지 목록을 적는다.
 
 `TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
@@ -379,6 +397,7 @@ repot-export-2026-11-02/
 - 오른쪽: 상세 패널. 설명, 원본 위치, 이식성 판정 이유, Finding 목록, 비밀정보 줄별 "원본으로 내보내기" 토글
 - 기본 체크 상태: 목적지 OS에서 사용 가능한 항목은 모두 체크된 상태로 시작한다.
 - 상단에서 목적지 OS를 바꾸면 사용 가능 여부를 즉시 다시 판정한다. 사용 불가가 된 항목의 체크는 해제된다.
+- 목적지가 Windows이고 출발이 Windows가 아니면 목적지 옆에 패키지 매니저 팝업(winget/Scoop/Chocolatey)을 보여준다. 바꾸면 즉시 다시 판정한다. 대응된 항목은 목록에 대응 이름을 보조 텍스트로, 상세 패널에 "brew `ripgrep` → winget `BurntSushi.ripgrep.MSVC`"와 내장 대응표 기준이니 실행 전에 확인하라는 안내를 보여준다.
 - "감지되지 않은 도구"와 "스캔 실패" 목록은 사이드바 아래쪽에 접힌 상태로 보여준다.
 
 ### 내보내기 화면
@@ -403,6 +422,7 @@ repot-export-2026-11-02/
 - **Provider 단위 테스트**: OS별로 녹화한 명령 출력과 파일을 fixture로 두고 `FakeEnv`로 실행한다. 어떤 OS에서든 모든 Provider 테스트를 돌릴 수 있다.
 - **비밀정보**: 감지해야 하는 사례와 감지하면 안 되는 사례(변수 참조, 주석 속 설명, 빈 값 등)를 표 기반으로 테스트한다.
 - **사용 가능 판정**: Portability × 목적지 OS 조합을 표 기반으로 테스트한다.
+- **패키지 대응표**: 데이터 형식(알려진 매니저 키, 정렬, 빈 값, 허용 패턴)과 역색인 유일성(대소문자 무시)을 테스트하고, CI `package-map` 작업이 이름을 실제 매니저로 확인한다.
 - **렌더러**: `restore.sh`, `restore.ps1`, 각 매니페스트를 `insta` 스냅샷으로 고정한다.
 - **CI (GitHub Actions)**:
   - macOS, Windows, Ubuntu 러너에서 `cargo test`, `clippy`, `fmt`
@@ -426,6 +446,7 @@ repot-export-2026-11-02/
 - apt·dnf의 "직접 설치" 목록에 기본 시스템 패키지가 섞일 수 있다.
 - winget, cargo 항목은 로컬에 설명이 없어 "설명 없음"으로 표시된다.
 - 패키지 매니저 간 중복은 이름이 정확히 같을 때만 감지한다.
+- OS 간 패키지 대응은 내장 대응표에 있는 패키지만 된다. 표에 없는 패키지는 다른 OS로 옮길 수 없다. 대응 이름은 앱 버전 시점의 저장소 기준이라 이후 이름이 바뀔 수 있다.
 - 비밀정보 감지는 패턴 기반이라 모든 비밀을 잡지는 못한다. UI와 README에 이 점을 명시한다.
 - WSL, Git Bash 환경은 고려하지 않는다.
 - winget은 `winget` 소스 패키지만 다룬다(msstore 제외).
