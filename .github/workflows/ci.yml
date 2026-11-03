@@ -84,7 +84,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - run: node --test scripts/*.test.mjs
+      - run: node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs
       - name: Refresh default Ubuntu repositories only
         if: runner.os == 'Linux'
         run: |
@@ -200,7 +200,7 @@ jobs:
             pacman -Syu --noconfirm --needed nodejs git
           fi
       - uses: actions/checkout@v6
-      - run: node --test scripts/*.test.mjs
+      - run: node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs
       - run: node scripts/check-package-map.mjs ${{ matrix.manager }}
       - uses: actions/upload-artifact@v6
         if: always()
@@ -547,7 +547,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/*.test.mjs
+      - run: node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test
       - run: pnpm --filter @repot/desktop build
