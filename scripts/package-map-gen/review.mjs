@@ -19,7 +19,9 @@ export async function writeReview(rows, { cacheDir = '.cache/package-map-gen', r
   await writeFile(reviewPath + '.tmp', JSON.stringify(review, null, 2) + '\n'); await rename(reviewPath + '.tmp', reviewPath);
   return review;
 }
-export async function applyReview({ cacheDir = '.cache/package-map-gen', reviewPath = join(cacheDir, 'review.json'), ...options } = {}) {
+export async function applyReview({ cacheDir = '.cache/package-map-gen', reviewPath = join(cacheDir, 'review.json'), reviewer = 'human', ...options } = {}) {
+  if (!['human', 'agent'].includes(reviewer)) throw new Error('Invalid reviewer: use human or agent');
+  const method = reviewer === 'agent' ? 'agent-review' : 'human';
   const review = JSON.parse(await readFile(reviewPath, 'utf8'));
   if (review.version !== 1 || !Array.isArray(review.items)) throw new Error('Invalid review file');
   const rows = [], seen = new Set();
@@ -28,7 +30,8 @@ export async function applyReview({ cacheDir = '.cache/package-map-gen', reviewP
     seen.add(identity(item));
     if (item.decision === '' || item.decision === 'skip') continue;
     if (typeof item.decision !== 'string' || !Array.isArray(item.candidates) || (item.decision !== 'none' && !item.candidates.some(c => c.id === item.decision))) throw new Error('Invalid review decision: choose a listed candidate, none, or skip');
-    rows.push({ ...item, status: 'human', method: 'human', picked: item.decision, probability: null });
+    if (item.evidence !== undefined && typeof item.evidence !== 'string') throw new Error('Invalid review evidence: use a string');
+    rows.push({ ...item, status: 'human', method, picked: item.decision, probability: null });
   }
   return applyDecisions(rows, options);
 }

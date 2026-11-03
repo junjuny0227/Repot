@@ -63,6 +63,10 @@ test('run/apply-review options validate finite thresholds and nonnegative budget
   assert.equal(options.command, 'run'); assert.equal(options.threshold, 0.8); assert.equal(options.maxRequests, 2); assert.equal(options.dryRun, true);
   assert.equal(parseOptions(['run', '--names', 'sample']).threshold, 0.95);
   assert.equal(parseOptions(['apply-review']).command, 'apply-review');
+  assert.equal(parseOptions(['apply-review']).reviewer, 'human');
+  assert.equal(parseOptions(['apply-review', '--reviewer', 'agent']).reviewer, 'agent');
+  assert.throws(() => parseOptions(['apply-review', '--reviewer', 'robot']), /--reviewer/);
+  assert.throws(() => parseOptions(['run', '--names', 'sample', '--reviewer', 'agent']), /Unknown option/);
   for (const args of [['--threshold', 'NaN'], ['--threshold', '1.1'], ['--max-requests', '-1'], ['--credit-floor', '-1']]) assert.throws(() => parseOptions(['run', '--names', 'sample', ...args]));
 });
 test('end-to-end candidates → jeb → dry-run/review edit → apply → rerun: no secrets/network outside injected fetch', async () => {

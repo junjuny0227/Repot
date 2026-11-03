@@ -11,12 +11,13 @@ import { classify } from './classify.mjs';
 import { applyDecisions, defaultMapPath } from './apply.mjs';
 import { writeReview, applyReview } from './review.mjs';
 const cacheDefault = '.cache/package-map-gen';
-const usage = 'Usage: pnpm package-map:gen candidates|run [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]; run [--threshold 0.95] [--max-requests 1000] [--credit-floor 100] [--dry-run]; apply-review [--review-file path] [--dry-run]';
+const usage = 'Usage: pnpm package-map:gen candidates|run [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]; run [--threshold 0.95] [--max-requests 1000] [--credit-floor 100] [--dry-run]; apply-review [--review-file path] [--reviewer human|agent] [--dry-run]';
 export function parseOptions(args) {
   const command = args[0];
   if (!['candidates', 'run', 'apply-review'].includes(command)) throw new Error(usage);
   const options = { offline: { type: 'boolean', default: false }, names: { type: 'string' }, 'from-analytics': { type: 'string' }, 'from-scan': { type: 'string' }, 'cache-dir': { type: 'string' } };
   if (command !== 'candidates') Object.assign(options, { 'dry-run': { type: 'boolean', default: false }, 'review-file': { type: 'string' } });
+  if (command === 'apply-review') options.reviewer = { type: 'string', default: 'human' };
   if (command === 'run') Object.assign(options, { threshold: { type: 'string' }, 'max-requests': { type: 'string' }, 'credit-floor': { type: 'string' } });
   const { values } = parseArgs({ args: args.slice(1), options });
   const top = values['from-analytics'] === undefined ? 0 : Number(values['from-analytics']);
@@ -27,7 +28,8 @@ export function parseOptions(args) {
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error('--threshold must be between 0 and 1');
   if (!Number.isSafeInteger(maxRequests) || maxRequests < 0) throw new Error('--max-requests requires a nonnegative integer');
   if (!Number.isFinite(creditFloor) || creditFloor < 0) throw new Error('--credit-floor requires a nonnegative number');
-  return { command, offline: values.offline, names, top, scanPath: values['from-scan'], cacheDir: values['cache-dir'] ?? cacheDefault, threshold, maxRequests, creditFloor, dryRun: values['dry-run'] ?? false, reviewPath: values['review-file'] };
+  if (values.reviewer !== undefined && !['human', 'agent'].includes(values.reviewer)) throw new Error('--reviewer must be human or agent');
+  return { command, offline: values.offline, names, top, scanPath: values['from-scan'], cacheDir: values['cache-dir'] ?? cacheDefault, threshold, maxRequests, creditFloor, dryRun: values['dry-run'] ?? false, reviewPath: values['review-file'], reviewer: values.reviewer ?? 'human' };
 }
 export async function loadAnalytics({ cacheDir = cacheDefault, offline = false, fetch = globalThis.fetch } = {}) {
   const results = [];
