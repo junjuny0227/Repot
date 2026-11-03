@@ -55,8 +55,13 @@ export function selectSources({ brew, names = [], scan, analytics = [], top = 0,
     requested.push({ id: match ? match[2] : name, kind: match ? (match[1] === 'brew' ? 'formula' : 'cask') : undefined });
   }
   if (scan) {
-    if (!Array.isArray(scan.scan?.items)) throw new Error('Invalid Repot scan: expected scan.items');
-    for (const item of scan.scan.items) if (item.details?.package?.manager === 'brew') requested.push({ id: item.name, kind: item.details.package.kind });
+    // Accept a core ScanResult (`items`, as written by the scan example) and the desktop UI state (`scan.items`).
+    const items = Array.isArray(scan.items) ? scan.items : scan.scan?.items;
+    if (!Array.isArray(items)) throw new Error('Invalid Repot scan: expected items or scan.items');
+    for (const item of items) {
+      const pkg = item.details?.package;
+      if (pkg?.manager === 'brew' && (pkg.kind === 'formula' || pkg.kind === 'cask')) requested.push({ id: item.name, kind: pkg.kind });
+    }
   }
   for (const { kind, data } of analytics) {
     const items = Array.isArray(data.items) ? data.items : Object.values(data.items ?? {}).flat();
