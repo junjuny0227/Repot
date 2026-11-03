@@ -319,6 +319,9 @@ jobs:
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test
       - run: pnpm --filter @repot/desktop build
+      - run: pnpm --filter @repot/site typecheck
+      - run: pnpm --filter @repot/site test
+      - run: pnpm --filter @repot/site build
 
   scripts:
     strategy:

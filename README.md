@@ -2,6 +2,8 @@
 
 Move your dev environment to a new machine — explained, selective, and safe.
 
+Website: <https://junjuny0227.github.io/Repot/>
+
 ## What it does
 
 Scan your current machine, review each item with its description and portability

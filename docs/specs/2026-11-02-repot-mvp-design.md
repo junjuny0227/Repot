@@ -81,9 +81,10 @@ Repot/
 │               ├── script/       # bash, PowerShell 렌더러
 │               └── manifest.rs   # 네이티브 매니페스트 생성
 └── apps/
-    └── desktop/
-        ├── src-tauri/            # Tauri 명령: core를 호출하는 얇은 층
-        └── src/                  # React + TypeScript + Vite
+    ├── desktop/
+    │   ├── src-tauri/            # Tauri 명령: core를 호출하는 얇은 층
+    │   └── src/                  # React + TypeScript + Vite
+    └── site/                     # 정적 제품 사이트 (GitHub Pages, 계획 6)
 ```
 
 ### 계층 경계
@@ -402,6 +403,7 @@ repot-export-2026-11-02/
 - `tauri-action`으로 macOS(`.dmg`, Apple silicon·Intel), Windows(`.msi`/설치 파일), Linux(`.AppImage`, `.deb`)를 빌드해 GitHub Releases에 올린다.
 - 코드 서명이 없으므로 README에 첫 실행 방법(macOS "확인 없이 열기", Windows "추가 정보 → 실행")을 안내한다.
 - 라이선스: Apache-2.0 (저장소의 `LICENSE`)
+- 제품 사이트: `apps/site`의 정적 페이지를 GitHub Pages(`https://junjuny0227.github.io/Repot/`)에 올린다. 다운로드 링크는 빌드 시점에 앱 버전으로 만든 릴리스 자산 URL이고, 사이트도 런타임 네트워크 호출을 하지 않는다. (계획 6)
 
 ## 15. 알려진 한계
 

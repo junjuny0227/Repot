@@ -4,7 +4,7 @@
 ## 기준 문서
 
 - 제품 결정의 기준은 `docs/specs/2026-11-02-repot-mvp-design.md`이다. 구현 순서와 인터페이스는 `docs/plans/2026-11-02-0[1-5]-*.md`를 따른다.
-- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
+- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 제품 사이트(`apps/site`)는 계획 6(`docs/plans/2026-11-03-06-site.md`)을 따른다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
 - 구현 중 스펙과 다른 결정을 내리면 같은 PR에서 스펙도 고친다. 계획만 고치고 스펙을 두면 두 문서가 어긋난다.
 
 ## 빌드와 테스트
@@ -20,6 +20,7 @@
 | `cargo run -p repot-core --example export` | verified (exit 0, 2026-11-02) | 계획 2 Task 9 |
 | `pnpm --filter @repot/desktop typecheck` / `test` / `build` | verified (exit 0, 2026-11-02) | 계획 3 Task 1 |
 | `pnpm --filter @repot/desktop tauri dev` | verified (exit 0, 2026-11-02) | 계획 3 Task 1 |
+| `pnpm --filter @repot/site typecheck` / `test` / `build` | verified (exit 0, 2026-11-03) | 계획 6 Task 1 |
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.
 - `repot-desktop`(Tauri)은 컴파일 시점에 `apps/desktop/dist`가 필요하다. 워크스페이스 전체를 `cargo`로 돌리기 전에 프론트엔드를 먼저 빌드한다.
@@ -34,6 +35,7 @@
 | `crates/core/tests/snapshots/` | `export/` 렌더러 | `INSTA_UPDATE=always cargo test` (cargo-insta가 설치돼 있으면 `cargo insta review`), unverified | `cargo test` |
 | `apps/desktop/src-tauri/icons/` (`icon.icns` 제외) | `apps/desktop/app-icon.svg` (여백 없는 원본, Windows·Linux용. 시작 화면도 이 파일을 쓴다) | `apps/desktop`에서 `pnpm tauri icon app-icon.svg` | 빌드 |
 | `apps/desktop/src-tauri/icons/icon.icns` | `apps/desktop/app-icon-macos.svg` (macOS 템플릿: 1024 캔버스, 824 판, 100px 여백) | 위 명령 다음에 `tmp=$(mktemp -d) && pnpm tauri icon app-icon-macos.svg -o "$tmp" && cp "$tmp/icon.icns" src-tauri/icons/icon.icns && rm -rf "$tmp"` | 빌드, Dock에서 다른 앱과 크기 비교 |
+| `apps/site/public/screenshots/*.webp` | 앱 화면 캡처 PNG(2200×1440, `03-review-*`, `05-export-script-*`) | 계획 6 Task 2의 `cwebp -metadata icc -q 82 -alpha_q 100` (1100폭은 `-resize 1100 0`) | 사이트 화면 확인 |
 | `pnpm-lock.yaml`, `Cargo.lock` | 의존성 선언 | `pnpm install`, `cargo` | CI `--frozen-lockfile` |
 
 - core 모델의 직렬화 모양을 바꾸면 `scan.json`을 반드시 다시 생성한다. TS 타입은 손으로 맞추고 이 fixture 테스트로만 검증한다.
