@@ -24,7 +24,12 @@ export function classify(manager, name, result) {
   if (result.error || result.status === null) return 'transient';
   const text = `${result.stdout ?? ''}\n${result.stderr ?? ''}`.replace(/\x1b\[[0-9;]*m/g, '');
   // Errors can coexist with a misleading empty-result message or partial metadata.
-  if (/HTTP\s*[45]\d\d|timed?\s*out|timeout|TLS handshake failed|SSL.*(?:error|failed)|certificate.*(?:error|failed)|network (?:failure|error)|could not resolve|connection (?:refused|failed|reset)|failed to download|failed to fetch|source unavailable|service unavailable|error.*source/i.test(text)) return 'transient';
+  // A successful query can contain release notes mentioning old network bugs.
+  // Only inspect diagnostic lines on success, but all output on command failure.
+  const diagnostics = result.status === 0
+    ? `${result.stderr ?? ''}\n${text.split(/[\r\n]+/).filter(line => /^(?:error|fatal|warning|HTTP|TLS|SSL|network)\b/i.test(line)).join('\n')}`
+    : text;
+  if (/HTTP\s*[45]\d\d|\btimed?\s+out\b|timeout (?:exceeded|expired|error)|TLS handshake failed|SSL.*(?:error|failed)|certificate.*(?:error|failed)|network (?:failure|error)|could not resolve|connection (?:refused|failed|reset)|failed to download|failed to fetch|source unavailable|service unavailable|error.*source/i.test(diagnostics)) return 'transient';
   const missing = {
     brew: /No available formula with the name|No formulae? found/i,
     brewCask: /No Cask with this name exists|No available cask/i,
@@ -32,7 +37,7 @@ export function classify(manager, name, result) {
     scoop: /Could not find manifest for .* in local buckets/i,
     choco: /(?:^|\n)0 packages found\.?\s*(?:\n|$)/i,
     apt: /No packages found|Unable to locate package/i,
-    dnf: /No matching Packages to list|No matching packages/i,
+    dnf: /No matching Packages to list|No matching packages|No matches found/i,
     pacman: /error: package .* was not found/i,
   };
   if (!managers.includes(manager)) throw new Error(`Unknown manager: ${manager}`);

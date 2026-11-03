@@ -107,7 +107,6 @@
     "chromium": {
       "brewCask": "chromium",
       "scoop": "extras/chromium",
-      "apt": "chromium",
       "dnf": "chromium",
       "pacman": "chromium"
     },
@@ -137,13 +136,11 @@
     },
     "cyberduck": {
       "brewCask": "cyberduck",
-      "winget": "iterate.Cyberduck",
       "scoop": "extras/cyberduck",
       "choco": "cyberduck"
     },
     "dbeaver-community": {
       "brewCask": "dbeaver-community",
-      "winget": "dbeaver.dbeaver",
       "scoop": "extras/dbeaver",
       "choco": "dbeaver"
     },
@@ -172,8 +169,6 @@
     },
     "duckdb": {
       "brew": "duckdb",
-      "apt": "duckdb",
-      "dnf": "duckdb",
       "pacman": "duckdb"
     },
     "dust": {
@@ -200,7 +195,6 @@
     },
     "fastfetch": {
       "brew": "fastfetch",
-      "apt": "fastfetch",
       "dnf": "fastfetch",
       "pacman": "fastfetch",
       "winget": "Fastfetch-cli.Fastfetch",
@@ -218,7 +212,6 @@
     "ffmpeg": {
       "brew": "ffmpeg",
       "apt": "ffmpeg",
-      "dnf": "ffmpeg",
       "pacman": "ffmpeg",
       "winget": "Gyan.FFmpeg",
       "scoop": "ffmpeg",
@@ -350,7 +343,6 @@
     },
     "google-chrome": {
       "brewCask": "google-chrome",
-      "winget": "Google.Chrome",
       "scoop": "extras/googlechrome",
       "choco": "googlechrome"
     },
@@ -470,7 +462,7 @@
     "lazygit": {
       "brew": "lazygit",
       "winget": "JesseDuffield.lazygit",
-      "scoop": "lazygit",
+      "scoop": "extras/lazygit",
       "choco": "lazygit"
     },
     "less": {
@@ -530,7 +522,6 @@
       "apt": "maven",
       "dnf": "maven",
       "pacman": "maven",
-      "winget": "Apache.Maven",
       "scoop": "maven",
       "choco": "maven"
     },
@@ -584,8 +575,6 @@
     },
     "ninja": {
       "brew": "ninja",
-      "apt": "ninja",
-      "dnf": "ninja",
       "pacman": "ninja",
       "winget": "Ninja-build.Ninja",
       "scoop": "ninja",
@@ -602,8 +591,6 @@
     },
     "node": {
       "brew": "node",
-      "apt": "node",
-      "dnf": "node",
       "winget": "OpenJS.NodeJS",
       "scoop": "nodejs",
       "choco": "nodejs"
@@ -632,7 +619,6 @@
     },
     "openssh": {
       "brew": "openssh",
-      "apt": "openssh",
       "dnf": "openssh",
       "pacman": "openssh"
     },
@@ -645,7 +631,6 @@
     "pandoc": {
       "brew": "pandoc",
       "apt": "pandoc",
-      "dnf": "pandoc",
       "winget": "JohnMacFarlane.Pandoc",
       "scoop": "pandoc",
       "choco": "pandoc"
@@ -681,7 +666,6 @@
     },
     "poetry": {
       "brew": "poetry",
-      "apt": "poetry",
       "dnf": "poetry"
     },
     "postman": {
@@ -726,8 +710,7 @@
     },
     "redis": {
       "brew": "redis",
-      "apt": "redis",
-      "dnf": "redis"
+      "apt": "redis"
     },
     "restic": {
       "brew": "restic",
@@ -780,7 +763,6 @@
     "shfmt": {
       "brew": "shfmt",
       "apt": "shfmt",
-      "dnf": "shfmt",
       "pacman": "shfmt",
       "winget": "mvdan.shfmt",
       "scoop": "shfmt",
@@ -818,8 +800,6 @@
     },
     "starship": {
       "brew": "starship",
-      "apt": "starship",
-      "dnf": "starship",
       "pacman": "starship",
       "winget": "Starship.Starship",
       "scoop": "starship",
@@ -848,7 +828,6 @@
     },
     "task": {
       "brew": "task",
-      "apt": "task",
       "dnf": "task",
       "pacman": "task"
     },
@@ -908,7 +887,6 @@
     "vim": {
       "brew": "vim",
       "apt": "vim",
-      "dnf": "vim",
       "pacman": "vim",
       "winget": "vim.vim",
       "scoop": "vim",
@@ -936,9 +914,7 @@
       "choco": "vscodium"
     },
     "watch": {
-      "brew": "watch",
-      "apt": "watch",
-      "dnf": "watch"
+      "brew": "watch"
     },
     "watchexec": {
       "brew": "watchexec",
@@ -952,14 +928,12 @@
     "wget": {
       "brew": "wget",
       "apt": "wget",
-      "dnf": "wget",
       "pacman": "wget",
       "scoop": "wget",
       "choco": "wget"
     },
     "xz": {
       "brew": "xz",
-      "apt": "xz",
       "dnf": "xz",
       "pacman": "xz"
     },

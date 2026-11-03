@@ -21,7 +21,11 @@ test('recognizes exact identities, not successful empty or unrelated output', ()
 });
 
 test('metadata mentioning networking, SSL and certificates is not a transport error', () => {
-  assert.equal(classify('pacman', 'curl', { status: 0, stdout: 'Name : curl\nDescription : network transfer with SSL\nDepends On : openssl ca-certificates' }), 'found');
+  assert.equal(classify('pacman', 'curl', { status: 0, stdout: 'Name : curl\nDescription : network transfer with SSL\nDepends On : openssl ca-certificates ruby-timeout' }), 'found');
+});
+
+test('release notes are metadata, not diagnostics', () => {
+  assert.equal(classify('winget', 'GitHub.GitLFS', { status: 0, stdout: 'Found Git LFS [GitHub.GitLFS]\nRelease Notes:\nFixed authentication timeouts and network error handling' }), 'found');
 });
 
 test('distinguishes authoritative absence from transport and command failures', () => {
@@ -32,6 +36,7 @@ test('distinguishes authoritative absence from transport and command failures', 
     ['scoop', "Could not find manifest for 'missing' in local buckets."],
     ['choco', '0 packages found.'],
     ['apt', 'E: No packages found'],
+    ['dnf', 'No matches found.'],
     ['dnf', 'Error: No matching Packages to list'],
     ['pacman', "error: package 'missing' was not found"],
   ];
