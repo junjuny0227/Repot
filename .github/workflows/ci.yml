@@ -164,8 +164,11 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          scoop bucket add extras
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot add official extras bucket' }
+          # Plan 9 allows every official bucket, so the checker must see them all.
+          foreach ($bucket in @('extras', 'versions', 'java', 'nerd-fonts')) {
+            scoop bucket add $bucket
+            if ($LASTEXITCODE -ne 0) { throw "Cannot add official $bucket bucket" }
+          }
       - name: Verify every non-null name against real default repositories
         shell: bash
         run: node scripts/check-package-map.mjs ${{ matrix.keys }}
