@@ -1,0 +1,9 @@
+[
+  { "id": "mac-arm", "os": "mac", "file": "Repot_{version}_aarch64.dmg" },
+  { "id": "mac-intel", "os": "mac", "file": "Repot_{version}_x64.dmg" },
+  { "id": "windows-setup", "os": "windows", "file": "Repot_{version}_x64-setup.exe" },
+  { "id": "windows-msi", "os": "windows", "file": "Repot_{version}_x64_en-US.msi" },
+  { "id": "linux-appimage", "os": "linux", "file": "Repot_{version}_amd64.AppImage" },
+  { "id": "linux-deb", "os": "linux", "file": "Repot_{version}_amd64.deb" },
+  { "id": "linux-rpm", "os": "linux", "file": "Repot-{version}-1.x86_64.rpm" }
+]
