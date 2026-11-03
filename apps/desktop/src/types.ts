@@ -1,12 +1,14 @@
 export type LinuxFamily = "debian" | "fedora" | "arch" | "other";
 export type Os = "macOs" | "windows" | { linux: LinuxFamily };
+export type PackageManager = "brew" | "winget" | "scoop" | "choco" | "apt" | "dnf" | "pacman";
+export interface Target { os: Os; packages: PackageManager | null }
 export type Shell = "zsh" | "bash" | "fish" | "powerShell";
 export type Category = "packageManager" | "runtime" | "globalPackage" | "editor" | "git" | "shell";
 export type RuntimeTool = "nvm" | "nvmWindows" | "fnm" | "volta" | "pyenv" | "pyenvWin" | "rustup" | "sdkman";
 export type Editor = "vsCode" | "cursor";
 export type TargetPath = { home: string } | { editorUser: { editor: Editor; rel: string } } | "powerShellProfile";
 export type Origin = { command: string } | { path: string };
-export type Portability = "any" | "sameOs" | { sameShell: Shell } | { mapped: RuntimeTool };
+export type Portability = "any" | "sameOs" | "package" | { sameShell: Shell } | { mapped: RuntimeTool };
 export type ItemDetails =
   | { package: { manager: string; kind: "formula" | "cask" | "tap" | "package" } }
   | { runtime: { tool: RuntimeTool; runtime: string; isDefault: boolean } }
