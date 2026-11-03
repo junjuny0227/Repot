@@ -587,14 +587,6 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
-    "openjdk": {
-      "scoop": {
-        "method": "jeb",
-        "probability": 0.9506199759505651,
-        "tier": "LOW",
-        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
-      }
-    },
     "oras": {
       "scoop": {
         "method": "high-tier",

@@ -846,10 +846,6 @@
       "brewCask": "opencode-desktop",
       "winget": "SST.OpenCodeDesktop"
     },
-    "openjdk": {
-      "brew": "openjdk",
-      "scoop": "java/openjdk"
-    },
     "openssh": {
       "brew": "openssh",
       "dnf": "openssh",
