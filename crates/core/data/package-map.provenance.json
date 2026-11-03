@@ -1,0 +1,933 @@
+{
+  "version": 1,
+  "packages": {
+    "1password-cli": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9670872030169854,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9789945752701096,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "actionlint": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "android-platform-tools": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9794545441865014,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "android-studio": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9783791101421007,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "antigravity-cli": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9591965760608718,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "argocd": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9613853867102266,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "aria2": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9608595097511152,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ast-grep": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "atuin": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "awscli": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9864041974175969,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "azure-cli": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9567064556669237,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9785195136317287,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "balenaetcher": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9535433423763379,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "bruno": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "cargo-nextest": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9616812158643051,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "cc-switch": {
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ccache": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.974101496152863,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "chezmoi": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "cloudflared": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "codex": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9544328549228663,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "db-browser-for-sqlite": {
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "dbeaver-community": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9508011791074021,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "docker": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9660172817865615,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "docker-buildx": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.975084809785159,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "docker-compose": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "docker-desktop": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9843792658741483,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "drawio": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9787332079133634,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "flyctl": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ghostscript": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "git-credential-manager": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9658070715725389,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "git-delta": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9554056947563043,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "github": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9739390294906114,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "gitleaks": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "gnupg": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9815902374150889,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "golangci-lint": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "google-gemini": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9876007395653498,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "handy": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9556017481759647,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "harfbuzz": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "herdr": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9650566798537786,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "jadx": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9610613483811736,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "jetbrains-toolbox": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9819559476653832,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "jsonnet": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9706922054821582,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "k9s": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "kicad": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "kubeconform": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "kubernetes-cli": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9759347916662202,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9881483594477305,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "kustomize": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9712445127313469,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "lefthook": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9503739278858772,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "lm-studio": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9758926416829811,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "microsoft-edge": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9779256026054377,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "mise": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "mitmproxy": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9589032576943749,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "mkcert": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "mole": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "moonlight": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9867308707491034,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ngrok": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.96229438844179,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "opencode-desktop": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9576604038971875,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "openjdk": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9506199759505651,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "oras": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "pgadmin4": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9851416983132558,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "pipx": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "pkgconf": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9905785587002486,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "podman-desktop": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "poppler": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9708292576611512,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9755682112769499,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "powershell": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9758435753449577,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "protobuf": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "raspberry-pi-imager": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9789732174840122,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "redis": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9631440014812606,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "rtk": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ruby": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9653100717587563,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "ruff": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9584692221479503,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "rustup": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9855093028565479,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "scrcpy": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "sentry-cli": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9559257143251043,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9760263191531795,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "session-manager-plugin": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9596650832110181,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "sqlite": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9612214351369556,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "steam": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9545650262674721,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "t3-code": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9721259903337353,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "tesseract": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "tigervnc": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9683939762969096,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "trivy": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "unbound": {
+      "scoop": {
+        "method": "jeb",
+        "probability": 0.9657915574213969,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "unity-hub": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9813617780165427,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "upscayl": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9723739753261443,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "watchman": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "wireshark-app": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9598703077382307,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "xz": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9503124287447755,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "yq": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "zed": {
+      "winget": {
+        "method": "jeb",
+        "probability": 0.9848337090780844,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "zen": {
+      "scoop": {
+        "method": "high-tier",
+        "probability": null,
+        "tier": "HIGH",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    }
+  }
+}
