@@ -62,7 +62,9 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
     let mut notes = vec![];
     for item in req.items.iter().filter(|item| selected.contains(&item.id)) {
         let item_id = item.id.clone();
-        if let Availability::Unavailable(reason) = availability(item, req.source, req.target) {
+        if let Availability::Unavailable(reason) =
+            availability(item, req.source, crate::Target::default_for(req.target))
+        {
             warnings.push(ExportWarning::Unavailable { item_id, reason });
             continue;
         }

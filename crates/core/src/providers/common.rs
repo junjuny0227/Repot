@@ -19,7 +19,7 @@ pub(crate) fn package_item(
         description,
         catalog_id: None,
         origin: Origin::Command(command.into()),
-        portability: Portability::SameOs,
+        portability: Portability::Package,
         details: ItemDetails::Package { manager, kind },
         findings: vec![],
     }

@@ -30,7 +30,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         items: result
             .items
             .iter()
-            .filter(|item| availability(item, source, source) == Availability::Available)
+            .filter(|item| {
+                availability(item, source, repot_core::Target::default_for(source))
+                    == Availability::Available
+            })
             .map(|item| item.id.clone())
             .collect(),
         reveal_secret_lines: vec![],

@@ -43,7 +43,7 @@ fn scans_top_level_formulae_casks_and_taps() {
     );
     // Descriptions from the tool itself are shown as they are, not translated.
     assert_eq!(rg.catalog_id, None);
-    assert_eq!(rg.portability, Portability::SameOs);
+    assert_eq!(rg.portability, Portability::Package);
     assert_eq!(
         rg.details,
         ItemDetails::Package {

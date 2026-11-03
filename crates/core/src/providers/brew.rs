@@ -95,7 +95,7 @@ impl Provider for Brew {
                     description,
                     catalog_id: None,
                     origin: Origin::Command(command.into()),
-                    portability: Portability::SameOs,
+                    portability: Portability::Package,
                     details: ItemDetails::Package {
                         manager: PackageManager::Brew,
                         kind,

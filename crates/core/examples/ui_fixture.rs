@@ -20,8 +20,8 @@ fn main() {
     );
     let output = serde_json::json!({
         "availability": {
-            "macOs": availability_map(&scan.items, Os::MacOs, Os::MacOs),
-            "windows": availability_map(&scan.items, Os::MacOs, Os::Windows),
+            "macOs": availability_map(&scan.items, Os::MacOs, repot_core::Target::default_for(Os::MacOs)),
+            "windows": availability_map(&scan.items, Os::MacOs, repot_core::Target::default_for(Os::Windows)),
         },
         "scan": scan,
     });
