@@ -64,6 +64,7 @@ impl Provider for Npm {
                     name,
                     version: Some(p.version),
                     description,
+                    catalog_id: None,
                     origin: Origin::Command("npm ls -g --depth=0 --json".into()),
                     portability: Portability::Any,
                     details: ItemDetails::GlobalPackage {

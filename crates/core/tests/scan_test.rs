@@ -47,6 +47,7 @@ fn pkg(provider: &str, name: &str) -> Item {
         name: name.into(),
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Command("x".into()),
         portability: Portability::SameOs,
         details: ItemDetails::Package {

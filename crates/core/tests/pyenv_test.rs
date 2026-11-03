@@ -34,6 +34,7 @@ fn versions_and_global() {
     );
     assert_eq!(items[0].name, "Python");
     assert_eq!(items[0].description.as_deref(), describe("runtime:python"));
+    assert_eq!(items[0].catalog_id.as_deref(), Some("runtime:python"));
 }
 
 #[test]

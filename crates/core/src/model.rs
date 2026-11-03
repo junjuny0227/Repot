@@ -18,6 +18,8 @@ pub struct Item {
     pub name: String,
     pub version: Option<String>,
     pub description: Option<String>,
+    /// Id of the built-in catalog entry the description came from; the UI translates by it.
+    pub catalog_id: Option<String>,
     pub origin: Origin,
     pub portability: Portability,
     pub details: ItemDetails,

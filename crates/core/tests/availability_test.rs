@@ -11,6 +11,7 @@ fn item(portability: Portability, findings: Vec<Finding>) -> Item {
         name: "x".into(),
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Command("test".into()),
         portability,
         details: ItemDetails::Runtime {

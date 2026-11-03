@@ -38,6 +38,7 @@ fn lists_versions_and_resolves_major_default() {
         ]
     );
     assert_eq!(items[0].portability, Portability::Mapped(RuntimeTool::Nvm));
+    assert_eq!(items[0].catalog_id.as_deref(), Some("runtime:node"));
 }
 
 #[test]

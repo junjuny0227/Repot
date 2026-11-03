@@ -26,6 +26,7 @@ fn e2e_bundle(os: Os) -> ExportBundle {
         name: name.into(),
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Command("CI restore fixture".into()),
         portability,
         details,

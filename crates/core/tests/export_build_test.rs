@@ -12,6 +12,7 @@ fn item(id: &str, name: &str, portability: Portability, details: ItemDetails) ->
         category: Category::Shell,
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Command("fixture".into()),
         portability,
         details,

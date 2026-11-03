@@ -113,6 +113,15 @@ fn unix_shell_files_and_omz_plugins() {
             target: TargetPath::Home(".oh-my-zsh/custom/plugins/zsh-autosuggestions".into())
         }
     );
+    let catalog_ids: Vec<_> = items.iter().map(|i| i.catalog_id.as_deref()).collect();
+    assert_eq!(
+        catalog_ids,
+        vec![
+            Some("file:zshrc"),
+            Some("file:starship"),
+            Some("plugin:oh-my-zsh")
+        ]
+    );
 }
 
 #[test]

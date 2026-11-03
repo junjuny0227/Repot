@@ -99,6 +99,7 @@ fn config_file_becomes_copy() {
         name: ".zshrc".into(),
         version: None,
         description: None,
+        catalog_id: None,
         origin: Origin::Path("/Users/t/.zshrc".into()),
         portability: Portability::Any,
         details: ItemDetails::ConfigFile {

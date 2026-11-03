@@ -17,6 +17,7 @@ fn smoke_bundle(os: Os) -> ExportBundle {
             name: ".repot-smoke".into(),
             version: None,
             description: None,
+            catalog_id: None,
             origin: Origin::Path(source.clone()),
             portability: Portability::Any,
             details: ItemDetails::ConfigFile {
@@ -32,6 +33,7 @@ fn smoke_bundle(os: Os) -> ExportBundle {
             name: "cowsay".into(),
             version: None,
             description: None,
+            catalog_id: None,
             origin: Origin::Command("npm ls -g".into()),
             portability: Portability::Any,
             details: ItemDetails::GlobalPackage {

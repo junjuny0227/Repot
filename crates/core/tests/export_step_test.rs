@@ -8,6 +8,7 @@ fn item(details: ItemDetails, name: &str, version: Option<&str>) -> Item {
         name: name.into(),
         version: version.map(str::to_owned),
         description: None,
+        catalog_id: None,
         origin: Origin::Command("test".into()),
         portability: Portability::Any,
         details,

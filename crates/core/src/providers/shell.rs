@@ -136,6 +136,7 @@ impl Provider for ShellProvider {
                     name: name.into(),
                     version: None,
                     description: catalog::describe("plugin:oh-my-zsh").map(str::to_owned),
+                    catalog_id: catalog::id("plugin:oh-my-zsh"),
                     origin: Origin::Path(config),
                     portability: Portability::SameShell(Shell::Zsh),
                     details: ItemDetails::ShellPlugin {

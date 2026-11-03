@@ -55,6 +55,11 @@ fn gitconfig_findings() {
         }
     );
     assert!(items[0].description.is_some());
+    assert_eq!(items[0].catalog_id.as_deref(), Some("file:gitconfig"));
+    assert_eq!(
+        items[1].catalog_id.as_deref(),
+        Some("file:gitignore-global")
+    );
 }
 
 #[test]
