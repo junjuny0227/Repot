@@ -123,5 +123,24 @@
     "startOver": "Start over",
     "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
     "language": "Language"
+  },
+  "updates": {
+    "settings": "Settings",
+    "automatic": "Check for updates automatically",
+    "checkNow": "Check now",
+    "checking": "Checking for updates…",
+    "current": "Repot is up to date.",
+    "unsupported": "Update with your package manager or download the latest version from the Repot site.",
+    "available": "Repot {version} is available",
+    "intro": "Install this signed update and restart Repot.",
+    "install": "Install and Restart",
+    "later": "Later",
+    "downloading": "Downloading and installing…",
+    "restarting": "Restarting…",
+    "progress": "{downloaded} of {total} bytes",
+    "failed": "Could not update Repot. Check your connection and try Check now again.",
+    "privacy": "Update checks and downloads connect to GitHub. Your scan data never leaves this machine.",
+    "deferred": "Repot {version} is ready. Return to the start or done screen to install it.",
+    "done": "Done"
   }
 }

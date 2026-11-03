@@ -9,6 +9,8 @@ import { ScanScreen } from "./screens/ScanScreen";
 import { ReviewScreen } from "./screens/ReviewScreen";
 import { ExportScreen } from "./screens/ExportScreen";
 import { DoneScreen } from "./screens/DoneScreen";
+import { updates } from "./updateService";
+import { UpdateNotice, UpdateStatus } from "./UpdateSettings";
 import { ExclamationCircle } from "./screens/icons";
 
 export default function App() {
@@ -20,12 +22,15 @@ export default function App() {
   latest.current = state;
 
   useEffect(() => {
+    updates.start();
     detectOs()
       .then((source) => dispatch({ type: "init", source }))
       .catch((e: unknown) => dispatch({ type: "error", message: errorMessage(e) }));
   }, []);
 
   const startScan = useCallback(async () => {
+    if (updates.busy()) return;
+    updates.setScreen("scanning");
     dispatch({ type: "scanStarted" });
     try {
       const scan = await runScan((report) => dispatch({ type: "progress", report }));
@@ -49,6 +54,8 @@ export default function App() {
       {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} />}
       {state.screen === "export" && <ExportScreen state={state} dispatch={dispatch} />}
       {state.screen === "done" && <DoneScreen state={state} dispatch={dispatch} />}
+      <UpdateNotice screen={state.screen} />
+      <UpdateStatus screen={state.screen} />
     </main>
   );
 }

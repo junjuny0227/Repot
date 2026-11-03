@@ -122,5 +122,24 @@
     "startOver": "最初に戻る",
     "secretLimit": "機密情報の検出はパターンに基づくため、見落としがある場合があります。共有する前にファイルを確認してください。",
     "language": "言語"
+  },
+  "updates": {
+    "settings": "設定",
+    "automatic": "アップデートを自動的に確認",
+    "checkNow": "今すぐ確認",
+    "checking": "アップデートを確認中…",
+    "current": "最新バージョンです。",
+    "unsupported": "パッケージマネージャーで更新するか、Repotのサイトから最新版をダウンロードしてください。",
+    "available": "Repot {version}にアップデート",
+    "intro": "署名済みのアップデートをインストールしてRepotを再起動します。",
+    "install": "インストールして再起動",
+    "later": "あとで",
+    "downloading": "ダウンロード・インストール中…",
+    "restarting": "再起動中…",
+    "progress": "{total}バイト中{downloaded}バイト",
+    "failed": "更新できませんでした。接続を確認し、今すぐ確認をもう一度押してください。",
+    "privacy": "更新の確認とダウンロードにのみGitHubを使用します。スキャンデータはこの端末から送信されません。",
+    "deferred": "Repot {version}をインストールできます。開始または完了画面に戻ってください。",
+    "done": "完了"
   }
 }
