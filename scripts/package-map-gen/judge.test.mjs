@@ -59,3 +59,19 @@ test('env key takes precedence; dotenv quotes/comments are parsed as data, never
   assert.equal(await readKey({ env: {}, envPath }), 'quoted');
   await assert.rejects(readKey({ env: {}, envPath: join(cacheDir, 'missing') }), /required/);
 }));
+test('public source desc and winget display fields reach uniform choices; safe request/cache statistics', () => temp(async cacheDir => {
+  const rich = { ...row, candidates: [{ ...row.candidates[0], name: undefined, description: undefined, fields: { PackageName: 'Display Tool', ShortDescription: 'Useful utility', PackageUrl: 'https://tool.example' } }] };
+  const payload = buildRequest({ ...source, desc: 'Source description' }, rich);
+  assert.equal(payload.state.desc, 'Source description');
+  assert.match(payload.questions.q.criteria[1], /Display Tool.*Useful utility.*https:\/\/tool.example/);
+  const judge = createJudge({ cacheDir, key: 'fake', fetch: async () => answer() });
+  await judge(source, row); await judge(source, row);
+  assert.deepEqual(judge.stats, { requests: 1, cached: 1, remainingCredits: 900 });
+}));
+test('offline cache miss and daily cap never invoke fetch', () => temp(async cacheDir => {
+  let calls = 0; const fetch = async () => { calls++; return answer(); };
+  await assert.rejects(createJudge({ cacheDir, offline: true, fetch })(source, row), /Offline/);
+  await writeFile(join(cacheDir, 'checkpoint.json'), JSON.stringify({ day: '2026-11-03', attempts: 1000, remainingCredits: 800, stopped: null }));
+  await assert.rejects(createJudge({ cacheDir, key: 'fake', fetch, now: () => new Date('2026-11-03') })(source, row), /limit/);
+  assert.equal(calls, 0);
+}));

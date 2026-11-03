@@ -13,9 +13,9 @@ export async function readKey({ env = process.env, envPath = new URL('../../.env
   return key;
 }
 export function buildRequest(source, row) {
-  const criteria = Object.fromEntries(row.candidates.map((c, i) => [String(i + 1), `${c.id}: ${c.name || c.id}. ${c.description || ''}. Homepage ${c.homepage || c.urls?.[0] || ''}. Kind ${['cli', 'gui'].includes(c.kind) ? c.kind : 'unknown'}`]));
+  const criteria = Object.fromEntries(row.candidates.map((c, i) => [String(i + 1), `${c.id}: ${c.name || c.fields?.PackageName || c.id}. ${c.description || c.fields?.ShortDescription || c.fields?.Description || ''}. Homepage ${c.homepage || c.fields?.PackageUrl || c.urls?.[0] || ''}. Kind ${['cli', 'gui'].includes(c.kind) ? c.kind : 'unknown'}`]));
   criteria[String(row.candidates.length + 1)] = 'none of these is the same software';
-  return { model: 'jeb', state: { kind: source.brew_kind, token: source.id, name: source.name || source.names, desc: source.description || '', homepage: source.homepage || source.urls?.[0] || '', source_repo_key: source.repos, target: row.target }, questions: { q: { type: 'choice', instructions: 'Choose the candidate that is the same software as the source package, not merely a functional alternative. Respect product/component, release channel and major-version constraints. Select none if no candidate is the same software. Source formula/cask kind is a hint, not proof of CLI/GUI.', criteria } } };
+  return { model: 'jeb', state: { kind: source.brew_kind, token: source.id, name: source.name || source.names, desc: source.description || source.desc || '', homepage: source.homepage || source.urls?.[0] || '', source_repo_key: source.repos, target: row.target }, questions: { q: { type: 'choice', instructions: 'Choose the candidate that is the same software as the source package, not merely a functional alternative. Respect product/component, release channel and major-version constraints. Select none if no candidate is the same software. Source formula/cask kind is a hint, not proof of CLI/GUI.', criteria } } };
 }
 function decode(body, row) {
   const a = body?.answers?.q, choice = String(a?.choice), index = Number(choice) - 1;
@@ -34,11 +34,12 @@ async function save(path, value) {
 // A serial queue deliberately stays below the maximum of two in-flight calls.
 export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globalThis.fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), now = () => new Date(), maxRequests = 1000, creditFloor = 100, offline = false, key, env, envPath } = {}) {
   let queue = Promise.resolve(), attempts = 0;
+  const stats = { requests: 0, cached: 0, remainingCredits: null };
   async function judge(source, row) {
     const payload = buildRequest(source, row), hash = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
     const responses = join(cacheDir, 'responses'), cachePath = join(responses, hash + '.json');
     const cached = await readJson(cachePath, null);
-    if (cached) return { ...decode(cached, row), cached: true };
+    if (cached) { const result = decode(cached, row); stats.cached++; return { ...result, cached: true }; }
     if (offline) throw new Error('Offline jeb response cache missing');
     const checkpointPath = join(cacheDir, 'checkpoint.json'), day = now().toISOString().slice(0, 10);
     let checkpoint = await readJson(checkpointPath, { day, attempts: 0, remainingCredits: null, stopped: null });
@@ -48,7 +49,7 @@ export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globa
     for (let retry = 0; retry < 7; retry++) {
       if (attempts >= maxRequests || checkpoint.attempts >= 1000) throw new Error('Jeb request limit reached');
       if (checkpoint.stopped || (checkpoint.remainingCredits !== null && checkpoint.remainingCredits < creditFloor)) throw new Error('Jeb quota stopped; resume after quota reset');
-      attempts++; checkpoint.attempts++;
+      attempts++; checkpoint.attempts++; stats.requests++;
       // Persist the reservation before transport; crashes must not refund attempts.
       checkpoint.stopped = 'request interrupted';
       await save(checkpointPath, checkpoint);
@@ -58,6 +59,7 @@ export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globa
       const header = response.headers.get('x-ratelimit-remaining-credits');
       const credits = header?.trim() ? Number(header) : NaN;
       checkpoint.remainingCredits = Number.isFinite(credits) && credits >= 0 ? credits : null;
+      stats.remainingCredits = checkpoint.remainingCredits;
       checkpoint.stopped = checkpoint.remainingCredits === null ? 'invalid quota header' : credits < creditFloor ? 'credit floor' : null;
       await save(checkpointPath, checkpoint);
       if (checkpoint.remainingCredits === null) throw new Error('Jeb quota header missing or invalid');
@@ -76,5 +78,7 @@ export function createJudge({ cacheDir = '.cache/package-map-gen', fetch = globa
       return { ...result, cached: false };
     }
   }
-  return (source, row) => { const task = queue.then(() => judge(source, row)); queue = task.catch(() => {}); return task; };
+  const client = (source, row) => { const task = queue.then(() => judge(source, row)); queue = task.catch(() => {}); return task; };
+  Object.defineProperty(client, 'stats', { get: () => ({ ...stats }) });
+  return client;
 }

@@ -6,16 +6,28 @@ import { createHash } from 'node:crypto';
 import { loadCatalogs } from './catalogs.mjs';
 import { index, propose } from './candidates.mjs';
 import { preFilter } from './filter.mjs';
+import { createJudge } from './judge.mjs';
+import { classify } from './classify.mjs';
+import { applyDecisions, defaultMapPath } from './apply.mjs';
+import { writeReview, applyReview } from './review.mjs';
 const cacheDefault = '.cache/package-map-gen';
-const usage = 'Usage: pnpm package-map:gen candidates [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]';
+const usage = 'Usage: pnpm package-map:gen candidates|run [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]; run [--threshold 0.8] [--max-requests 1000] [--credit-floor 100] [--dry-run]; apply-review [--review-file path] [--dry-run]';
 export function parseOptions(args) {
-  if (args[0] !== 'candidates') throw new Error(usage);
-  const { values } = parseArgs({ args: args.slice(1), options: { offline: { type: 'boolean', default: false }, names: { type: 'string' }, 'from-analytics': { type: 'string' }, 'from-scan': { type: 'string' }, 'cache-dir': { type: 'string' } } });
+  const command = args[0];
+  if (!['candidates', 'run', 'apply-review'].includes(command)) throw new Error(usage);
+  const options = { offline: { type: 'boolean', default: false }, names: { type: 'string' }, 'from-analytics': { type: 'string' }, 'from-scan': { type: 'string' }, 'cache-dir': { type: 'string' } };
+  if (command !== 'candidates') Object.assign(options, { 'dry-run': { type: 'boolean', default: false }, 'review-file': { type: 'string' } });
+  if (command === 'run') Object.assign(options, { threshold: { type: 'string' }, 'max-requests': { type: 'string' }, 'credit-floor': { type: 'string' } });
+  const { values } = parseArgs({ args: args.slice(1), options });
   const top = values['from-analytics'] === undefined ? 0 : Number(values['from-analytics']);
   if (values['from-analytics'] !== undefined && (!Number.isSafeInteger(top) || top <= 0)) throw new Error('--from-analytics requires a positive integer');
   const names = values.names?.split(',').map(s => s.trim()).filter(Boolean) ?? [];
-  if (!names.length && !top && !values['from-scan']) throw new Error(usage);
-  return { offline: values.offline, names, top, scanPath: values['from-scan'], cacheDir: values['cache-dir'] ?? cacheDefault };
+  if (command !== 'apply-review' && !names.length && !top && !values['from-scan']) throw new Error(usage);
+  const threshold = Number(values.threshold ?? 0.8), maxRequests = Number(values['max-requests'] ?? 1000), creditFloor = Number(values['credit-floor'] ?? 100);
+  if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error('--threshold must be between 0 and 1');
+  if (!Number.isSafeInteger(maxRequests) || maxRequests < 0) throw new Error('--max-requests requires a nonnegative integer');
+  if (!Number.isFinite(creditFloor) || creditFloor < 0) throw new Error('--credit-floor requires a nonnegative number');
+  return { command, offline: values.offline, names, top, scanPath: values['from-scan'], cacheDir: values['cache-dir'] ?? cacheDefault, threshold, maxRequests, creditFloor, dryRun: values['dry-run'] ?? false, reviewPath: values['review-file'] };
 }
 export async function loadAnalytics({ cacheDir = cacheDefault, offline = false, fetch = globalThis.fetch } = {}) {
   const results = [];
@@ -82,9 +94,36 @@ export async function runCandidates(options) {
   const rows = sources.flatMap(source => ['winget', 'scoop'].map(target => ({ source: source.id, sourceKind: source.brew_kind, target, ...preFilter(source, propose(source, catalogs[target], indices[target])) })));
   return { rows, skipped, issues };
 }
+export async function run(options) {
+  const catalogs = options.catalogs ?? await loadCatalogs(options);
+  const packages = JSON.parse(await readFile(options.mapPath ?? defaultMapPath, 'utf8')).packages;
+  const proposals = await runCandidates({ ...options, catalogs, packages });
+  const catalogSnapshot = options.catalogSnapshot ?? JSON.parse(await readFile(join(options.cacheDir ?? cacheDefault, 'sources.json'), 'utf8')).snapshotDate;
+  const judge = options.judge ?? createJudge(options), rows = [], skipped = [...proposals.skipped];
+  for (const proposal of proposals.rows) {
+    const manager = proposal.sourceKind === 'formula' ? 'brew' : 'brewCask';
+    if (Object.values(packages).some(p => p[manager]?.toLowerCase() === proposal.source.toLowerCase() && Object.hasOwn(p, proposal.target))) {
+      skipped.push({ source: proposal.source, target: proposal.target, reason: 'existing target preserved' }); continue;
+    }
+    const source = catalogs.brew.find(s => s.id === proposal.source && s.brew_kind === proposal.sourceKind);
+    rows.push({ ...await classify(source, proposal, { judge, threshold: options.threshold }), catalogSnapshot });
+  }
+  // Review evidence is checkpointed even in dry-run; only the two tracked data files are suppressed.
+  await writeReview(rows, options);
+  const applied = await applyDecisions(rows, options);
+  const counts = Object.fromEntries(['auto', 'review', 'no-candidate', 'incomplete'].map(status => [status, rows.filter(row => row.status === status).length]));
+  Object.assign(counts, { added: applied.added.length, conflicts: applied.skipped.length });
+  return { dryRun: options.dryRun ?? false, catalogSnapshot, counts, added: applied.added, conflicts: applied.skipped, skipped, issues: proposals.issues, rows, ...(judge.stats ? { jeb: judge.stats } : {}) };
+}
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  runCandidates(parseOptions(process.argv.slice(2))).then(report => {
+  Promise.resolve().then(async () => {
+    const options = parseOptions(process.argv.slice(2));
+    if (options.command === 'candidates') return runCandidates(options);
+    if (options.command === 'run') return run(options);
+    const result = await applyReview(options);
+    return { dryRun: options.dryRun, added: result.added, skipped: result.skipped };
+  }).then(report => {
     console.log(JSON.stringify(report, null, 2));
-    if (report.issues.length) process.exitCode = 1;
+    if (report.issues?.length || report.counts?.incomplete) process.exitCode = 1;
   }).catch(error => { console.error(error.message); process.exitCode = 1; });
 }
