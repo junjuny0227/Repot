@@ -1,6 +1,15 @@
 {
   "version": 1,
   "packages": {
+    "1password": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Candidate Publisher=AgileBits Inc., PackageUrl https://1password.com/downloads/windows; brew cask homepage https://1password.com/ (same vendor, desktop app; .CLI is the separate op tool)."
+      }
+    },
     "1password-cli": {
       "scoop": {
         "method": "jeb",
@@ -29,6 +38,15 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "android-commandlinetools": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew urls developer.android.com/studio; main/android-clt url dl.google.com/android/repository/commandlinetools-win-*_latest.zip = Google's official Windows command-line tools (extras/android-studio is the full IDE)"
+      }
+    },
     "android-platform-tools": {
       "winget": {
         "method": "jeb",
@@ -38,6 +56,13 @@
       }
     },
     "android-studio": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew cask homepage developer.android.com/studio; scoop extras/android-studio homepage same, url edgedl.me.gvt1.com/android/studio/ide-zips/2026.2.2.8 (same Google build 2026.2.2.8 as brew dmg)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9783791101421007,
@@ -45,7 +70,30 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "antigravity": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Scoop extras/antigravity homepage https://antigravity.google/product/antigravity-2 and download storage.googleapis.com/antigravity-public/antigravity-hub/2.28.2-.../windows-x64; brew cask uses same homepage and same bucket/version (darwin-arm)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url storage.googleapis.com/antigravity-public/antigravity-hub/2.28.2-*/darwin-arm; winget Google.Antigravity Publisher Google, installer same path 2.28.2-*/windows-x64/Antigravity-x64.exe"
+      }
+    },
     "antigravity-cli": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://antigravity.google/product/antigravity-cli; Scoop url storage.googleapis.com/antigravity-public/antigravity-cli/1.4.12-.../windows-x64 is the same official bucket/version as brew darwin-arm url."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9591965760608718,
@@ -68,6 +116,13 @@
       }
     },
     "aria2": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/aria2/aria2; scoop main/aria2 url github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0-win-64bit-build1.zip (upstream Windows build, same 1.37.0)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9608595097511152,
@@ -132,6 +187,13 @@
       }
     },
     "balenaetcher": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/etcher downloads github.com/balena-io/etcher/releases v2.1.9 balenaEtcher-win32-x64; brew cask same repo and version. etcher-cli is the old 1.4.9 CLI."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9535433423763379,
@@ -145,6 +207,38 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/usebruno/bruno; winget Bruno.Bruno PublisherUrl usebruno.com, repo github.com/usebruno/bruno"
+      }
+    },
+    "bun": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/oven-sh/bun; scoop main/bun url github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-windows-x64.zip (upstream release asset)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Oven-sh.Bun repo github.com/oven-sh/bun, homepage bun.sh = brew formula repo github.com/oven-sh/bun. Baseline/Profile ids are CPU/debug build variants."
+      }
+    },
+    "ca-certificates": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage curl.se/docs/caextract.html; main/cacert url curl.se/ca/cacert-2026-10-20.pem (same Mozilla CA bundle extracted by curl)"
       }
     },
     "cargo-nextest": {
@@ -156,6 +250,13 @@
       }
     },
     "cc-switch": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/farion1231/cc-switch; extras/cc-switch url github.com/farion1231/cc-switch/releases/.../CC-Switch-v4.0.25-Windows-Portable.zip (stable); versions/cc-switch-pre is prerelease channel"
+      },
       "winget": {
         "method": "high-tier",
         "probability": null,
@@ -177,6 +278,22 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "chatgpt": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://chatgpt.com/; Scoop url persistent.oaistatic.com/codex-app-prod/.../ChatGPT-x64.msix is OpenAI's official CDN, same as brew url host."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew desc \"OpenAI's official ChatGPT desktop app\", url persistent.oaistatic.com/codex-app-prod; winget OpenAI.ChatGPT Publisher OpenAI, installer persistent.oaistatic.com/codex-app-prod/releases/.../ChatGPT-x64.msix"
+      }
+    },
     "chezmoi": {
       "scoop": {
         "method": "high-tier",
@@ -191,15 +308,54 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "claude": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/claude downloads https://downloads.claude.ai/releases/win32/x64/AnthropicClaude-4.4212.0-full.nupkg; brew cask downloads.claude.ai/releases/darwin/.../4.4212.0 (same vendor Anthropic, same version)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage claude.com/download; winget Anthropic.Claude Publisher 'Anthropic, PBC', installer downloads.claude.ai/releases/win32/x64/.../Claude-*.msix"
+      }
+    },
+    "claude-code": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url downloads.claude.ai/claude-code-releases/.../darwin-arm64/claude; winget Anthropic.ClaudeCode Publisher Anthropic PBC, installer downloads.claude.ai/claude-code-releases/2.1.302/win32-x64/claude.exe"
+      }
+    },
     "cloudflared": {
       "scoop": {
         "method": "high-tier",
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/cloudflare/cloudflared, same version 2026.10.7, winget Publisher cloudflare."
       }
     },
     "codex": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/openai/codex (rust-v0.166.0); scoop main/codex url github.com/openai/codex/releases/download/rust-v0.166.0/codex-package-x86_64-pc-windows-msvc.tar.gz"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9544328549228663,
@@ -207,7 +363,55 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "copilot-cli": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/github/copilot-cli; main/copilot-cli url github.com/github/copilot-cli/releases/download/v1.0.105/copilot-win32-x64.zip (stable)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/github/copilot-cli, same version 1.0.105, Publisher 'GitHub, Inc.'; Amazon.CopilotCLI is AWS Copilot (aws.github.io/copilot-cli), unrelated."
+      }
+    },
+    "cursor": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage cursor.com; extras/cursor url downloads.cursor.com/production/.../CursorUserSetup-x64-3.27.22.exe (official, stable); versions/cursor-latest is a separate channel"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://www.cursor.com/, Publisher Anysphere; Sakana-yuyu.cursor-byok is a third-party add-on."
+      }
+    },
+    "cyberduck": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage cyberduck.io; winget Iterate.Cyberduck Publisher iterate GmbH, PackageUrl cyberduck.io, installer update.cyberduck.io/Cyberduck-Installer-9.5.4.45528.exe (same version as brew)"
+      }
+    },
     "db-browser-for-sqlite": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/sqlitebrowser homepage sqlitebrowser.org, download github.com/sqlitebrowser/sqlitebrowser v3.13.1 win64 = brew cask repo/version."
+      },
       "winget": {
         "method": "high-tier",
         "probability": null,
@@ -267,6 +471,15 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "dotnet-sdk": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew dotnet-sdk homepage microsoft.com/net; main/dotnet-sdk url builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-win-x64.zip (official Microsoft SDK, latest)"
+      }
+    },
     "drawio": {
       "scoop": {
         "method": "high-tier",
@@ -281,6 +494,31 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "figma": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://www.figma.com/; Scoop url desktop.figma.com/win/Figma-126.10.13 matches brew desktop.figma.com/mac-arm/Figma-126.10.13."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage figma.com, url desktop.figma.com/mac-arm; winget Figma.Figma Publisher Figma, Inc., installer desktop.figma.com/win/build/Figma-126.11.7.exe"
+      }
+    },
+    "flutter": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/flutter downloads storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.47.9-stable.zip; brew cask same official stable channel 3.47.9."
+      }
+    },
     "flyctl": {
       "scoop": {
         "method": "high-tier",
@@ -293,6 +531,22 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "freecad": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/freecad/freecad; extras/freecad url github.com/FreeCAD/FreeCAD/releases/download/1.1.4/...Windows-x86_64-py311.7z (stable; freecad-weekly is dev channel)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/freecad/freecad, same version 1.1.4, Publisher 'FreeCAD Team'; FreeCAD.FreeCAD.Weekly is a weekly channel."
       }
     },
     "ghostscript": {
@@ -332,6 +586,13 @@
       }
     },
     "github": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage desktop.github.com; extras/github url github.com/desktop/desktop/releases/.../GitHubDesktop-3.6.10-x64-full.nupkg (official GitHub Desktop)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9739390294906114,
@@ -345,14 +606,44 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/gitleaks/gitleaks, homepage gitleaks.io, same version 8.30.1."
       }
     },
     "gnupg": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url gnupg.org/ftp/gcrypt/gnupg/gnupg-2.5.24.tar.bz2; scoop main/gnupg url gnupg.org/ftp/gcrypt/binary/gnupg-w32-2.5.24_20260923.exe (official GnuPG Windows installer, same 2.5.24; bucket/gnupg.json checked)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9815902374150889,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "godot": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/godot downloads github.com/godotengine/godot/releases 4.7.2-stable win64 (standard, non-mono) = brew cask godot 4.7.2-stable; mono/rc/godot3 are other variants."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/godotengine/godot (standard build; godot-mono is separate cask); winget GodotEngine.GodotEngine Publisher Godot Engine, repo godotengine/godot; .Mono is the C# variant"
       }
     },
     "golangci-lint": {
@@ -361,6 +652,31 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/golangci/golangci-lint, homepage golangci-lint.run, Publisher GolangCI."
+      }
+    },
+    "google-chrome": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage google.com/chrome stable dmg; winget Google.Chrome Publisher Google LLC, PackageUrl google.com/chrome, installer dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi (stable)"
+      }
+    },
+    "google-drive": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Google.GoogleDrive Publisher Google LLC, PackageUrl workspace.google.com/products/drive; brew cask Google Drive client (dl.google.com/drive-file-stream)."
       }
     },
     "google-gemini": {
@@ -369,6 +685,31 @@
         "probability": 0.9876007395653498,
         "tier": "LOW",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "gradle": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url services.gradle.org/distributions/gradle-9.8.2-all.zip; main/gradle url identical gradle-9.8.2-all.zip (gradle4-7 are pinned old lines)"
+      }
+    },
+    "grok-bot": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://x.ai/bot; Scoop url downloads.cursor.com/grokbot/stable/win32-x64/0.78.1 is the same vendor CDN/stable channel as brew downloads.cursor.com/.../stable/darwin-arm64/0.78.4."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage x.ai/bot, url downloads.cursor.com/sand/stable; winget xAI.GrokBot PackageUrl x.ai/bot, Author xAI Corp., installer downloads.cursor.com/grokbot/stable/win32-x64/0.78.3"
       }
     },
     "handy": {
@@ -401,6 +742,38 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "imagemagick": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/imagemagick/imagemagick, Scoop url ImageMagick 7.1.2-35 official release asset (same version as brew); -lean is a portable subset, versions/imagemagick-ffmpeg old 7.1.0 bundle."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew formula builds IM7 with default Q16-HDRI (no --disable-hdri/--with-quantum-depth in Formula/i/imagemagick.rb); winget ImageMagick.ImageMagick Publisher ImageMagick Studio LLC, installer github.com/ImageMagick/ImageMagick/releases/.../ImageMagick-7.1.2-34-Q16-HDRI-x64-dll.exe"
+      }
+    },
+    "intellij-idea": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/idea.json: unified IntelliJ IDEA (Community+Ultimate merged), checkver code=II type=release, 2026.2.4 = brew cask intellij-idea 2026.2.4."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url download.jetbrains.com/idea/ideaIU-2026.2.4; winget JetBrains.IntelliJIDEA 2026.2.4 (idea-2026.2.4.exe, moniker intellij-idea); JetBrains unified distribution since 2025.3: https://blog.jetbrains.com/idea/2025/07/intellij-idea-unified-distribution-plan/"
+      }
+    },
     "jadx": {
       "scoop": {
         "method": "high-tier",
@@ -416,6 +789,13 @@
       }
     },
     "jetbrains-toolbox": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: Scoop url download.jetbrains.com/toolbox/jetbrains-toolbox-3.9.1.89198.exe, same vendor CDN and version as brew jetbrains-toolbox-3.9.1.89198-arm64.dmg."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9819559476653832,
@@ -451,6 +831,29 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url github.com/KiCad/kicad-source-mirror/releases/download/10.0.7; winget KiCad.KiCad Publisher KiCad, installer same repo release 10.0.7 kicad-10.0.7-x86_64.exe"
+      }
+    },
+    "kitty": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": null,
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Only candidate extras/kitty is KiTTY (github.com/cyd01/KiTTY, PuTTY fork). kovidgoyal/kitty docs/index.rst lists Linux, macOS, BSDs; docs/binary.rst binaries only for macOS/Linux. No kovidgoyal kitty in Scoop catalog cache (main/extras/versions)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": null,
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://sw.kovidgoyal.net/kitty/ lists Linux, macOS, BSDs; https://sw.kovidgoyal.net/kitty/binary/ binaries only for macOS or Linux; winget avborup.kitty is an unrelated Kattis CLI"
       }
     },
     "kubeconform": {
@@ -459,6 +862,13 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/yannh/kubeconform, same version 0.8.0, Publisher Yann Hamon."
       }
     },
     "kubernetes-cli": {
@@ -503,12 +913,51 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "llvm": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/llvm/llvm-project; Scoop url LLVM-23.1.4-win64.msi official release of the same version as brew 23.1.4. llvm-arm64 is arch variant, versions/llvm-full alternate tarball."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/llvm/llvm-project 23.1.4; winget LLVM.LLVM Publisher LLVM, installer github.com/llvm/llvm-project/releases/download/llvmorg-23.1.4/LLVM-23.1.4-win64.msi"
+      }
+    },
     "lm-studio": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/lmstudio downloads installers.lmstudio.ai/win32/x64/0.4.28-2 = brew cask installers.lmstudio.ai/darwin/arm64/0.4.28-2; lmstudio-bionic is a different product."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9758926416829811,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "localsend": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/localsend/localsend; extras/localsend url github.com/localsend/localsend/releases/.../LocalSend-1.18.2-windows-x86-64.zip (GUI app; main/localsend-cli is the CLI)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/localsend/localsend, installer LocalSend-1.18.2-windows-x86-64.exe same version as brew GUI cask; .CLI is the separate CLI build."
       }
     },
     "microsoft-edge": {
@@ -517,6 +966,31 @@
         "probability": 0.9779256026054377,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "microsoft-teams": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage microsoft.com/en/microsoft-teams/group-chat-software, pkg production-osx/26276.505; winget Microsoft.Teams same PackageUrl, Publisher Microsoft, installer teamsinstaller...production-windows-x64/26276.513 (same build line); Teams.Free is the older personal build"
+      }
+    },
+    "miniforge": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "extras/miniforge3 downloads github.com/conda-forge/miniforge 26.9.4-1 Windows-x86_64 = brew cask repo/version."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/conda-forge/miniforge; winget CondaForge.Miniforge3 Publisher conda-forge, same repo (Mambaforge deprecated, PyPy3 variants differ)"
       }
     },
     "mise": {
@@ -534,6 +1008,13 @@
       }
     },
     "mitmproxy": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage https://mitmproxy.org/, Scoop url mitmproxy-12.3.1-windows-x86_64.zip same version as brew 12.3.1; extras/pathod is a different old tool (6.0.2)."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9589032576943749,
@@ -547,6 +1028,13 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/filosottile/mkcert v1.4.4; winget FiloSottile.mkcert Author Filippo Valsorda, installer github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-windows-amd64.exe"
       }
     },
     "mole": {
@@ -555,6 +1043,22 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "mongodb-compass": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage mongodb.com/products/compass; extras/mongodb-compass url downloads.mongodb.com/compass/mongodb-compass-1.53.2-win32-x64.zip"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage mongodb.com/products/compass, Publisher MongoDB Inc, version 1.53.2.0 = brew 1.53.2 (standard edition); Isolated/Readonly are separate editions, Community is stale 1.41.0."
       }
     },
     "moonlight": {
@@ -571,12 +1075,69 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "mysql": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url cdn.mysql.com/Downloads/MySQL-26.10/mysql-26.10.0.tar.gz; scoop main/mysql homepage dev.mysql.com/downloads/mysql, url dev.mysql.com/get/Downloads/MySQL-26.10/mysql-26.10.0-winx64.msi (Oracle official, same version)"
+      }
+    },
     "ngrok": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage ngrok.com (v3 agent); main/ngrok url bin.ngrok.com/.../ngrok-v3-3.39.13-windows-amd64.zip (versions/ngrok2 is old v2 line)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.96229438844179,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "notion": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: Scoop url desktop-release.notion-static.com/Notion Setup 7.41.1.exe, same vendor CDN and version as brew Notion-7.41.1-arm64.dmg; homepage notion.so = notion.com."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url desktop-release.notion-static.com/Notion-7.41.1-arm64.dmg; winget Notion.Notion Publisher Notion Labs, installer desktop-release.notion-static.com/Notion Setup 7.41.1.exe"
+      }
+    },
+    "ollama": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/ollama/ollama, Scoop url ollama-windows-amd64.zip official CLI/server release (formula is the CLI); ollama-full is the GUI installer, -mlx/-rocm are variants."
+      }
+    },
+    "ollama-app": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew ollama-app = Ollama desktop app (Ollama-darwin.zip v0.40.14). https://raw.githubusercontent.com/ScoopInstaller/Extras/master/bucket/ollama-full.json installs OllamaSetup.exe from github.com/ollama/ollama v0.40.14 (official Windows app); main/ollama is the CLI zip."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/ollama/ollama, homepage ollama.com; winget Ollama.Ollama Publisher Ollama, same repo (Portable is a different distribution)"
       }
     },
     "opencode-desktop": {
@@ -585,6 +1146,22 @@
         "probability": 0.9576604038971875,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "openlogi": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage openlogi.org; Scoop url github.com/AprilNEA/OpenLogi/releases v0.8.20 windows build, same version as brew updates.openlogi.org v0.8.20."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage openlogi.org; winget AprilNEA.OpenLogi PublisherUrl openlogi.org, installer github.com/AprilNEA/OpenLogi/releases/download/v0.8.20 (same version 0.8.20)"
       }
     },
     "oras": {
@@ -607,6 +1184,15 @@
         "probability": 0.9851416983132558,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "php": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew php is a non-thread-safe CLI/FPM build; main/php-nts downloads downloads.php.net/~windows php-8.5.12-1-nts (official php.net Windows build, same version 8.5.12). main/php is the TS build (Main/php.json description \"thread safe\")."
       }
     },
     "pipx": {
@@ -660,6 +1246,13 @@
       }
     },
     "powershell": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "main/pwsh downloads github.com/PowerShell/PowerShell releases v7.6.9 win-x64 = brew formula repo github.com/powershell/powershell."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9758435753449577,
@@ -673,6 +1266,38 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/protocolbuffers/protobuf, same version 36.2."
+      }
+    },
+    "protonvpn": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage protonvpn.com, url vpn.protondownload.com; winget Proton.ProtonVPN Publisher Proton AG, installer vpn.protondownload.com/download/ProtonVPN_v5.1.9_x64.exe"
+      }
+    },
+    "qemu": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "main/qemu url qemu.weilnetz.de/w64/...qemu-w64-setup-20260811.exe; https://www.qemu.org/download/ Windows section: 'Stefan Weil provides binaries and installers' (upstream-linked Windows build)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://www.qemu.org/download/ Windows section: 'Stefan Weil provides binaries and installers' (qemu.weilnetz.de) = winget installer urls qemu.weilnetz.de/w64; upstream presents it as the Windows build."
       }
     },
     "raspberry-pi-imager": {
@@ -733,7 +1358,39 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "rust": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/rust.json: standalone installer static.rust-lang.org rust-1.99.1 msvc (official), same version as brew rust 1.99.1 (rust-lang/rust)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew rust = rustc+cargo toolchain (static.rust-lang.org src); winget Rustlang.Rust.MSVC = official standalone MSI static.rust-lang.org/dist/rust-1.99.1-x86_64-pc-windows-msvc.msi (https://forge.rust-lang.org/infra/other-installation-methods.html); MSVC is the default Windows host per https://rust-lang.github.io/rustup/installation/windows.html"
+      }
+    },
+    "rustdesk": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/rustdesk/rustdesk, Scoop url rustdesk-1.5.1-x86_64.exe same version as brew 1.5.1."
+      }
+    },
     "rustup": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew rustup homepage rust-lang.github.io/rustup; scoop main/rustup homepage rustup.rs, url static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe (official)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9855093028565479,
@@ -747,6 +1404,13 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Genymobile.scrcpy repo github.com/genymobile/scrcpy v5.0.1 = brew formula repo/version; Frontesque.scrcpy+ is a third-party GUI."
       }
     },
     "sentry-cli": {
@@ -771,12 +1435,35 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "sevenzip": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/ip7z/7zip 26.05; main/7zip url github.com/ip7z/7zip/releases/download/26.05/7z2605-x64.msi (7zip-dark is a fork, 19.00-helper pinned)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/ip7z/7zip, Publisher Igor Pavlov, version 26.05 = brew; 7zip.7zr is the reduced standalone 7zr.exe only."
+      }
+    },
     "sqlite": {
       "scoop": {
         "method": "jeb",
         "probability": 0.9612214351369556,
         "tier": "LOW",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew sqlite \"Command-line interface for SQLite\", sqlite.org 3540100; winget SQLite.SQLite PackageUrl sqlite.org, installer sqlite.org/2026/sqlite-tools-win-x64-3540100.zip (official CLI tools, same version)"
       }
     },
     "steam": {
@@ -801,12 +1488,35 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "tailscale-app": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage tailscale.com, pkgs.tailscale.com/stable/Tailscale-1.104.5-macos.pkg; scoop extras/tailscale url pkgs.tailscale.com/stable/tailscale-setup-1.104.5-amd64.msi (official stable, same version)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Tailscale.Tailscale Publisher Tailscale Inc., PackageUrl tailscale.com/download, v1.104.5 = brew cask 1.104.5; tailcat is a different tool."
+      }
+    },
     "tesseract": {
       "scoop": {
         "method": "high-tier",
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/tesseract-ocr/tesseract; winget tesseract-ocr.tesseract installer github.com/tesseract-ocr/tesseract/releases/download/5.5.3/tesseract-ocr-w64-setup-5.5.3.20260724.exe (upstream release)"
       }
     },
     "tigervnc": {
@@ -837,6 +1547,13 @@
         "probability": 0.9657915574213969,
         "tier": "LOW",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew unbound homepage unbound.net, nlnetlabs.nl/downloads/unbound; winget NLnetLabs.Unbound Publisher NLnet Labs, installer nlnetlabs.nl/downloads/unbound/unbound_setup_1.26.1.exe (official upstream Windows installer)"
       }
     },
     "unity-hub": {
@@ -861,15 +1578,47 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "warp": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage warp.dev/terminal; winget Warp.Warp PublisherUrl warp.dev, url warp.dev/windows-terminal, stable_01 version (Cloudflare.Warp is the unrelated VPN client)"
+      }
+    },
     "watchman": {
       "scoop": {
         "method": "high-tier",
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: both repo github.com/facebook/watchman; winget installer github.com/facebook/watchman/releases/download/v2025.02.24.00/...-windows.zip is the official upstream Windows release."
+      }
+    },
+    "windows-app": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage aka.ms/WindowsApp; winget Microsoft.WindowsApp Publisher Microsoft Corp., url learn.microsoft.com/windows-app/overview"
       }
     },
     "wireshark-app": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage wireshark.org, Scoop url wireshark.org/download/win64/Wireshark-4.6.9 same version as brew 4.6.9; versions/wireshark3* are pinned 3.6."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9598703077382307,
@@ -891,6 +1640,22 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "yarn": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew yarn url github.com/yarnpkg/yarn/releases/download/v1.22.22/yarn-v1.22.22.tar.gz; scoop main/yarn same url and homepage yarnpkg.com"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Yarn.Yarn repo github.com/yarnpkg/yarn v1.22.22 = brew yarn repo/version."
+      }
+    },
     "yq": {
       "scoop": {
         "method": "high-tier",
@@ -906,6 +1671,13 @@
       }
     },
     "zed": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew repo github.com/zed-industries/zed; extras/zed url github.com/zed-industries/zed/releases/download/v1.26.2/Zed-x86_64.exe (stable; zed-opengl is a third-party build, zed-pre is preview)"
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9848337090780844,
@@ -919,6 +1691,29 @@
         "probability": null,
         "tier": "HIGH",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: repo github.com/zen-browser/desktop, homepage zen-browser.app, version 1.24b = brew 1.24b; .Twilight is the nightly channel; ZenPrivacy/Zenvara unrelated."
+      }
+    },
+    "zoom": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage zoom.us, cdn.zoom.us/prod/7.2.5; scoop extras/zoom homepage zoom.us, url cdn.zoom.us/prod/7.2.5.51704/x64/ZoomInstallerFull.exe (official)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "winget-pkgs manifests/z/Zoom/Zoom/7.2.51704 installer: ZoomInstallerFull.msi from zoom.us (official Zoom Workplace client, machine scope); EXE variant is the same client as per-user exe; VDI/Rooms/plugins are other products."
       }
     }
   }
