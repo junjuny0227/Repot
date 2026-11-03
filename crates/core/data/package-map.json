@@ -220,6 +220,10 @@
       "brewCask": "claude-code",
       "winget": "Anthropic.ClaudeCode"
     },
+    "claude-code-latest": {
+      "brewCask": "claude-code@latest",
+      "scoop": "main/claude-code"
+    },
     "cloudflared": {
       "brew": "cloudflared",
       "scoop": "main/cloudflared",
@@ -810,6 +814,10 @@
       "scoop": "extras/localsend",
       "winget": "LocalSend.LocalSend"
     },
+    "logi-options-plus": {
+      "brewCask": "logi-options+",
+      "winget": "Logitech.OptionsPlus"
+    },
     "lsof": {
       "brew": "lsof",
       "apt": "lsof",
@@ -962,6 +970,10 @@
       "scoop": "nodejs",
       "choco": "nodejs"
     },
+    "node-22": {
+      "brew": "node@22",
+      "winget": "OpenJS.NodeJS.22"
+    },
     "notion": {
       "brewCask": "notion",
       "scoop": "extras/notion",
@@ -1084,6 +1096,20 @@
       "winget": "oschwartz10612.Poppler",
       "scoop": "main/poppler"
     },
+    "postgresql-16": {
+      "brew": "postgresql@16",
+      "scoop": "versions/postgresql16",
+      "winget": "PostgreSQL.PostgreSQL.16"
+    },
+    "postgresql-17": {
+      "brew": "postgresql@17",
+      "scoop": "versions/postgresql17",
+      "winget": "PostgreSQL.PostgreSQL.17"
+    },
+    "postgresql-18": {
+      "brew": "postgresql@18",
+      "winget": "PostgreSQL.PostgreSQL.18"
+    },
     "postman": {
       "brewCask": "postman",
       "winget": "Postman.Postman",
@@ -1094,6 +1120,10 @@
       "brew": "powershell",
       "winget": "Microsoft.PowerShell",
       "scoop": "main/pwsh"
+    },
+    "powershell-preview": {
+      "brewCask": "powershell@preview",
+      "winget": "Microsoft.PowerShell.Preview"
     },
     "procs": {
       "brew": "procs",
@@ -1116,6 +1146,35 @@
       "apt": "pv",
       "dnf": "pv",
       "pacman": "pv"
+    },
+    "python-3-10": {
+      "brew": "python@3.10",
+      "scoop": "versions/python310",
+      "winget": "Python.Python.3.10"
+    },
+    "python-3-11": {
+      "brew": "python@3.11",
+      "scoop": "versions/python311",
+      "winget": "Python.Python.3.11"
+    },
+    "python-3-12": {
+      "brew": "python@3.12",
+      "scoop": "versions/python312",
+      "winget": "Python.Python.3.12"
+    },
+    "python-3-13": {
+      "brew": "python@3.13",
+      "scoop": "versions/python313",
+      "winget": "Python.Python.3.13"
+    },
+    "python-3-14": {
+      "brew": "python@3.14",
+      "scoop": "versions/python314",
+      "winget": "Python.Python.3.14"
+    },
+    "python-3-15": {
+      "brew": "python@3.15",
+      "scoop": "versions/python315"
     },
     "qemu": {
       "brew": "qemu",
@@ -1337,6 +1396,10 @@
       "brewCask": "temurin",
       "scoop": "java/temurin-jdk"
     },
+    "temurin-17": {
+      "brewCask": "temurin@17",
+      "winget": "EclipseAdoptium.Temurin.17.JDK"
+    },
     "tesseract": {
       "brew": "tesseract",
       "scoop": "main/tesseract",
@@ -1468,6 +1531,10 @@
       "pacman": "wget",
       "scoop": "wget",
       "choco": "wget"
+    },
+    "whisper-cpp": {
+      "brew": "whisper.cpp",
+      "scoop": "main/whisper-cpp"
     },
     "windows-app": {
       "brewCask": "windows-app",

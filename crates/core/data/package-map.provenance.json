@@ -333,6 +333,15 @@
         "evidence": "brew url downloads.claude.ai/claude-code-releases/.../darwin-arm64/claude; winget Anthropic.ClaudeCode Publisher Anthropic PBC, installer downloads.claude.ai/claude-code-releases/2.1.302/win32-x64/claude.exe"
       }
     },
+    "claude-code-latest": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/claude-code.json: homepage claude.com/product/claude-code, checkver claude-code-releases/latest (latest channel, same as @latest cask), version 2.1.317 = brew."
+      }
+    },
     "cloudflared": {
       "scoop": {
         "method": "high-tier",
@@ -969,6 +978,15 @@
         "evidence": "catalog: repo github.com/localsend/localsend, installer LocalSend-1.18.2-windows-x86-64.exe same version as brew GUI cask; .CLI is the separate CLI build."
       }
     },
+    "logi-options-plus": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew homepage logitech.com/en-us/software/logi-options-plus.html, url download01.logi.com/.../optionsplus/; winget Logitech.OptionsPlus PackageName Logi Options+, installer download01.logi.com/web/ftp/pub/techsupport/optionsplus/logioptionsplus_installer.exe"
+      }
+    },
     "microsoft-edge": {
       "winget": {
         "method": "jeb",
@@ -1106,6 +1124,15 @@
         "probability": 0.96229438844179,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "node-22": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew node@22 url nodejs.org/dist/v22.23.4; winget OpenJS.NodeJS.22 PackageName Node.js 22, installer nodejs.org/dist/v22.23.4/node-v22.23.4-x64.msi (same pinned line)"
       }
     },
     "notion": {
@@ -1254,6 +1281,47 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "postgresql-16": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: same homepage postgresql.org; versions/postgresql16 url postgresql-16.15-1-windows-x64-binaries.zip, same pinned line and version as brew 16.15."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew postgresql@16 homepage postgresql.org, 16.15; winget PostgreSQL.PostgreSQL.16 Publisher PostgreSQL Global Development Group, PackageUrl postgresql.org/download/windows, installer get.enterprisedb.com/postgresql/postgresql-16.15-5-windows-x64.exe"
+      }
+    },
+    "postgresql-17": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "versions/postgresql17 downloads postgresql-17.11-1-windows-x64-binaries (get.enterprisedb.com, the Windows binaries linked by postgresql.org); same 17.11 line as brew postgresql@17."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew postgresql@17 pinned to 17; winget PostgreSQL.PostgreSQL.17 Publisher PostgreSQL Global Development Group, url postgresql.org/download/windows, version 17.11-5"
+      }
+    },
+    "postgresql-18": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew postgresql@18 homepage postgresql.org, 18.6; winget PostgreSQL.PostgreSQL.18 Publisher PostgreSQL Global Development Group, PackageUrl postgresql.org/download/windows, installer postgresql-18.6-5-windows-x64.exe"
+      }
+    },
     "powershell": {
       "scoop": {
         "method": "agent-review",
@@ -1267,6 +1335,15 @@
         "probability": 0.9758435753449577,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      }
+    },
+    "powershell-preview": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew powershell@preview repo github.com/powershell/powershell (preview channel); winget Microsoft.PowerShell.Preview Publisher Microsoft Corporation, same repo, same preview channel"
       }
     },
     "protobuf": {
@@ -1291,6 +1368,95 @@
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "brew homepage protonvpn.com, url vpn.protondownload.com; winget Proton.ProtonVPN Publisher Proton AG, installer vpn.protondownload.com/download/ProtonVPN_v5.1.9_x64.exe"
+      }
+    },
+    "python-3-10": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.10 pinned 3.10; versions/python310 url python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe (official installer, same line)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: Python.Python.3.10 Publisher Python Software Foundation, version 3.10.11, same 3.10 line as brew python@3.10 (python.org)."
+      }
+    },
+    "python-3-11": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.11 from python.org (3.11.x pinned); scoop versions/python311 url python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe (official, same 3.11 line)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Python.Python.3.11 Publisher Python Software Foundation, python.org, 3.11 line = brew python@3.11."
+      }
+    },
+    "python-3-12": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.12 pinned 3.12; versions/python312 url python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe (official installer, same line)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: Python.Python.3.12 Publisher Python Software Foundation, version 3.12.10, same 3.12 line as brew python@3.12."
+      }
+    },
+    "python-3-13": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.13 from python.org (3.13.18); scoop versions/python313 url python.org/ftp/python/3.13.17/python-3.13.17-amd64.exe (official, same 3.13 line)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "Python.Python.3.13 Publisher Python Software Foundation, python.org, 3.13 line = brew python@3.13."
+      }
+    },
+    "python-3-14": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.14 pinned 3.14; versions/python314 url python.org/ftp/python/3.14.10/python-3.14.10-amd64.exe (official installer, same line)"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "catalog: Python.Python.3.14 Publisher Python Software Foundation, version 3.14.10 = brew 3.14.10."
+      }
+    },
+    "python-3-15": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew python@3.15 from python.org 3.15.2 (pinned line); scoop versions/python315 url python.org/ftp/python/3.15.2/python-3.15.2-amd64.exe pinned to 3.15 (main/python floats to latest)"
       }
     },
     "qemu": {
@@ -1529,6 +1695,15 @@
         "evidence": "brew url github.com/adoptium/temurin27-binaries jdk-27 (latest JDK); java/temurin-jdk url github.com/adoptium/temurin27-binaries/.../OpenJDK27U-jdk_x64_windows_hotspot_27_35.zip (same repo, JDK)"
       }
     },
+    "temurin-17": {
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "EclipseAdoptium.Temurin.17.JDK repo github.com/adoptium/temurin17-binaries = brew cask temurin@17 repo (JDK, 17 line)."
+      }
+    },
     "tesseract": {
       "scoop": {
         "method": "high-tier",
@@ -1625,6 +1800,15 @@
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "catalog: both repo github.com/facebook/watchman; winget installer github.com/facebook/watchman/releases/download/v2025.02.24.00/...-windows.zip is the official upstream Windows release."
+      }
+    },
+    "whisper-cpp": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/whisper-cpp.json: version 1.9.5 from github.com/ggml-org/whisper.cpp releases (build b5454) = brew whisper.cpp v1.9.5 same repo."
       }
     },
     "windows-app": {
