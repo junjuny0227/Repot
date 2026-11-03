@@ -98,7 +98,7 @@ export const C = {
   install: {
     title: "Install and first launch",
     lead:
-      "Builds are unsigned prereleases: they are not code-signed or notarized, and there are no automatic updates yet, so your OS warns on first launch. Continue only after verifying that you trust the download.",
+      "0.x builds are unsigned betas: they are not code-signed or notarized, and there are no automatic updates yet, so your OS warns on first launch. Continue only after verifying that you trust the download.",
     osLabel: "Operating system",
     os: { mac: "macOS", windows: "Windows", linux: "Linux" } as Record<DesktopOs, string>,
     downloads: "Downloads",

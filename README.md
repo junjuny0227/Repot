@@ -42,7 +42,7 @@ unavailable items are disabled rather than guessed.
 ## Install
 
 Download an installer for your OS from [GitHub Releases](https://github.com/junjuny0227/Repot/releases)
-when a release is available. Builds are unsigned prereleases: they are not
+when a release is available. 0.x builds are unsigned betas: they are not
 code-signed or notarized, and there are no automatic updates yet, so your OS warns
 on first launch.
 
@@ -138,8 +138,8 @@ cargo run -p repot-core --example scan
 The scan example reads your local environment and prints JSON; it does not restore
 or install anything. CI runs Rust checks, real scans and restore smoke tests on
 macOS, Windows and Ubuntu, plus frontend type checks, tests and build. Release
-workflow builds require a matching version tag and create only draft prereleases;
-publishing is a separate human decision.
+workflow builds require a matching version tag and create a draft release named
+"Repot <version> (beta)"; publishing is a separate human decision.
 
 ## Docs
 
