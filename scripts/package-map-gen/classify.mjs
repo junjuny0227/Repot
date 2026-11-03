@@ -1,4 +1,4 @@
-export async function classify(source, row, { judge, threshold = 0.8 } = {}) {
+export async function classify(source, row, { judge, threshold = 0.95 } = {}) {
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error('Invalid threshold');
   if (!row.candidates.length) return { ...row, status: 'no-candidate' };
   const highs = row.candidates.filter(c => c.tier === 'HIGH');

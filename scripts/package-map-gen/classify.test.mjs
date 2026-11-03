@@ -4,6 +4,8 @@ import { classify } from './classify.mjs';
 const candidate = { id: 'Vendor.Tool', tier: 'MEDIUM', kindFlag: false };
 test('classification: inclusive threshold, kind flag and none review, empty no-candidate, unique HIGH bypass, failures incomplete', async () => {
   for (const [candidates, outcome, threshold, expected, calls] of [
+    [[candidate], { picked: candidate.id, probability: 0.9499 }, undefined, 'review', 1],
+    [[candidate], { picked: candidate.id, probability: 0.95 }, undefined, 'auto', 1],
     [[], {}, 0.8, 'no-candidate', 0],
     [[{ ...candidate, tier: 'HIGH' }], {}, 0.8, 'auto', 0],
     [[candidate], { picked: candidate.id, probability: 0.8 }, 0.8, 'auto', 1],
