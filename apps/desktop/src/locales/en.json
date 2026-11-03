@@ -1,0 +1,106 @@
+{
+  "category": {
+    "packageManager": "Packages",
+    "runtime": "Runtimes",
+    "globalPackage": "Global packages",
+    "editor": "Editors",
+    "git": "Git",
+    "shell": "Shell"
+  },
+  "os": {
+    "linux": "Linux ({family})",
+    "linuxOther": "other"
+  },
+  "status": {
+    "running": "Scanning…",
+    "notDetected": "Not detected",
+    "timedOut": "Timed out (60 s)",
+    "found": "Found {count}"
+  },
+  "finding": {
+    "atLine": "Line {line}: {text}",
+    "unreadable": "This file could not be read, so it will not be exported.",
+    "secret": "Looks like a secret. It will be masked unless you allow the original value.",
+    "secretNamed": "Looks like a secret ({name}). It will be masked unless you allow the original value.",
+    "osSpecificLine": "{key} is specific to this OS and will be commented out on a different OS.",
+    "duplicate": "Also detected by {provider}."
+  },
+  "reason": {
+    "unreadable": "Unavailable: the file could not be read.",
+    "differentOs": "Unavailable: only works on {os}.",
+    "shellUnsupported": "Unavailable: {shell} is not available on the destination OS.",
+    "noCounterpart": "Unavailable: {tool} has no counterpart on the destination OS."
+  },
+  "warning": {
+    "unavailable": "{item} was skipped. {reason}",
+    "invalidValue": "{item} was skipped because it contains characters that are unsafe in a script.",
+    "duplicateTarget": "{item} was skipped because another item writes to the same file.",
+    "readFailed": "{item} was skipped because the file could not be read."
+  },
+  "nextSteps": {
+    "readme": "Open README.md in this folder and follow the steps.",
+    "copy": "Copy this folder to the new machine.",
+    "run": "Run: {command}"
+  },
+  "origin": {
+    "command": "Detected with: {command}",
+    "path": "File: {path}"
+  },
+  "availableOn": "Available on {os}.",
+  "withCount": "{label} ({count})",
+  "selectedCount": {
+    "one": "{checked} of {total} item selected",
+    "other": "{checked} of {total} items selected"
+  },
+  "selectCategory": "Select all in {category}",
+  "revealSecretLine": "Export the original value of line {line}",
+  "ui": {
+    "currentOs": "This machine",
+    "targetOs": "Destination OS",
+    "scanButton": "Scan this machine",
+    "detectingOs": "Detecting…",
+    "startIntro": "Repot reads your development setup and turns it into a restore script or package lists for a new machine. Nothing on this machine is changed.",
+    "scanning": "Scanning this machine…",
+    "scanIntro": "Each tool is checked separately. This can take up to 60 seconds.",
+    "errorTitle": "Something went wrong",
+    "available": "Available",
+    "reviewTitle": "Review what to move",
+    "allItems": "All items",
+    "noDescription": "No description",
+    "noItems": "No items match the current filters.",
+    "selectItem": "Select an item to see its details.",
+    "description": "Description",
+    "origin": "Source",
+    "availability": "On the destination",
+    "findings": "Findings",
+    "noFindings": "Nothing to warn about.",
+    "badgeSecret": "Contains a secret",
+    "badgeDuplicate": "Also found by another tool",
+    "badgeUnavailable": "Unavailable on the destination OS",
+    "failedDetail": "Details",
+    "search": "Search",
+    "onlyAvailable": "Available only",
+    "onlyWarnings": "With warnings only",
+    "revealSecret": "Export original value",
+    "notDetected": "Not detected",
+    "failed": "Failed",
+    "nextExport": "Next: Export",
+    "exportTitle": "Export",
+    "format": "Format",
+    "formatScript": "Restore script",
+    "formatManifest": "Native manifests",
+    "back": "Back",
+    "save": "Choose folder and save",
+    "saving": "Saving…",
+    "previewLoading": "Preparing preview…",
+    "previewFailed": "The preview could not be created. Change the format or go back and try again.",
+    "previewEmpty": "No files will be created.",
+    "warningsTitle": "Some items will be skipped",
+    "savedTo": "Saved to",
+    "nextStepsTitle": "Next steps",
+    "done": "Export complete",
+    "openFolder": "Open folder",
+    "startOver": "Start over",
+    "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing."
+  }
+}

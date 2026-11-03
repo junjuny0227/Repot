@@ -1,7 +1,7 @@
 import type { Dispatch } from "react";
 import { revealKey } from "../../logic";
 import type { Action, State } from "../../state";
-import { S, availableOn, categoryLabel, findingText, originText, reasonText, revealLine } from "../../strings";
+import { S, availableOn, categoryLabel, findingText, originText, reasonText, revealSecretLine } from "../../strings";
 import type { Finding, Item } from "../../types";
 import { CategoryIcon, CheckCircle, Duplicate, ExclamationCircle, InfoCircle, NoSign, WarningTriangle } from "../icons";
 
@@ -65,7 +65,7 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
                         type="checkbox"
                         role="switch"
                         className="switch"
-                        aria-label={`${S.revealSecret} ${revealLine(line)}`}
+                        aria-label={revealSecretLine(line)}
                         checked={state.revealed.has(revealKey(item.id, line))}
                         disabled={!checked}
                         onChange={() => dispatch({ type: "toggleReveal", id: item.id, line })}
