@@ -289,6 +289,14 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - 이름 유사도로 추측하지 않는다. 표에 없으면 `NotInPackageMap`, `null`이면 `NoPackageInManager`, 목적지에 매니저가 없으면 `NoPackageManager`로 사용 불가다.
 - CI가 대응표의 이름을 각 러너의 실제 매니저로 확인한다(대응표가 바뀐 PR과 주 1회).
 
+### 패키지 대응표 생성기 (계획 10)
+
+개발자가 로컬에서 `pnpm package-map:gen`으로 대응표 확장안을 만든다. Node.js 22 표준 라이브러리만 쓰는 별도 도구(`scripts/package-map-gen/`)이며 앱이나 CI에서 생성·AI 판정을 실행하지 않는다. CI에서는 네트워크 없는 단위 테스트와 기존 결과 데이터 검증만 한다. 출발은 Homebrew formula/cask, 목적지는 winget·Scoop 공식 bucket뿐이다. 설치 통계(30일), 제공된 스캔 JSON의 brew 항목, 명시 이름에서 입력을 고르고, 공식 카탈로그를 로컬 캐시한다. `--offline`은 캐시만 쓰고 네트워크에 접근하지 않는다. 앱에는 결과 대응표만 포함하며 core의 네트워크 금지와 기존 데이터 형식은 바뀌지 않는다.
+
+후보는 같은 정규화 source repo·homepage/download URL·정확한 정규화 이름으로만 만들고 최대 12개를 유지한다. repo 유일성과 명확한 kind 호환을 충족한 HIGH 후보는 jeb를 생략한다. 채널이 다른 후보는 제거하되 CLI/GUI kind 불일치는 표시만 남긴다. 나머지는 AI Hub jeb가 고른 후보의 확률이 기본 0.80 이상이고 kind 표시가 없을 때만 auto로 분류하며, 저확률·kind 불일치 선택·none은 파일 검토로 보낸다. `JEB_AI_HUB_KEY`는 환경변수 우선, 없을 때만 루트 `.env`에서 읽고 출력·커밋하지 않는다. 동시 최대 2요청, 일일 1000요청 할당량, 요청 상한과 잔여 credits floor(기본 100), 503 backoff, 요청 해시 캐시·checkpoint로 비용과 재개를 관리한다.
+
+기존 값(문자열·`null`)은 덮어쓰지 않고 §10 이름 패턴·대소문자 무시 유일성·알파벳 키 정렬을 지킨다. 새 id는 brew token 소문자(`[a-z0-9-]+`)이며 부적합하거나 충돌하면 건너뛴다. 정확도를 측정하지 않은 choco·apt·dnf·pacman 키는 추가하지 않는다. 후보 없음·모델 none·오류로 `null`을 자동 생성하지 않는다. gitignored `.cache/package-map-gen/review.json`의 빈 `decision`에 사람이 후보 id / `none` / `skip`을 쓰고 `apply-review`로 적용한다. 사람의 `none`만 확인된 부재로 `null`이 된다. 추가 값의 방법(`high-tier | jeb | human`), 확률(모델 확률이 없으면 `null`), tier·snapshot 날짜는 `crates/core/data/package-map.provenance.json`에 별도 기록하며 앱에 내장하지 않는다. 생성 결과는 데이터 PR과 기존 CI `package-map` 검증을 거친다. 상세 결정·실험 근거·구현 순서는 `docs/plans/2026-11-03-10-package-map-generator.md`를 따른다.
+
 ### OS 간 이동 시 설정 파일 변환
 
 - **Git**: `credential.helper`(`osxkeychain` ↔ `manager` 등), `core.autocrlf`, `gpg.program`, 절대 경로가 든 `core.editor` 같은 OS 전용 줄은 주석 처리하고, 목적지 OS용 대안을 주석으로 단다.
@@ -447,6 +455,7 @@ repot-export-2026-11-02/
 - winget, cargo 항목은 로컬에 설명이 없어 "설명 없음"으로 표시된다.
 - 패키지 매니저 간 중복은 이름이 정확히 같을 때만 감지한다.
 - OS 간 패키지 대응은 내장 대응표에 있는 패키지만 된다. 표에 없는 패키지는 다른 OS로 옮길 수 없다. 대응 이름은 앱 버전 시점의 저장소 기준이라 이후 이름이 바뀔 수 있다.
+- 로컬 생성기(계획 10)는 Homebrew → winget·Scoop만 넓힌다. threshold 0.8의 근거는 positive 106쌍·인공 negative 30쌍의 작은 in-sample 평가이며, kind 제거를 표시로 바꾼 최종 정책의 held-out 성능이나 무인 승인 안전성은 검증하지 못했다. 높은 확률과 CI 이름 존재 확인은 의미적 동일성의 보증이 아니며, 모르는 대응은 계속 키를 비워 둔다.
 - 비밀정보 감지는 패턴 기반이라 모든 비밀을 잡지는 못한다. UI와 README에 이 점을 명시한다.
 - WSL, Git Bash 환경은 고려하지 않는다.
 - winget은 `winget` 소스 패키지만 다룬다(msstore 제외).
