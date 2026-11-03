@@ -533,6 +533,15 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "font-jetbrains-mono": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/JetBrains-Mono.json: url JetBrains/JetBrainsMono v2.304 JetBrainsMono-2.304.zip (original, not NF-patched), identical to brew url."
+      }
+    },
     "freecad": {
       "scoop": {
         "method": "agent-review",
@@ -1467,6 +1476,13 @@
       }
     },
     "steam": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "LOW",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://raw.githubusercontent.com/ScoopInstaller/Versions/master/bucket/steam.json installs Valve's official SteamSetup.exe (steamcdn-a.akamaihd.net), homepage store.steampowered.com; \"nightly\" is only the unversioned label, not a beta channel."
+      },
       "winget": {
         "method": "jeb",
         "probability": 0.9545650262674721,
@@ -1502,6 +1518,15 @@
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "Tailscale.Tailscale Publisher Tailscale Inc., PackageUrl tailscale.com/download, v1.104.5 = brew cask 1.104.5; tailcat is a different tool."
+      }
+    },
+    "temurin": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "brew url github.com/adoptium/temurin27-binaries jdk-27 (latest JDK); java/temurin-jdk url github.com/adoptium/temurin27-binaries/.../OpenJDK27U-jdk_x64_windows_hotspot_27_35.zip (same repo, JDK)"
       }
     },
     "tesseract": {
