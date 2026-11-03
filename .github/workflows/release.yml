@@ -58,12 +58,14 @@ jobs:
         with:
           projectPath: apps/desktop
           tagName: ${{ github.ref_name }}
-          releaseName: Repot ${{ github.ref_name }}
+          # 0.x releases are full releases (so they get "Latest" and releases/latest)
+          # marked as beta in the name. tauri-action replaces __VERSION__.
+          releaseName: Repot __VERSION__ (beta)
           # Prepended to GitHub's generated notes (PRs since the previous tag,
           # grouped by label per .github/release.yml). Edit the draft before publishing.
           releaseBody: |
             > **Unsigned beta.** Not code-signed or notarized yet; see the README for first launch on macOS and Windows.
           generateReleaseNotes: true
           releaseDraft: true
-          prerelease: true
+          prerelease: false
           args: ${{ matrix.args }}

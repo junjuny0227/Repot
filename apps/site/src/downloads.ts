@@ -1,6 +1,6 @@
 // Download links are fixed at build time from the app version, so the page stays
-// static and never calls the GitHub API. releases/latest is not usable while only
-// prereleases exist, and asset names contain the version anyway.
+// static and never calls the GitHub API. Links stay pinned to this version (asset
+// names contain it), so the page never points at a release it was not built for.
 import { version } from "../../desktop/src-tauri/tauri.conf.json";
 import assets from "./assets.json";
 
