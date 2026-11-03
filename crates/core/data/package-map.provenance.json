@@ -542,6 +542,15 @@
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
       }
     },
+    "font-hack-nerd-font": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/font-hack-nerd-font.json v3.5.1 from ryanoasis/nerd-fonts Hack.tar.xz; https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/Hack-NF.json v3.5.1 from ryanoasis/nerd-fonts Hack.zip (same upstream release, installs the Hack Nerd Font family; Mono/Propo are separate -NF-Mono/-NF-Propo packages)."
+      }
+    },
     "font-jetbrains-mono": {
       "scoop": {
         "method": "agent-review",
@@ -549,6 +558,15 @@
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/JetBrains-Mono.json: url JetBrains/JetBrainsMono v2.304 JetBrainsMono-2.304.zip (original, not NF-patched), identical to brew url."
+      }
+    },
+    "font-jetbrains-mono-nerd-font": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/font-jetbrains-mono-nerd-font.json v3.5.1 from ryanoasis/nerd-fonts JetBrainsMono.tar.xz; https://raw.githubusercontent.com/matthewjberger/scoop-nerd-fonts/master/bucket/JetBrainsMono-NF.json v3.5.1 from ryanoasis/nerd-fonts JetBrainsMono.zip (same upstream release; Mono/Propo are separate packages)."
       }
     },
     "freecad": {
@@ -1696,12 +1714,51 @@
       }
     },
     "temurin-17": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/temurin@17.json github.com/adoptium/temurin17-binaries 17.0.21+9 JDK; https://raw.githubusercontent.com/ScoopInstaller/Java/master/bucket/temurin17-jdk.json github.com/adoptium/temurin17-binaries 17.0.20.1+1 JDK zip, checkver api.adoptium.net feature_releases/17/ga (same vendor, same pinned line)."
+      },
       "winget": {
         "method": "agent-review",
         "probability": null,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z",
         "evidence": "EclipseAdoptium.Temurin.17.JDK repo github.com/adoptium/temurin17-binaries = brew cask temurin@17 repo (JDK, 17 line)."
+      }
+    },
+    "temurin-21": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/temurin@21.json adoptium/temurin21-binaries jdk-21.0.13+9; https://raw.githubusercontent.com/ScoopInstaller/Java/master/bucket/temurin21-jdk.json same repo jdk-21.0.13+9 JDK zip, checkver feature_releases/21/ga (same version)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/temurin@21.json adoptium/temurin21-binaries jdk-21.0.13+9; https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EclipseAdoptium/Temurin/21/JDK/21.0.13.9 Publisher Eclipse Adoptium, InstallerUrl adoptium/temurin21-binaries jdk-21.0.13+9 msi (same version)."
+      }
+    },
+    "temurin-25": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/temurin@25.json adoptium/temurin25-binaries jdk-25.0.5+8; https://raw.githubusercontent.com/ScoopInstaller/Java/master/bucket/temurin25-jdk.json same repo jdk-25.0.5+8 JDK zip, checkver feature_releases/25/ga (same version)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/temurin@25.json adoptium/temurin25-binaries jdk-25.0.5+8; https://github.com/microsoft/winget-pkgs/tree/master/manifests/e/EclipseAdoptium/Temurin/25/JDK/25.0.5.8 Publisher Eclipse Adoptium, InstallerUrl adoptium/temurin25-binaries jdk-25.0.5+8 msi (same version)."
       }
     },
     "tesseract": {
@@ -1931,6 +1988,29 @@
         "probability": 0.9683328700391972,
         "tier": "MEDIUM",
         "catalogSnapshot": "2026-11-03T11:48:54.428Z"
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/zulu@17.json cdn.azul.com zulu17.70.113-ca-jdk17.0.21.0.3; https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Azul/Zulu/17/JDK/17.70.113 Publisher Azul Systems, Inc., InstallerUrl cdn.azul.com zulu17.70.113-ca-jdk17.0.21.0.3-win_x64.msi (same build)."
+      }
+    },
+    "zulu-25": {
+      "scoop": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/zulu@25.json cdn.azul.com zulu25.38.109-ca-jdk25.0.5.0.3; https://raw.githubusercontent.com/ScoopInstaller/Java/master/bucket/zulu25-jdk.json cdn.azul.com zulu25.38.109-ca-jdk25.0.5.0.3-win_x64.zip (same build)."
+      },
+      "winget": {
+        "method": "agent-review",
+        "probability": null,
+        "tier": "MEDIUM",
+        "catalogSnapshot": "2026-11-03T11:48:54.428Z",
+        "evidence": "https://formulae.brew.sh/api/cask/zulu@25.json cdn.azul.com zulu25.38.109-ca-jdk25.0.5.0.3; https://github.com/microsoft/winget-pkgs/tree/master/manifests/a/Azul/Zulu/25/JDK/25.38.109 Publisher Azul Systems, Inc., InstallerUrl cdn.azul.com zulu25.38.109-ca-jdk25.0.5.0.3-win_x64.msi (same build)."
       }
     }
   }

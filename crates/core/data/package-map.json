@@ -435,9 +435,17 @@
       "scoop": "fnm",
       "choco": "fnm"
     },
+    "font-hack-nerd-font": {
+      "brewCask": "font-hack-nerd-font",
+      "scoop": "nerd-fonts/Hack-NF"
+    },
     "font-jetbrains-mono": {
       "brewCask": "font-jetbrains-mono",
       "scoop": "nerd-fonts/JetBrains-Mono"
+    },
+    "font-jetbrains-mono-nerd-font": {
+      "brewCask": "font-jetbrains-mono-nerd-font",
+      "scoop": "nerd-fonts/JetBrainsMono-NF"
     },
     "freecad": {
       "brewCask": "freecad",
@@ -1398,7 +1406,18 @@
     },
     "temurin-17": {
       "brewCask": "temurin@17",
-      "winget": "EclipseAdoptium.Temurin.17.JDK"
+      "winget": "EclipseAdoptium.Temurin.17.JDK",
+      "scoop": "java/temurin17-jdk"
+    },
+    "temurin-21": {
+      "brewCask": "temurin@21",
+      "scoop": "java/temurin21-jdk",
+      "winget": "EclipseAdoptium.Temurin.21.JDK"
+    },
+    "temurin-25": {
+      "brewCask": "temurin@25",
+      "scoop": "java/temurin25-jdk",
+      "winget": "EclipseAdoptium.Temurin.25.JDK"
     },
     "tesseract": {
       "brew": "tesseract",
@@ -1620,7 +1639,13 @@
     },
     "zulu-17": {
       "brewCask": "zulu@17",
-      "scoop": "java/zulu17-jdk"
+      "scoop": "java/zulu17-jdk",
+      "winget": "Azul.Zulu.17.JDK"
+    },
+    "zulu-25": {
+      "brewCask": "zulu@25",
+      "scoop": "java/zulu25-jdk",
+      "winget": "Azul.Zulu.25.JDK"
     }
   }
 }
