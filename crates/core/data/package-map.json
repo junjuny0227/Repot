@@ -285,7 +285,6 @@
       "brew": "gh",
       "apt": "gh",
       "dnf": "gh",
-      "pacman": "gh",
       "winget": "GitHub.cli",
       "scoop": "gh",
       "choco": "gh"
@@ -492,8 +491,7 @@
       "scoop": "extras/libreoffice",
       "choco": "libreoffice-fresh",
       "apt": "libreoffice",
-      "dnf": "libreoffice",
-      "pacman": "libreoffice"
+      "dnf": "libreoffice"
     },
     "llvm": {
       "brew": "llvm",
@@ -606,7 +604,6 @@
       "brew": "node",
       "apt": "node",
       "dnf": "node",
-      "pacman": "node",
       "winget": "OpenJS.NodeJS",
       "scoop": "nodejs",
       "choco": "nodejs"
@@ -649,7 +646,6 @@
       "brew": "pandoc",
       "apt": "pandoc",
       "dnf": "pandoc",
-      "pacman": "pandoc",
       "winget": "JohnMacFarlane.Pandoc",
       "scoop": "pandoc",
       "choco": "pandoc"
@@ -669,8 +665,7 @@
     "pipx": {
       "brew": "pipx",
       "apt": "pipx",
-      "dnf": "pipx",
-      "pacman": "pipx"
+      "dnf": "pipx"
     },
     "pkgconf": {
       "brew": "pkgconf",
@@ -687,8 +682,7 @@
     "poetry": {
       "brew": "poetry",
       "apt": "poetry",
-      "dnf": "poetry",
-      "pacman": "poetry"
+      "dnf": "poetry"
     },
     "postman": {
       "brewCask": "postman",
@@ -733,8 +727,7 @@
     "redis": {
       "brew": "redis",
       "apt": "redis",
-      "dnf": "redis",
-      "pacman": "redis"
+      "dnf": "redis"
     },
     "restic": {
       "brew": "restic",
@@ -773,8 +766,7 @@
       "pacman": "rust"
     },
     "scc": {
-      "brew": "scc",
-      "pacman": "scc"
+      "brew": "scc"
     },
     "shellcheck": {
       "brew": "shellcheck",
@@ -893,8 +885,7 @@
       "scoop": "extras/transmission",
       "choco": "transmission",
       "apt": "transmission",
-      "dnf": "transmission",
-      "pacman": "transmission"
+      "dnf": "transmission"
     },
     "tree": {
       "brew": "tree",
@@ -947,8 +938,7 @@
     "watch": {
       "brew": "watch",
       "apt": "watch",
-      "dnf": "watch",
-      "pacman": "watch"
+      "dnf": "watch"
     },
     "watchexec": {
       "brew": "watchexec",
@@ -979,8 +969,7 @@
       "scoop": "yazi"
     },
     "yq": {
-      "brew": "yq",
-      "pacman": "yq"
+      "brew": "yq"
     },
     "yt-dlp": {
       "brew": "yt-dlp",

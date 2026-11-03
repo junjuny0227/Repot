@@ -24,7 +24,7 @@ export function classify(manager, name, result) {
   if (result.error || result.status === null) return 'transient';
   const text = `${result.stdout ?? ''}\n${result.stderr ?? ''}`.replace(/\x1b\[[0-9;]*m/g, '');
   // Errors can coexist with a misleading empty-result message or partial metadata.
-  if (/HTTP\s*[45]\d\d|timed?\s*out|timeout|TLS|SSL|certificate|network|could not resolve|connection|failed to download|failed to fetch|source unavailable|service unavailable|error.*source/i.test(text)) return 'transient';
+  if (/HTTP\s*[45]\d\d|timed?\s*out|timeout|TLS handshake failed|SSL.*(?:error|failed)|certificate.*(?:error|failed)|network (?:failure|error)|could not resolve|connection (?:refused|failed|reset)|failed to download|failed to fetch|source unavailable|service unavailable|error.*source/i.test(text)) return 'transient';
   const missing = {
     brew: /No available formula with the name|No formulae? found/i,
     brewCask: /No Cask with this name exists|No available cask/i,

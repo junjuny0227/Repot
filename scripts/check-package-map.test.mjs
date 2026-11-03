@@ -20,6 +20,10 @@ test('recognizes exact identities, not successful empty or unrelated output', ()
   }
 });
 
+test('metadata mentioning networking, SSL and certificates is not a transport error', () => {
+  assert.equal(classify('pacman', 'curl', { status: 0, stdout: 'Name : curl\nDescription : network transfer with SSL\nDepends On : openssl ca-certificates' }), 'found');
+});
+
 test('distinguishes authoritative absence from transport and command failures', () => {
   const cases = [
     ['brew', 'Error: No available formula with the name "missing"'],

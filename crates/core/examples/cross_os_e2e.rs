@@ -48,6 +48,7 @@ fn bundle() -> ExportBundle {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let parent = std::env::args().nth(1).ok_or("usage: cross_os_e2e <out>")?;
+    std::fs::create_dir_all(&parent)?;
     let bundle = bundle();
     if bundle.warnings.len() != 2 {
         return Err(format!("unexpected warnings: {:?}", bundle.warnings).into());
