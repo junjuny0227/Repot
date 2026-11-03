@@ -10,10 +10,181 @@ on:
   pull_request:
     paths-ignore: ['**/*.md', 'docs/**', 'LICENSE']
 
+  schedule:
+    - cron: '23 5 * * 1'
+
 permissions:
   contents: read
 
 jobs:
+  package-map-changes:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.paths.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: paths
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [[ "$EVENT" == schedule ]] || git diff --name-only "$BASE" "$HEAD" | grep -Eq '^(crates/core/data/package-map.json|scripts/check-package-map[^/]*\.mjs|\.github/workflows/ci\.yml)$'; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          fi
+
+  package-map:
+    name: Package map (${{ matrix.manager }})
+    needs: package-map-changes
+    if: needs.package-map-changes.outputs.enabled == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            manager: brew
+            keys: brew brewCask
+          - os: windows-latest
+            manager: windows
+            keys: winget scoop choco
+          - os: ubuntu-latest
+            manager: apt
+            keys: apt
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node --test scripts/
+      - name: Refresh default Ubuntu repositories only
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/*.list
+          sudo apt-get update
+      - name: Provision usable winget
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.WinGet.Client -Force -Repository PSGallery -Scope CurrentUser
+          Repair-WinGetPackageManager -AllUsers
+          winget --version
+          if ($LASTEXITCODE -ne 0) { throw 'winget is required, not optional' }
+      - name: Install Scoop without elevation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Install as a standard local account, never with -RunAsAdmin.
+          $user = 'RepotScoop'
+          $password = [guid]::NewGuid().ToString('N') + 'aA1!'
+          $secure = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name $user -Password $secure | Out-Null
+          Add-LocalGroupMember -Group Users -Member $user
+          $account = "$env:COMPUTERNAME\$user"
+          # Scoop refuses a non-empty install dir, so the bootstrap script and logs
+          # live next to it and $root itself is created by the installer.
+          $base = 'C:\repot-ci'
+          $root = Join-Path $base 'scoop'
+          $work = Join-Path $base 'setup'
+          New-Item -ItemType Directory -Path $work -Force | Out-Null
+          icacls $base /grant "${account}:(OI)(CI)F" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot grant Scoop directory access' }
+          $script = Join-Path $work 'install.ps1'
+          $log = Join-Path $work 'install.log'
+          @'
+          $ErrorActionPreference = 'Stop'
+          $env:SCOOP = '__SCOOP_ROOT__'
+          # The child inherits runneradmin's profile variables; keep Scoop's config writable.
+          $env:XDG_CONFIG_HOME = '__SCOOP_CONFIG__'
+          Start-Transcript -Path '__SCOOP_LOG__'
+          try {
+            $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+            $principal = [Security.Principal.WindowsPrincipal]::new($identity)
+            if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+              throw 'Scoop must be installed with a non-admin token'
+            }
+            Write-Output 'Confirmed non-admin Scoop installation'
+            Invoke-RestMethod https://get.scoop.sh | Invoke-Expression
+            & "$env:SCOOP/shims/scoop.cmd" install jq ripgrep
+            if ($LASTEXITCODE -ne 0) { throw 'Scoop package installation failed' }
+          } catch {
+            Write-Output ($_ | Out-String)
+            exit 1
+          } finally { Stop-Transcript }
+          '@.Replace('__SCOOP_LOG__', $log).Replace('__SCOOP_ROOT__', $root).Replace('__SCOOP_CONFIG__', (Join-Path $base 'config')) | Set-Content $script
+          $credential = [pscredential]::new($account, $secure)
+          $stdout = Join-Path $work 'stdout.log'
+          $stderr = Join-Path $work 'stderr.log'
+          try {
+            Start-Service seclogon
+            $process = Start-Process -FilePath (Get-Command pwsh).Source -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Credential $credential -LoadUserProfile -WorkingDirectory $work -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+            if (-not $process.WaitForExit(300000)) {
+              $process.Kill()
+              throw 'Scoop setup timed out'
+            }
+            if ($process.ExitCode -ne 0) { throw "Scoop setup failed: $($process.ExitCode)" }
+          } finally {
+            foreach ($file in @($log, $stdout, $stderr)) {
+              if (Test-Path $file) { Get-Content $file }
+            }
+            Remove-LocalUser -Name $user
+          }
+          "SCOOP=$root" >> $env:GITHUB_ENV
+          "XDG_CONFIG_HOME=$(Join-Path $base 'config')" >> $env:GITHUB_ENV
+          "$root/shims" >> $env:GITHUB_PATH
+      - name: Add official Scoop buckets
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          scoop bucket add extras
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot add official extras bucket' }
+      - name: Verify every non-null name against real default repositories
+        shell: bash
+        run: node scripts/check-package-map.mjs ${{ matrix.keys }}
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: package-map-${{ matrix.manager }}
+          path: package-map-*.json
+
+  package-map-linux:
+    name: Package map (${{ matrix.manager }})
+    needs: package-map-changes
+    if: needs.package-map-changes.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:latest
+            manager: dnf
+          - image: archlinux:base
+            manager: pacman
+    container: ${{ matrix.image }}
+    steps:
+      - name: Refresh default repositories and install Node
+        shell: bash
+        run: |
+          if command -v dnf >/dev/null; then
+            dnf install -y nodejs git
+          else
+            pacman -Syu --noconfirm --needed nodejs git
+          fi
+      - uses: actions/checkout@v6
+      - run: node --test scripts/
+      - run: node scripts/check-package-map.mjs ${{ matrix.manager }}
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: package-map-${{ matrix.manager }}
+          path: package-map-*.json
+
   rust:
     strategy:
       fail-fast: false
@@ -304,6 +475,33 @@ jobs:
               assert not list(dest.parent.glob('.repot-e2e.repot-backup-*')), 'Unchanged config was backed up'
               with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as report:
                   report.write(f'### Restore {target}, run {attempt}\nExit: {result.returncode}\n```text\n{summary}```\n')
+      - name: Cross-OS macOS to Windows winget restore
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Install-Module Microsoft.WinGet.Client -Force -Repository PSGallery -Scope CurrentUser
+          Repair-WinGetPackageManager -AllUsers
+          winget --version
+          if ($LASTEXITCODE -ne 0) { throw 'winget is required for cross-OS restore' }
+          $id = 'BurntSushi.ripgrep.MSVC'
+          $before = winget list --id $id --exact --accept-source-agreements --disable-interactivity | Out-String
+          if ($before -match [regex]::Escape($id)) { throw 'Mapped fixture is already installed' }
+          cargo test -p repot-core --example cross_os_e2e
+          if ($LASTEXITCODE -ne 0) { throw 'Cross-OS export tests failed' }
+          $out = cargo run -q -p repot-core --example cross_os_e2e -- "$env:RUNNER_TEMP/repot-cross-os"
+          if ($LASTEXITCODE -ne 0) { throw 'Cross-OS export failed' }
+          $script = Join-Path $out 'restore.ps1'
+          if ((Get-Content $script -Raw) -notmatch '# from brew: ripgrep') { throw 'Missing source mapping' }
+          foreach ($attempt in 1, 2) {
+            $log = powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Yes | Out-String
+            $log | Write-Host
+            if ($LASTEXITCODE -ne 0) { throw "Cross-OS restore $attempt failed" }
+            if ($attempt -eq 1 -and $log -notmatch 'OK: winget install') { throw 'First restore did not install mapped package' }
+            if ($attempt -eq 2 -and $log -notmatch 'skipped: winget install') { throw 'Second restore was not idempotent' }
+            $installed = winget list --id $id --exact --accept-source-agreements --disable-interactivity | Out-String
+            if ($LASTEXITCODE -ne 0 -or $installed -notmatch [regex]::Escape($id)) { throw 'Mapped package not installed' }
+            $log >> $env:GITHUB_STEP_SUMMARY
+          }
       - uses: actions/upload-artifact@v6
         if: always()
         with:
@@ -320,7 +518,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/check-version.test.mjs
+      - run: node --test scripts/
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test
       - run: pnpm --filter @repot/desktop build
