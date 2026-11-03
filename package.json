@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@12.11.2",
   "scripts": {
-    "desktop": "pnpm --filter @repot/desktop tauri"
+    "desktop": "pnpm --filter @repot/desktop tauri",
+    "package-map:gen": "node scripts/package-map-gen/cli.mjs"
   }
 }
