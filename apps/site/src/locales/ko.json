@@ -92,7 +92,7 @@
     "editor": "VS Code와 Cursor의 확장, 설정, 키 바인딩, 스니펫",
     "git": "사용자 설정과 설정해 둔 전역 ignore 파일",
     "shell": "zsh, Bash, fish, PowerShell 프로필, oh-my-zsh 커스텀 플러그인과 테마, Starship 설정",
-    "note": "패키지 매니저 항목은 같은 OS(Linux는 같은 배포판 계열)로만 옮길 수 있습니다. 런타임 관리자는 대상 OS에 맞는 도구로 바꾸며, 옮길 수 없는 항목은 추측하지 않고 비활성화합니다."
+    "note": "같은 OS(Linux는 같은 배포판 계열)로 옮기면 패키지는 원래 매니저를 그대로 씁니다. 다른 OS로 옮길 때는 Repot 내장 패키지 대응표만 쓰며, Windows에서는 winget, Scoop, Chocolatey 중에서 고릅니다. 런타임 관리자는 대상 OS에 맞는 도구로 바꾸며, 옮길 수 없는 항목은 추측하지 않고 비활성화합니다."
   },
   "install": {
     "title": "설치와 첫 실행",
