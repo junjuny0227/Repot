@@ -16,6 +16,19 @@ test('merges names/scan/analytics, skips mapped including null and reports unkno
   assert.deepEqual(selected.issues.map(i => i.type), ['ambiguous', 'unknown']);
   assert.equal(selected.skipped[0].id, 'ripgrep');
 });
+test('reads brew formulae and casks from a core ScanResult (top-level items) and skips taps', () => {
+  const scanResult = { items: [
+    { name: 'ripgrep', details: { package: { manager: 'brew', kind: 'formula' } } },
+    { name: 'docker-desktop', details: { package: { manager: 'brew', kind: 'cask' } } },
+    { name: 'homebrew/cask-fonts', details: { package: { manager: 'brew', kind: 'tap' } } },
+  ] };
+  const selected = selectSources({ brew, scan: scanResult, packages: {} });
+  assert.deepEqual(selected.sources.map(s => [s.id, s.brew_kind]), [['docker-desktop', 'cask'], ['ripgrep', 'formula']].sort());
+  assert.deepEqual(selected.issues, []);
+});
+test('rejects a scan file with neither items nor scan.items', () => {
+  assert.throws(() => selectSources({ brew, scan: { providers: [] }, packages: {} }), /Invalid Repot scan/);
+});
 test('dry-run output is repeatable with channel and kind flags and no data changes', async () => {
   const catalogs = { brew, winget: [record('Docker.DockerDesktop', ['docker-desktop'], [], 'gui')], scoop: [] };
   const options = { names: ['docker-desktop'], packages: {}, catalogs };
