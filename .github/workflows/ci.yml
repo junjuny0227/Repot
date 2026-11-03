@@ -1,9 +1,14 @@
 name: CI
 
 on:
+  # Docs-only changes do not affect builds or tests. No .md file outside docs/ is a
+  # test input. If CI becomes a required check, switch to a job-level filter: a
+  # skipped workflow never reports, so a required check would wait forever.
   push:
     branches: [main]
+    paths-ignore: ['**/*.md', 'docs/**', 'LICENSE']
   pull_request:
+    paths-ignore: ['**/*.md', 'docs/**', 'LICENSE']
 
 permissions:
   contents: read
