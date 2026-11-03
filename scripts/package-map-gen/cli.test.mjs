@@ -4,7 +4,9 @@ import { readFile, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { record } from './normalize.mjs';
-import { selectSources, runCandidates, parseOptions, loadAnalytics } from './cli.mjs';
+import { selectSources, runCandidates, run, parseOptions, loadAnalytics } from './cli.mjs';
+import { applyReview } from './review.mjs';
+import { writeFile } from 'node:fs/promises';
 const source = (id, kind = 'formula') => ({ ...record(id, [id], ['https://github.com/a/' + id], kind === 'formula' ? 'cli' : 'gui'), brew_kind: kind });
 const brew = [source('ripgrep'), source('docker-desktop', 'cask'), source('dual'), source('dual', 'cask')];
 const scan = { scan: { items: [{ name: 'ripgrep', details: { package: { manager: 'brew', kind: 'formula' } } }, { name: 'not-brew', provider: 'npm' }] } };
@@ -41,5 +43,32 @@ test('analytics is cached; offline never fetches, and missing offline analytics 
     await rm(join(cacheDir, 'analytics-formula.json'));
     await assert.rejects(loadAnalytics({ cacheDir, offline: true, fetch }), /Offline analytics cache missing/);
     assert.equal(calls, 2);
+  } finally { await rm(cacheDir, { recursive: true, force: true }); }
+});
+test('run/apply-review options validate finite thresholds and nonnegative budgets', () => {
+  const options = parseOptions(['run', '--names', 'sample', '--threshold', '0.8', '--max-requests', '2', '--credit-floor', '100', '--dry-run']);
+  assert.equal(options.command, 'run'); assert.equal(options.threshold, 0.8); assert.equal(options.maxRequests, 2); assert.equal(options.dryRun, true);
+  assert.equal(parseOptions(['apply-review']).command, 'apply-review');
+  for (const args of [['--threshold', 'NaN'], ['--threshold', '1.1'], ['--max-requests', '-1'], ['--credit-floor', '-1']]) assert.throws(() => parseOptions(['run', '--names', 'sample', ...args]));
+});
+test('end-to-end candidates → jeb → dry-run/review edit → apply → rerun: no secrets/network outside injected fetch', async () => {
+  const cacheDir = await mkdtemp(join(tmpdir(), 'map-run-')), mapPath = join(cacheDir, 'map.json'), provenancePath = join(cacheDir, 'provenance.json');
+  try {
+    await writeFile(mapPath, JSON.stringify({ version: 1, packages: {} }));
+    const catalogs = { brew: [source('sample')], winget: [record('Vendor.Sample', ['sample'], [], 'cli')], scoop: [record('main/sample', ['sample'], [], 'gui')] };
+    let calls = 0;
+    const options = { catalogs, names: ['sample'], cacheDir, mapPath, provenancePath, catalogSnapshot: '2026-11-03', key: 'synthetic', fetch: async () => { calls++; return Response.json({ answers: { q: { choice: '1', probabilities: { 1: 0.8 } } } }, { headers: { 'x-ratelimit-remaining-credits': '900' } }); } };
+    const before = await readFile(mapPath, 'utf8');
+    const dry = await run({ ...options, dryRun: true });
+    assert.equal(await readFile(mapPath, 'utf8'), before);
+    assert.deepEqual(dry.counts, { auto: 1, review: 1, 'no-candidate': 0, incomplete: 0, added: 1, conflicts: 0 });
+    const real = await run({ ...options, offline: true });
+    assert.equal(real.counts.added, 1); assert.equal(calls, 2);
+    const reviewPath = join(cacheDir, 'review.json'), review = JSON.parse(await readFile(reviewPath));
+    review.items[0].decision = 'none'; await writeFile(reviewPath, JSON.stringify(review));
+    await applyReview({ mapPath, provenancePath, reviewPath });
+    assert.equal(JSON.parse(await readFile(mapPath)).packages.sample.scoop, null);
+    const rerun = await run({ ...options, offline: true });
+    assert.equal(rerun.counts.added, 0); assert.equal(rerun.skipped.length, 1); assert.equal(calls, 2);
   } finally { await rm(cacheDir, { recursive: true, force: true }); }
 });

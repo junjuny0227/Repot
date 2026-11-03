@@ -51,3 +51,7 @@ test('catalog acquisition records hashes; offline reuses snapshot with zero tran
     await assert.rejects(loadCatalogs({ cacheDir: dir, offline: true, fetch: forbidden }), /offline.*missing/i);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+test('Scoop public description is retained for judge choices', () => {
+  const item = parseScoop('main', 'tool', { name: 'Display Tool', description: 'Useful utility', homepage: 'https://tool.example' });
+  assert.equal(item.name, 'Display Tool'); assert.equal(item.description, 'Useful utility');
+});

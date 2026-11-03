@@ -21,7 +21,7 @@ export function parseScoop(bucket, name, data) {
   const arch = Object.values(data.architecture ?? {});
   const gui = Boolean(data.shortcuts || arch.some(value => value.shortcuts));
   const cli = Boolean(data.bin || arch.some(value => value.bin));
-  return record(`${bucket}/${name}`, [name], [...strings(data.homepage), ...strings(data.url), ...arch.flatMap(value => strings(value.url)), ...strings(data.checkver?.github)], gui && cli ? 'mixed' : gui ? 'gui' : cli ? 'cli' : 'unknown');
+  return { ...record(`${bucket}/${name}`, [name], [...strings(data.homepage), ...strings(data.url), ...arch.flatMap(value => strings(value.url)), ...strings(data.checkver?.github)], gui && cli ? 'mixed' : gui ? 'gui' : cli ? 'cli' : 'unknown'), name: data.name || name, description: data.description || '' };
 }
 function scalar(value) {
   value = value.trim();
