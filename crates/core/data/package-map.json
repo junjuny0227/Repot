@@ -431,10 +431,6 @@
       "scoop": "fnm",
       "choco": "fnm"
     },
-    "font-jetbrains-mono": {
-      "brewCask": "font-jetbrains-mono",
-      "scoop": "nerd-fonts/JetBrains-Mono"
-    },
     "freecad": {
       "brewCask": "freecad",
       "scoop": "extras/freecad",
@@ -1288,8 +1284,7 @@
     },
     "steam": {
       "brewCask": "steam",
-      "winget": "Valve.Steam",
-      "scoop": "versions/steam"
+      "winget": "Valve.Steam"
     },
     "stow": {
       "brew": "stow",
@@ -1332,10 +1327,6 @@
       "winget": "Telegram.TelegramDesktop",
       "scoop": "extras/telegram",
       "choco": "telegram"
-    },
-    "temurin": {
-      "brewCask": "temurin",
-      "scoop": "java/temurin-jdk"
     },
     "tesseract": {
       "brew": "tesseract",
