@@ -14,6 +14,8 @@
   border-right: 1px solid var(--separator);
 }
 :root[data-platform="mac"] .sidebar-pane { background: transparent; }
+/* Japanese category names are longer ("グローバルパッケージ"); give them room instead of truncating. */
+:root:lang(ja) .sidebar-pane { width: 248px; }
 @media (prefers-reduced-transparency: reduce) {
   :root[data-platform="mac"] .sidebar-pane { background-color: var(--sidebar); }
 }
@@ -76,6 +78,10 @@ button.source-item { height: 28px; padding: 0 8px; }
 .provider-groups ul { display: flex; flex-direction: column; gap: 3px; padding: 2px 8px 6px 23px; color: var(--label-2); }
 .provider-groups .mono { font-size: var(--caption); }
 .provider-groups li summary { height: 20px; padding: 0; font-weight: 400; }
+.sidebar-language { flex: none; padding: 8px 18px 12px; border-top: 1px solid var(--separator); }
+.sidebar-language .language-field { display: flex; }
+.sidebar-language .popup { flex: 1; min-width: 0; }
+.sidebar-language .popup select { width: 100%; min-width: 0; }
 .provider-groups pre { margin-top: 4px; padding: 6px; max-height: 160px; overflow: auto; border-radius: 6px; background-color: var(--fill); font-size: 10px; line-height: 13px; }
 
 /* Main column. */
