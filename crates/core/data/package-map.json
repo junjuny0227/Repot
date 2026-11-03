@@ -1,6 +1,16 @@
 {
   "version": 1,
   "packages": {
+    "1password-cli": {
+      "brewCask": "1password-cli",
+      "winget": "AgileBits.1Password.CLI",
+      "scoop": "main/1password-cli"
+    },
+    "actionlint": {
+      "brew": "actionlint",
+      "winget": "rhysd.actionlint",
+      "scoop": "main/actionlint"
+    },
     "alacritty": {
       "brewCask": "alacritty",
       "winget": "Alacritty.Alacritty",
@@ -9,17 +19,45 @@
       "dnf": "alacritty",
       "pacman": "alacritty"
     },
+    "android-platform-tools": {
+      "brewCask": "android-platform-tools",
+      "winget": "Google.PlatformTools"
+    },
+    "android-studio": {
+      "brewCask": "android-studio",
+      "winget": "Google.AndroidStudio"
+    },
     "ansible": {
       "brew": "ansible",
       "apt": "ansible",
       "dnf": "ansible",
       "pacman": "ansible"
     },
+    "antigravity-cli": {
+      "brewCask": "antigravity-cli",
+      "winget": "Google.AntigravityCLI"
+    },
+    "argocd": {
+      "brew": "argocd",
+      "winget": "argoproj.argocd",
+      "scoop": "main/argocd"
+    },
     "aria2": {
       "brew": "aria2",
       "apt": "aria2",
       "dnf": "aria2",
-      "pacman": "aria2"
+      "pacman": "aria2",
+      "winget": "aria2.aria2"
+    },
+    "ast-grep": {
+      "brew": "ast-grep",
+      "winget": "ast-grep.ast-grep",
+      "scoop": "main/ast-grep"
+    },
+    "atuin": {
+      "brew": "atuin",
+      "winget": "Atuinsh.Atuin",
+      "scoop": "main/atuin"
     },
     "audacity": {
       "brewCask": "audacity",
@@ -43,7 +81,18 @@
       "pacman": "automake"
     },
     "awscli": {
-      "brew": "awscli"
+      "brew": "awscli",
+      "winget": "Amazon.AWSCLI",
+      "scoop": "main/aws"
+    },
+    "azure-cli": {
+      "brewCask": "azure-cli",
+      "winget": "Microsoft.AzureCLI",
+      "scoop": "main/azure-cli"
+    },
+    "balenaetcher": {
+      "brewCask": "balenaetcher",
+      "winget": "Balena.Etcher"
     },
     "bat": {
       "brew": "bat",
@@ -82,6 +131,10 @@
       "scoop": "extras/brave",
       "choco": "brave"
     },
+    "bruno": {
+      "brewCask": "bruno",
+      "scoop": "extras/bruno"
+    },
     "btop": {
       "brew": "btop",
       "apt": "btop",
@@ -98,17 +151,36 @@
       "dnf": "calibre",
       "pacman": "calibre"
     },
+    "cargo-nextest": {
+      "brew": "cargo-nextest",
+      "winget": "nextest.cargo-nextest"
+    },
+    "cc-switch": {
+      "brewCask": "cc-switch",
+      "winget": "farion1231.CC-Switch"
+    },
     "ccache": {
       "brew": "ccache",
       "apt": "ccache",
       "dnf": "ccache",
-      "pacman": "ccache"
+      "pacman": "ccache",
+      "winget": "Ccache.Ccache",
+      "scoop": "main/ccache"
+    },
+    "chezmoi": {
+      "brew": "chezmoi",
+      "winget": "twpayne.chezmoi",
+      "scoop": "main/chezmoi"
     },
     "chromium": {
       "brewCask": "chromium",
       "scoop": "extras/chromium",
       "dnf": "chromium",
       "pacman": "chromium"
+    },
+    "cloudflared": {
+      "brew": "cloudflared",
+      "scoop": "main/cloudflared"
     },
     "cmake": {
       "brew": "cmake",
@@ -118,6 +190,10 @@
       "winget": "Kitware.CMake",
       "scoop": "cmake",
       "choco": "cmake"
+    },
+    "codex": {
+      "brewCask": "codex",
+      "winget": "OpenAI.Codex"
     },
     "coreutils": {
       "brew": "coreutils",
@@ -139,10 +215,15 @@
       "scoop": "extras/cyberduck",
       "choco": "cyberduck"
     },
+    "db-browser-for-sqlite": {
+      "brewCask": "db-browser-for-sqlite",
+      "winget": "DBBrowserForSQLite.DBBrowserForSQLite"
+    },
     "dbeaver-community": {
       "brewCask": "dbeaver-community",
       "scoop": "extras/dbeaver",
-      "choco": "dbeaver"
+      "choco": "dbeaver",
+      "winget": "DBeaver.DBeaver.Community"
     },
     "direnv": {
       "brew": "direnv",
@@ -158,6 +239,24 @@
       "scoop": "extras/discord",
       "choco": "discord"
     },
+    "docker": {
+      "brew": "docker",
+      "scoop": "main/docker"
+    },
+    "docker-buildx": {
+      "brew": "docker-buildx",
+      "winget": "Docker.Buildx",
+      "scoop": "main/docker-buildx"
+    },
+    "docker-compose": {
+      "brew": "docker-compose",
+      "winget": "Docker.DockerCompose",
+      "scoop": "main/docker-compose"
+    },
+    "docker-desktop": {
+      "brewCask": "docker-desktop",
+      "winget": "Docker.DockerDesktop"
+    },
     "dos2unix": {
       "brew": "dos2unix",
       "apt": "dos2unix",
@@ -166,6 +265,11 @@
       "winget": "waterlan.dos2unix",
       "scoop": "dos2unix",
       "choco": "dos2unix"
+    },
+    "drawio": {
+      "brewCask": "drawio",
+      "winget": "JGraph.Draw",
+      "scoop": "extras/draw.io"
     },
     "duckdb": {
       "brew": "duckdb",
@@ -247,6 +351,11 @@
       "dnf": "flameshot",
       "pacman": "flameshot"
     },
+    "flyctl": {
+      "brew": "flyctl",
+      "winget": "Fly-io.flyctl",
+      "scoop": "main/flyctl"
+    },
     "fnm": {
       "brew": "fnm",
       "winget": "Schniz.fnm",
@@ -282,6 +391,10 @@
       "scoop": "gh",
       "choco": "gh"
     },
+    "ghostscript": {
+      "brew": "ghostscript",
+      "scoop": "main/ghostscript"
+    },
     "gimp": {
       "brewCask": "gimp",
       "winget": "GIMP.GIMP.3",
@@ -300,6 +413,16 @@
       "dnf": "git",
       "pacman": "git"
     },
+    "git-credential-manager": {
+      "brewCask": "git-credential-manager",
+      "winget": "Git.GCM",
+      "scoop": "extras/git-credential-manager"
+    },
+    "git-delta": {
+      "brew": "git-delta",
+      "winget": "dandavison.delta",
+      "scoop": "main/delta"
+    },
     "git-lfs": {
       "brew": "git-lfs",
       "apt": "git-lfs",
@@ -308,6 +431,14 @@
       "winget": "GitHub.GitLFS",
       "scoop": "git-lfs",
       "choco": "git-lfs"
+    },
+    "github": {
+      "brewCask": "github",
+      "winget": "GitHub.GitHubDesktop"
+    },
+    "gitleaks": {
+      "brew": "gitleaks",
+      "scoop": "main/gitleaks"
     },
     "glab": {
       "brew": "glab",
@@ -330,7 +461,8 @@
       "brew": "gnupg",
       "apt": "gnupg",
       "dnf": "gnupg2",
-      "pacman": "gnupg"
+      "pacman": "gnupg",
+      "winget": "GnuPG.GnuPG"
     },
     "go": {
       "brew": "go",
@@ -341,10 +473,18 @@
       "scoop": "go",
       "choco": "golang"
     },
+    "golangci-lint": {
+      "brew": "golangci-lint",
+      "scoop": "main/golangci-lint"
+    },
     "google-chrome": {
       "brewCask": "google-chrome",
       "scoop": "extras/googlechrome",
       "choco": "googlechrome"
+    },
+    "google-gemini": {
+      "brewCask": "google-gemini",
+      "winget": "Google.GeminiDesktop"
     },
     "graphviz": {
       "brew": "graphviz",
@@ -367,11 +507,24 @@
       "dnf": "gzip",
       "pacman": "gzip"
     },
+    "handy": {
+      "brewCask": "handy",
+      "winget": "cjpais.Handy",
+      "scoop": "extras/handy"
+    },
+    "harfbuzz": {
+      "brew": "harfbuzz",
+      "scoop": "main/harfbuzz"
+    },
     "helm": {
       "brew": "helm",
       "winget": "Helm.Helm",
       "scoop": "helm",
       "choco": "kubernetes-helm"
+    },
+    "herdr": {
+      "brew": "herdr",
+      "scoop": "main/herdr"
     },
     "htop": {
       "brew": "htop",
@@ -426,6 +579,15 @@
     "iterm2": {
       "brewCask": "iterm2"
     },
+    "jadx": {
+      "brew": "jadx",
+      "winget": "Skylot.jadx",
+      "scoop": "extras/jadx"
+    },
+    "jetbrains-toolbox": {
+      "brewCask": "jetbrains-toolbox",
+      "winget": "JetBrains.Toolbox"
+    },
     "jq": {
       "brew": "jq",
       "apt": "jq",
@@ -434,6 +596,10 @@
       "winget": "jqlang.jq",
       "scoop": "jq",
       "choco": "jq"
+    },
+    "jsonnet": {
+      "brew": "jsonnet",
+      "scoop": "main/go-jsonnet"
     },
     "just": {
       "brew": "just",
@@ -444,6 +610,11 @@
       "scoop": "just",
       "choco": "just"
     },
+    "k9s": {
+      "brew": "k9s",
+      "winget": "Derailed.k9s",
+      "scoop": "main/k9s"
+    },
     "keepassxc": {
       "brewCask": "keepassxc",
       "winget": "KeePassXCTeam.KeePassXC",
@@ -453,17 +624,40 @@
       "dnf": "keepassxc",
       "pacman": "keepassxc"
     },
+    "kicad": {
+      "brewCask": "kicad",
+      "scoop": "extras/kicad"
+    },
     "kitty": {
       "brewCask": "kitty",
       "apt": "kitty",
       "dnf": "kitty",
       "pacman": "kitty"
     },
+    "kubeconform": {
+      "brew": "kubeconform",
+      "scoop": "main/kubeconform"
+    },
+    "kubernetes-cli": {
+      "brew": "kubernetes-cli",
+      "winget": "Kubernetes.kubectl",
+      "scoop": "main/kubectl"
+    },
+    "kustomize": {
+      "brew": "kustomize",
+      "winget": "Kubernetes.kustomize",
+      "scoop": "main/kustomize"
+    },
     "lazygit": {
       "brew": "lazygit",
       "winget": "JesseDuffield.lazygit",
       "scoop": "extras/lazygit",
       "choco": "lazygit"
+    },
+    "lefthook": {
+      "brew": "lefthook",
+      "winget": "evilmartians.lefthook",
+      "scoop": "main/lefthook"
     },
     "less": {
       "brew": "less",
@@ -490,6 +684,10 @@
       "apt": "llvm",
       "dnf": "llvm",
       "pacman": "llvm"
+    },
+    "lm-studio": {
+      "brewCask": "lm-studio",
+      "winget": "ElementLabs.LMStudio"
     },
     "lsof": {
       "brew": "lsof",
@@ -540,11 +738,34 @@
       "dnf": "meson",
       "pacman": "meson"
     },
+    "microsoft-edge": {
+      "brewCask": "microsoft-edge",
+      "winget": "Microsoft.Edge"
+    },
     "minikube": {
       "brew": "minikube"
     },
     "mise": {
-      "brew": "mise"
+      "brew": "mise",
+      "winget": "jdx.mise",
+      "scoop": "main/mise"
+    },
+    "mitmproxy": {
+      "brewCask": "mitmproxy",
+      "winget": "mitmproxy.mitmproxy"
+    },
+    "mkcert": {
+      "brew": "mkcert",
+      "scoop": "extras/mkcert"
+    },
+    "mole": {
+      "brew": "mole",
+      "scoop": "main/mole"
+    },
+    "moonlight": {
+      "brewCask": "moonlight",
+      "winget": "MoonlightGameStreamingProject.Moonlight",
+      "scoop": "extras/moonlight"
     },
     "mosh": {
       "brew": "mosh",
@@ -572,6 +793,10 @@
       "winget": "Neovim.Neovim",
       "scoop": "neovim",
       "choco": "neovim"
+    },
+    "ngrok": {
+      "brewCask": "ngrok",
+      "winget": "Ngrok.Ngrok"
     },
     "ninja": {
       "brew": "ninja",
@@ -617,6 +842,10 @@
       "scoop": "extras/obsidian",
       "choco": "obsidian"
     },
+    "opencode-desktop": {
+      "brewCask": "opencode-desktop",
+      "winget": "SST.OpenCodeDesktop"
+    },
     "openssh": {
       "brew": "openssh",
       "dnf": "openssh",
@@ -624,6 +853,11 @@
     },
     "openssl-3": {
       "brew": "openssl@3"
+    },
+    "oras": {
+      "brew": "oras",
+      "winget": "ORASProject.ORAS",
+      "scoop": "extras/oras"
     },
     "p7zip": {
       "brew": "p7zip"
@@ -641,6 +875,10 @@
       "dnf": "parallel",
       "pacman": "parallel"
     },
+    "pgadmin4": {
+      "brewCask": "pgadmin4",
+      "winget": "PostgreSQL.pgAdmin"
+    },
     "pigz": {
       "brew": "pigz",
       "apt": "pigz",
@@ -650,13 +888,16 @@
     "pipx": {
       "brew": "pipx",
       "apt": "pipx",
-      "dnf": "pipx"
+      "dnf": "pipx",
+      "scoop": "main/pipx"
     },
     "pkgconf": {
       "brew": "pkgconf",
       "apt": "pkgconf",
       "dnf": "pkgconf",
-      "pacman": "pkgconf"
+      "pacman": "pkgconf",
+      "winget": "pkgconf.pkgconf",
+      "scoop": "main/pkgconf"
     },
     "pnpm": {
       "brew": "pnpm",
@@ -664,15 +905,29 @@
       "scoop": "pnpm",
       "choco": "pnpm"
     },
+    "podman-desktop": {
+      "brewCask": "podman-desktop",
+      "winget": "RedHat.Podman-Desktop",
+      "scoop": "extras/podman-desktop"
+    },
     "poetry": {
       "brew": "poetry",
       "dnf": "poetry"
+    },
+    "poppler": {
+      "brew": "poppler",
+      "winget": "oschwartz10612.Poppler",
+      "scoop": "main/poppler"
     },
     "postman": {
       "brewCask": "postman",
       "winget": "Postman.Postman",
       "scoop": "extras/postman",
       "choco": "postman"
+    },
+    "powershell": {
+      "brew": "powershell",
+      "winget": "Microsoft.PowerShell"
     },
     "procs": {
       "brew": "procs",
@@ -682,13 +937,19 @@
       "brew": "protobuf",
       "apt": "protobuf-compiler",
       "dnf": "protobuf-compiler",
-      "pacman": "protobuf"
+      "pacman": "protobuf",
+      "scoop": "extras/protobuf"
     },
     "pv": {
       "brew": "pv",
       "apt": "pv",
       "dnf": "pv",
       "pacman": "pv"
+    },
+    "raspberry-pi-imager": {
+      "brewCask": "raspberry-pi-imager",
+      "winget": "RaspberryPiFoundation.RaspberryPiImager",
+      "scoop": "extras/raspberry-pi-imager"
     },
     "rclone": {
       "brew": "rclone",
@@ -710,7 +971,8 @@
     },
     "redis": {
       "brew": "redis",
-      "apt": "redis"
+      "apt": "redis",
+      "scoop": "main/redis"
     },
     "restic": {
       "brew": "restic",
@@ -736,11 +998,22 @@
       "dnf": "rsync",
       "pacman": "rsync"
     },
+    "rtk": {
+      "brew": "rtk",
+      "winget": "rtk-ai.rtk",
+      "scoop": "main/rtk"
+    },
     "ruby": {
       "brew": "ruby",
       "apt": "ruby",
       "dnf": "ruby",
-      "pacman": "ruby"
+      "pacman": "ruby",
+      "scoop": "main/ruby"
+    },
+    "ruff": {
+      "brew": "ruff",
+      "winget": "astral-sh.ruff",
+      "scoop": "main/ruff"
     },
     "rust": {
       "brew": "rust",
@@ -748,8 +1021,25 @@
       "dnf": "rust",
       "pacman": "rust"
     },
+    "rustup": {
+      "brew": "rustup",
+      "winget": "Rustlang.Rustup"
+    },
     "scc": {
       "brew": "scc"
+    },
+    "scrcpy": {
+      "brew": "scrcpy",
+      "scoop": "main/scrcpy"
+    },
+    "sentry-cli": {
+      "brewCask": "sentry-cli",
+      "winget": "Sentry.sentry-cli",
+      "scoop": "main/sentry-cli"
+    },
+    "session-manager-plugin": {
+      "brewCask": "session-manager-plugin",
+      "winget": "Amazon.SessionManagerPlugin"
     },
     "shellcheck": {
       "brew": "shellcheck",
@@ -796,7 +1086,8 @@
       "brew": "sqlite",
       "apt": "sqlite3",
       "dnf": "sqlite",
-      "pacman": "sqlite"
+      "pacman": "sqlite",
+      "scoop": "main/sqlite"
     },
     "starship": {
       "brew": "starship",
@@ -804,6 +1095,10 @@
       "winget": "Starship.Starship",
       "scoop": "starship",
       "choco": "starship"
+    },
+    "steam": {
+      "brewCask": "steam",
+      "winget": "Valve.Steam"
     },
     "stow": {
       "brew": "stow",
@@ -826,6 +1121,11 @@
       "scoop": "syncthing",
       "choco": "syncthing"
     },
+    "t3-code": {
+      "brewCask": "t3-code",
+      "winget": "T3Tools.T3Code",
+      "scoop": "extras/t3code"
+    },
     "task": {
       "brew": "task",
       "dnf": "task",
@@ -836,6 +1136,10 @@
       "winget": "Telegram.TelegramDesktop",
       "scoop": "extras/telegram",
       "choco": "telegram"
+    },
+    "tesseract": {
+      "brew": "tesseract",
+      "scoop": "main/tesseract"
     },
     "thunderbird": {
       "brewCask": "thunderbird",
@@ -851,6 +1155,10 @@
       "apt": "tig",
       "dnf": "tig",
       "pacman": "tig"
+    },
+    "tigervnc": {
+      "brewCask": "tigervnc",
+      "winget": "TigerVNC.TigerVNC"
     },
     "tmux": {
       "brew": "tmux",
@@ -872,11 +1180,29 @@
       "dnf": "tree",
       "pacman": "tree"
     },
+    "trivy": {
+      "brew": "trivy",
+      "winget": "AquaSecurity.Trivy",
+      "scoop": "main/trivy"
+    },
+    "unbound": {
+      "brew": "unbound",
+      "scoop": "main/unbound"
+    },
+    "unity-hub": {
+      "brewCask": "unity-hub",
+      "winget": "Unity.UnityHub"
+    },
     "unzip": {
       "brew": "unzip",
       "apt": "unzip",
       "dnf": "unzip",
       "pacman": "unzip"
+    },
+    "upscayl": {
+      "brewCask": "upscayl",
+      "winget": "Upscayl.Upscayl",
+      "scoop": "extras/upscayl"
     },
     "uv": {
       "brew": "uv",
@@ -920,6 +1246,10 @@
       "brew": "watchexec",
       "pacman": "watchexec"
     },
+    "watchman": {
+      "brew": "watchman",
+      "scoop": "main/watchman"
+    },
     "wezterm": {
       "brewCask": "wezterm",
       "winget": "wez.wezterm",
@@ -932,10 +1262,16 @@
       "scoop": "wget",
       "choco": "wget"
     },
+    "wireshark-app": {
+      "brewCask": "wireshark-app",
+      "winget": "WiresharkFoundation.Wireshark"
+    },
     "xz": {
       "brew": "xz",
       "dnf": "xz",
-      "pacman": "xz"
+      "pacman": "xz",
+      "winget": "TukaaniProject.XZUtils",
+      "scoop": "main/xz"
     },
     "yazi": {
       "brew": "yazi",
@@ -943,7 +1279,9 @@
       "scoop": "yazi"
     },
     "yq": {
-      "brew": "yq"
+      "brew": "yq",
+      "winget": "MikeFarah.yq",
+      "scoop": "main/yq"
     },
     "yt-dlp": {
       "brew": "yt-dlp",
@@ -953,6 +1291,14 @@
       "winget": "yt-dlp.yt-dlp",
       "scoop": "yt-dlp",
       "choco": "yt-dlp"
+    },
+    "zed": {
+      "brewCask": "zed",
+      "winget": "ZedIndustries.Zed"
+    },
+    "zen": {
+      "brewCask": "zen",
+      "scoop": "extras/zen-browser"
     },
     "zotero": {
       "brewCask": "zotero",

@@ -106,15 +106,12 @@ fn embedded_data_and_lookup_distinguish_missing_and_null() {
 }
 
 #[test]
-fn seed_has_about_150_entries_and_preserves_ui_fixture_packages() {
+fn map_keeps_the_seed_size_and_ui_fixture_packages() {
     let data: serde_json::Value =
         serde_json::from_str(include_str!("../data/package-map.json")).unwrap();
     let packages = data["packages"].as_object().unwrap();
-    assert!(
-        (140..=160).contains(&packages.len()),
-        "seed count: {}",
-        packages.len()
-    );
+    // The curated seed is a floor; generated mappings may grow the table.
+    assert!(packages.len() >= 140, "seed count: {}", packages.len());
     assert_eq!(packages["ripgrep"]["winget"], "BurntSushi.ripgrep.MSVC");
     assert_eq!(packages["rectangle"]["brewCask"], "rectangle");
     for manager in ["winget", "scoop", "choco", "apt", "dnf", "pacman"] {

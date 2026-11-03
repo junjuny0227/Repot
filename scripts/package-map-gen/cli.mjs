@@ -11,7 +11,7 @@ import { classify } from './classify.mjs';
 import { applyDecisions, defaultMapPath } from './apply.mjs';
 import { writeReview, applyReview } from './review.mjs';
 const cacheDefault = '.cache/package-map-gen';
-const usage = 'Usage: pnpm package-map:gen candidates|run [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]; run [--threshold 0.8] [--max-requests 1000] [--credit-floor 100] [--dry-run]; apply-review [--review-file path] [--dry-run]';
+const usage = 'Usage: pnpm package-map:gen candidates|run [--offline] [--names token,brew:token,brewCask:token] [--from-analytics N] [--from-scan scan.json] [--cache-dir path]; run [--threshold 0.95] [--max-requests 1000] [--credit-floor 100] [--dry-run]; apply-review [--review-file path] [--dry-run]';
 export function parseOptions(args) {
   const command = args[0];
   if (!['candidates', 'run', 'apply-review'].includes(command)) throw new Error(usage);
@@ -23,7 +23,7 @@ export function parseOptions(args) {
   if (values['from-analytics'] !== undefined && (!Number.isSafeInteger(top) || top <= 0)) throw new Error('--from-analytics requires a positive integer');
   const names = values.names?.split(',').map(s => s.trim()).filter(Boolean) ?? [];
   if (command !== 'apply-review' && !names.length && !top && !values['from-scan']) throw new Error(usage);
-  const threshold = Number(values.threshold ?? 0.8), maxRequests = Number(values['max-requests'] ?? 1000), creditFloor = Number(values['credit-floor'] ?? 100);
+  const threshold = Number(values.threshold ?? 0.95), maxRequests = Number(values['max-requests'] ?? 1000), creditFloor = Number(values['credit-floor'] ?? 100);
   if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new Error('--threshold must be between 0 and 1');
   if (!Number.isSafeInteger(maxRequests) || maxRequests < 0) throw new Error('--max-requests requires a nonnegative integer');
   if (!Number.isFinite(creditFloor) || creditFloor < 0) throw new Error('--credit-floor requires a nonnegative number');

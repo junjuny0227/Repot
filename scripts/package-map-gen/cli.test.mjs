@@ -61,6 +61,7 @@ test('analytics is cached; offline never fetches, and missing offline analytics 
 test('run/apply-review options validate finite thresholds and nonnegative budgets', () => {
   const options = parseOptions(['run', '--names', 'sample', '--threshold', '0.8', '--max-requests', '2', '--credit-floor', '100', '--dry-run']);
   assert.equal(options.command, 'run'); assert.equal(options.threshold, 0.8); assert.equal(options.maxRequests, 2); assert.equal(options.dryRun, true);
+  assert.equal(parseOptions(['run', '--names', 'sample']).threshold, 0.95);
   assert.equal(parseOptions(['apply-review']).command, 'apply-review');
   for (const args of [['--threshold', 'NaN'], ['--threshold', '1.1'], ['--max-requests', '-1'], ['--credit-floor', '-1']]) assert.throws(() => parseOptions(['run', '--names', 'sample', ...args]));
 });
@@ -70,7 +71,7 @@ test('end-to-end candidates → jeb → dry-run/review edit → apply → rerun:
     await writeFile(mapPath, JSON.stringify({ version: 1, packages: {} }));
     const catalogs = { brew: [source('sample')], winget: [record('Vendor.Sample', ['sample'], [], 'cli')], scoop: [record('main/sample', ['sample'], [], 'gui')] };
     let calls = 0;
-    const options = { catalogs, names: ['sample'], cacheDir, mapPath, provenancePath, catalogSnapshot: '2026-11-03', key: 'synthetic', fetch: async () => { calls++; return Response.json({ answers: { q: { choice: '1', probabilities: { 1: 0.8 } } } }, { headers: { 'x-ratelimit-remaining-credits': '900' } }); } };
+    const options = { catalogs, names: ['sample'], cacheDir, mapPath, provenancePath, catalogSnapshot: '2026-11-03', key: 'synthetic', fetch: async () => { calls++; return Response.json({ answers: { q: { choice: '1', probabilities: { 1: 0.95 } } } }, { headers: { 'x-ratelimit-remaining-credits': '900' } }); } };
     const before = await readFile(mapPath, 'utf8');
     const dry = await run({ ...options, dryRun: true });
     assert.equal(await readFile(mapPath, 'utf8'), before);

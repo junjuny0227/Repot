@@ -5,7 +5,7 @@
 ```sh
 pnpm package-map:gen candidates --names ripgrep --offline
 pnpm package-map:gen run --names brew:tool,brewCask:app --dry-run --max-requests 20
-pnpm package-map:gen run --from-analytics 10 --threshold 0.8 --credit-floor 100
+pnpm package-map:gen run --from-analytics 10 --threshold 0.95 --credit-floor 100
 pnpm package-map:gen apply-review --dry-run
 pnpm package-map:gen apply-review
 ```

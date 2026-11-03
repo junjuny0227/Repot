@@ -23,7 +23,9 @@
 
 **왜 CI가 아니라 로컬인가.** 카탈로그 다운로드와 유료·할당량 제한 판정은 앱 실행이나 모든 PR의 통과 조건이 아니다. 로컬 캐시·checkpoint로 비용과 중단을 제어하고, 생성 결과만 작은 데이터 PR로 제출한다. CI에서 키를 필요로 하거나 실시간 모델 응답에 테스트가 흔들리는 구조를 피한다. CI는 이름이 존재하는지 확인할 뿐, 두 패키지가 같은 제품인지 보증하지 않는다.
 
-**왜 jeb와 0.8인가.** 2026-11-03 실험에서 baseline jeb는 정답이 포함된 106쌍 중 97쌍을 맞혔다. threshold 0.8에서 formula 31/48, cask 31/58(합계 62/106)을 승인하고 이 positive 집합의 오승인은 0이었다. 하지만 정답 후보를 제거한 인공 negative 30쌍에서는 9/30을 잘못 승인했다. 채널과 kind를 모두 제거한 실험에서는 positive 정답 98/106, 0.8 승인 78/106(formula 33/48, cask 45/58), positive 오승인 0, negative 오승인 0/30이었다. 0.8은 검사한 threshold 중 이 조건을 만족한 최저값이므로 기본값으로 채택하고 `--threshold`로 조정한다. 선택 확률은 응답의 선택된 `probabilities` 항목이지 별도 confidence 문구가 아니다.
+**왜 jeb와 0.95인가.** 첫 데이터의 배포 전 spot-check에서 기존 positive 106쌍·인공 negative 30쌍에 없던 포트·대체품·변형 패키지 오선택이 0.80 이상 0.95 미만에서 발견되어 사용자 결정으로 기본값을 0.95로 올렸다. 구체적으로 `caffeine` → `ZhornSoftware.Caffeine`(0.83), `chatgpt` → `extras/chatgpt`(0.81), `libomp` → `LLVM.LLVM`(0.86), `openjdk` → `Microsoft.OpenJDK.17`(0.91), `font-jetbrains-mono` → `nerd-fonts/JetBrains-Mono`(0.93), `nvm` → `main/nvm`(0.94)이다. 이 구간의 선택은 사람이 검토하며, 0.95 이상을 확인한 표본에서 문제가 없었다는 관측도 전체 정확도 보증은 아니다.
+
+**초기 0.8 실험.** 2026-11-03 실험에서 baseline jeb는 정답이 포함된 106쌍 중 97쌍을 맞혔다. threshold 0.8에서 formula 31/48, cask 31/58(합계 62/106)을 승인하고 이 positive 집합의 오승인은 0이었다. 하지만 정답 후보를 제거한 인공 negative 30쌍에서는 9/30을 잘못 승인했다. 채널과 kind를 모두 제거한 실험에서는 positive 정답 98/106, 0.8 승인 78/106(formula 33/48, cask 45/58), positive 오승인 0, negative 오승인 0/30이었다. 0.8은 당시 검사한 threshold 중 이 조건을 만족한 최저값이었으나 실배포 표본의 오선택으로 기본값을 0.95로 올렸고 `--threshold`로 조정한다. 선택 확률은 응답의 선택된 `probabilities` 항목이지 별도 confidence 문구가 아니다.
 
 flash-next의 선택된 paired positive에서는 두 모드 모두 31/34였고, negative는 9/12에서 10/12로 바뀐 정도여서 두 번째 모델의 이득을 입증하지 못했다. 별도 command-name 검사는 정답 154쌍에서 MISMATCH 오경보 2개, 잘못된 후보 297개에서 MATCH 41개와 UNKNOWN 252개여서 hard gate로 쓰지 않는다. 모델 추가나 명령 이름 gate 대신 단일 jeb와 보수적인 review 경계를 쓴다.
 
@@ -42,7 +44,7 @@ flash-next의 선택된 paired positive에서는 두 모드 모두 31/34였고, 
 3. **후보:** 정규화한 source repo가 같으면, 그 repo 후보가 유일하고 kind가 명확히 호환될 때만 HIGH다. repo가 여럿이거나 kind가 호환되지 않으면 MEDIUM, 같은 정규화 homepage/download URL도 MEDIUM, 정확한 정규화 이름만 같으면 LOW다. repo HIGH라도 채널 불일치나 출발 token의 `@` 버전 고정은 MEDIUM으로 낮춘다. URL의 scheme·`www.`·후행 slash·`.git` 및 repo 경로를 정규화하고, 이름은 소문자 영숫자만 비교한다. 강한 tier 순, 같은 tier는 id 대소문자 무시 순으로 최대 12개를 유지한다. 필터 후 HIGH로 승격하지 않는다.
 4. **사전 필터:** 식별자 경계로 `nightly`, `beta`, `alpha`, `preview`, `dev`, `canary`, `prerelease`, `insider(s)`, `unstable`, `snapshot`, `edge`, 후행 `-git`을 감지한다. insider/insiders는 같은 label이며 빈 집합은 stable/unlabelled다. 출발·후보 label 집합이 다르면 제거한다. 설명·URL·버전으로 채널을 추측하지 않는다. formula=cli, cask=gui이나 binaries 선언이 있으면 mixed다. 확정 CLI/GUI 불일치는 flag만 단다.
 5. **판정:** 유일한 HIGH이면서 kind flag가 없으면 jeb를 호출하지 않고 auto다. 나머지는 `(출발, 목적지)`당 요청 하나를 `POST https://jeb.https.gsmsv.site/v1/systemone`에 Bearer 인증으로 보낸다. 후보별 동일한 형식의 선택지와 마지막 `none of these`를 쓴다. 하루 1000요청, 동시 최대 2개, 503은 backoff 재시도다. HTTP 시도(재시도 포함)는 `--max-requests`로 제한하고 `x-ratelimit-remaining-credits`가 기본 floor 100 미만이면 새 요청을 멈춘다. 할당량 헤더가 없거나 판독 불가하면 안전하게 중단한다. 요청 해시로 응답을 캐시하고 checkpoint로 재개한다. 키는 해시 입력·캐시에 포함하지 않는다. offline에서는 캐시 없는 jeb 요청을 보내지 않는다.
-6. **분류:** jeb가 후보를 고르고 확률 ≥ 기본 0.80이며 그 후보에 kind flag가 없으면 auto, 후보가 있지만 저확률·kind flag 선택·none이면 review, 후보 자체가 없으면 no-candidate다. 실패·잘못된 응답·할당량 중단은 미완료로 남겨 재개하며 auto나 부재로 처리하지 않는다.
+6. **분류:** jeb가 후보를 고르고 확률 ≥ 기본 0.95이며 그 후보에 kind flag가 없으면 auto, 후보가 있지만 저확률·kind flag 선택·none이면 review, 후보 자체가 없으면 no-candidate다. 실패·잘못된 응답·할당량 중단은 미완료로 남겨 재개하며 auto나 부재로 처리하지 않는다.
 7. **출력·검토:** auto를 `package-map.json`과 provenance에 함께 반영한다. review는 `.cache/package-map-gen/review.json`에 출발·목적지, 후보와 메타데이터, jeb 선택/확률, 빈 `decision`을 쓴다. 사람은 후보 id / `none` / `skip`을 적고 `pnpm package-map:gen apply-review`로 적용한다. 후보에 없는 id·잘못된 결정은 오류다. 적용 직전에 최신 대응표의 기존 값·id 충돌·유일성·패턴을 다시 검사한다. 적용한 값의 provenance 방법은 `human`이다.
 8. **데이터 PR:** auto/review/no-candidate/미완료/충돌 수와 실제 추가 수를 나눠 보고한다. 데이터·provenance diff를 확인하고 기존 CI `package-map` 작업으로 실제 이름 존재를 검사한 뒤 merge commit으로 병합한다. CI의 존재 확인을 의미적 동일성 확인으로 표현하지 않는다.
 
@@ -84,7 +86,7 @@ flash-next의 선택된 paired positive에서는 두 모드 모두 31/34였고, 
 ### Task 2: jeb 판정과 파일 검토 (PR `feat/package-map-gen-judge`)
 
 - [ ] TDD: 주입한 fetch·타이머로 선택 확률 해석, 마지막 none, 잘못된 응답, 503 backoff, 최대 동시 2, 요청 상한·quota floor·헤더 누락 중단, 요청 해시 재사용·checkpoint 재개를 검증한다. `.env` 파서는 값 실행 없이 환경변수 우선·따옴표 처리를 테스트하고 키가 로그·오류·캐시에 없는지 검사한다.
-- [ ] `judge`, `classify`를 구현한다. 유일 HIGH 호출 0회, 0.80 경계 포함, kind flag 선택은 review, none도 review, 빈 후보는 no-candidate, 오류는 미완료임을 표 기반 테스트로 확인한다. offline은 캐시만 재사용한다.
+- [ ] `judge`, `classify`를 구현한다. 유일 HIGH 호출 0회, 0.95 경계 포함·기본값 미만 review, kind flag 선택은 review, none도 review, 빈 후보는 no-candidate, 오류는 미완료임을 표 기반 테스트로 확인한다. offline은 캐시만 재사용한다.
 - [ ] `apply`, `review`와 CLI 실행·`apply-review`를 연결한다. 기존 값/null 보존, 잘못된 id·이름·결정 거부, case-insensitive 유일성·정렬, auto가 null을 쓰지 않음, 사람 none만 null, human provenance, 빈 결정·skip 무변경, 재적용 멱등성을 테스트한다. 쓰기 전 전체 검증 실패 시 두 데이터 파일 모두 기존 내용이 유지되는지 확인한다.
 - [ ] 비밀정보 없는 합성 fixture로 후보 → 판정 → review 편집 → 적용 → 재실행을 끝까지 검증한다. Node 전체 테스트·`git diff --check`·PR CI를 통과한다. 실 jeb 성능은 이 PR의 mocked 테스트로 검증됐다고 하지 않는다.
 - 커밋: `feat: judge package map candidates with jeb`, `feat: apply package map decisions with provenance`, `feat: support file-based package map review`
