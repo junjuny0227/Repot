@@ -22,6 +22,8 @@
     "unreadable": "このファイルは読み込めなかったため、書き出しません。",
     "secret": "機密情報のようです。元の値を許可しない限り、マスクして書き出します。",
     "secretNamed": "{name} は機密情報のようです。元の値を許可しない限り、マスクして書き出します。",
+    "secretStored": "Repot ファイルに伏せた状態で保存された秘密情報です。復元後に値を入力してください。",
+    "secretStoredNamed": "Repot ファイルに伏せた状態で保存された秘密情報（{name}）です。復元後に値を入力してください。",
     "osSpecificLine": "{key} はこの OS 固有の設定のため、別の OS ではコメントアウトされます。",
     "duplicate": "{provider} でも検出されました。"
   },
@@ -77,6 +79,17 @@
     "file:vscode-snippet": "エディタのスニペットは、再利用できるコードのひな形です。",
     "plugin:oh-my-zsh": "oh-my-zsh の拡張機能は、Zsh の動作や見た目をカスタマイズします。"
   },
+  "openedFrom": "{os} で {date} に作成した Repot ファイル",
+  "skippedItems": {
+    "other": "このバージョンの Repot で読めない項目を {count} 件スキップしました。"
+  },
+  "openError": {
+    "tooLarge": "Repot ファイルとしては大きすぎます。",
+    "notRepotFile": "Repot ファイルではありません。書き出しフォルダの repot.json を選んでください。",
+    "newerVersion": "新しいバージョンの Repot で作成されたファイルです。Repot をアップデートしてから開いてください。",
+    "invalid": "Repot ファイルが壊れているため開けません。",
+    "readFailed": "ファイルを読み込めませんでした。"
+  },
   "ui": {
     "currentOs": "このコンピュータ",
     "targetOs": "移行先の OS",
@@ -127,7 +140,9 @@
     "startOver": "最初に戻る",
     "secretLimit": "機密情報の検出はパターンに基づくため、見落としがある場合があります。共有する前にファイルを確認してください。",
     "mappingNote": "Repot に内蔵された対応表に基づく名前です。復元を実行する前に確認してください。",
-    "language": "言語"
+    "language": "言語",
+    "openFile": "Repot ファイルを開く…",
+    "repotFileNote": "あとで選び直すには、このフォルダの repot.json を Repot で開いてください。"
   },
   "updates": {
     "settings": "設定",

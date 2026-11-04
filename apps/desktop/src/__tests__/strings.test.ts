@@ -25,3 +25,21 @@ test("counts use the plural form for the total", () => {
   expect(selectedCount(2, 12)).toBe("2 of 12 items selected");
   expect(revealSecretLine(4)).toBe("Export the original value of line 4");
 });
+
+test("open errors map to messages; unknown errors pass through", async () => {
+  const { openErrorText, openedFromText, skippedItemsText } = await import("../strings");
+  expect(openErrorText("newerVersion:2")).toBe("This file was made by a newer version of Repot. Update Repot to open it.");
+  expect(openErrorText("notRepotFile")).toContain("repot.json");
+  expect(openErrorText("readFailed")).toBe("The file couldn’t be read.");
+  expect(openErrorText(new Error("boom"))).toBe("boom");
+  expect(openErrorText("hasOwnProperty")).toBe("hasOwnProperty");
+  expect(openedFromText({ source: "macOs", createdAt: "2026-11-04T10:00Z" })).toBe("From a Repot file made on macOS, Nov 4, 2026");
+  expect(skippedItemsText(1)).toBe("1 item this version of Repot can’t read was skipped.");
+});
+
+test("secrets from an opened Repot file are described as already masked", async () => {
+  const { findingText } = await import("../strings");
+  const f = { line: 2, kind: { secret: { name: "API_TOKEN" } } };
+  expect(findingText(f, true)).toBe("Line 2: Masked in the Repot file (API_TOKEN). Fill in the value after restoring.");
+  expect(findingText(f)).toContain("unless you allow the original value");
+});

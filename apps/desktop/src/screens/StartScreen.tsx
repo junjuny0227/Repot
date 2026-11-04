@@ -5,7 +5,7 @@ import { LanguageSelect } from "./LanguageSelect";
 import { TargetSelect } from "./TargetSelect";
 import appIcon from "../../app-icon.svg?raw";
 
-export function StartScreen({ state, dispatch, onScan }: { state: State; dispatch: Dispatch<Action>; onScan: () => void }) {
+export function StartScreen({ state, dispatch, onScan, onOpen }: { state: State; dispatch: Dispatch<Action>; onScan: () => void; onOpen: () => void }) {
   const ready = state.source !== null && state.target !== null;
   return (
     <section className="screen start">
@@ -25,6 +25,7 @@ export function StartScreen({ state, dispatch, onScan }: { state: State; dispatc
           <TargetSelect className="row" value={state.target} onChange={(target) => dispatch({ type: "setTarget", target })} />
         </div>
         <div className="actions">
+          <button className="large" disabled={!ready} onClick={onOpen}>{S.openFile}</button>
           <button className="primary large" disabled={!ready} onClick={onScan}>{S.scanButton}</button>
         </div>
       </div>

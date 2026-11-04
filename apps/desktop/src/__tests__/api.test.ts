@@ -18,3 +18,9 @@ test("availability, preview and export send the same Target", async () => {
     ["export", { selection, target, format: "manifest", parent: "/tmp/out" }],
   ]);
 });
+
+test("openSnapshot sends the chosen path", async () => {
+  const { openSnapshot } = await import("../api");
+  await openSnapshot("/tmp/repot-export-2026-11-04/repot.json");
+  expect(invoke.mock.calls).toEqual([["open_snapshot", { path: "/tmp/repot-export-2026-11-04/repot.json" }]]);
+});

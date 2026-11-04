@@ -4,7 +4,7 @@ const fixture = (await import("../__fixtures__/scan.json")).default;
 const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
-import { canExport, initialState, reducer } from "../state";
+import { canExport, initialState, reducer, sessionSource } from "../state";
 import { isAvailable } from "../logic";
 
 test("scan_finished_uses_current_target", () => {   // Review Focus 1
@@ -83,4 +83,27 @@ test("changing the package manager re-judges and unchecks newly unavailable item
   expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
   s = reducer(s, { type: "toggleItem", id: "brew:formula:ripgrep" });
   expect(s.checked.has("brew:formula:ripgrep")).toBe(false);
+});
+
+const opened = { scan, source: "windows" as const, createdAt: "2026-11-04T10:00Z", repotVersion: "0.5.0", skippedItems: 2 };
+
+test("opening a Repot file goes to review with the file's source OS", () => {
+  let s = reducer(initialState, { type: "init", source: "macOs" });
+  s = reducer(s, { type: "fileOpened", file: opened, avail: availMac });
+  expect(s.screen).toBe("review");
+  expect(s.scan).toBe(scan);
+  expect(s.providers).toEqual([]);
+  expect(s.opened).toEqual({ source: "windows", createdAt: "2026-11-04T10:00Z", repotVersion: "0.5.0", skippedItems: 2 });
+  expect(sessionSource(s)).toBe("windows");
+  expect(s.source).toBe("macOs");
+  expect([...s.checked].every((id) => isAvailable(availMac[id]))).toBe(true);
+});
+
+test("an opened file cannot reveal secrets, and a new scan or restart forgets it", () => {
+  let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "fileOpened", file: opened, avail: availMac });
+  expect(reducer(s, { type: "toggleReveal", id: "shell:file:.zshrc", line: 1 })).toBe(s);
+  expect(sessionSource(reducer(s, { type: "scanStarted" }))).toBe("macOs");
+  s = reducer(s, { type: "restart" });
+  expect(s.opened).toBeNull();
+  expect(sessionSource(s)).toBe("macOs");
 });
