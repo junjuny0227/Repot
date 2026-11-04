@@ -4,7 +4,7 @@
 ## 기준 문서
 
 - 제품 결정의 기준은 `docs/specs/2026-11-02-repot-mvp-design.md`이다. 구현 순서와 인터페이스는 `docs/plans/2026-11-02-0[1-5]-*.md`를 따른다.
-- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 제품 사이트(`apps/site`)는 계획 6(`docs/plans/2026-11-03-06-site.md`)을 따른다. 다국어 UI는 계획 7(`docs/plans/2026-11-03-07-i18n.md`)을, 앱 자체 업데이트는 계획 8(`docs/plans/2026-11-03-08-updater.md`)을, OS 간 패키지 대응은 계획 9(`docs/plans/2026-11-03-09-package-mapping.md`)를, 대응표 생성기는 계획 10(`docs/plans/2026-11-03-10-package-map-generator.md`)을, Repot 파일(`repot.json`)은 계획 11(`docs/plans/2026-11-04-11-repot-file.md`)을 따른다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
+- 계획은 1 → 2 → (3, 4 병렬 가능) → 5 순서다. 제품 사이트(`apps/site`)는 계획 6(`docs/plans/2026-11-03-06-site.md`)을 따른다. 다국어 UI는 계획 7(`docs/plans/2026-11-03-07-i18n.md`)을, 앱 자체 업데이트는 계획 8(`docs/plans/2026-11-03-08-updater.md`)을, OS 간 패키지 대응은 계획 9(`docs/plans/2026-11-03-09-package-mapping.md`)를, 대응표 생성기는 계획 10(`docs/plans/2026-11-03-10-package-map-generator.md`)을, Repot 파일(`repot.json`)은 계획 11(`docs/plans/2026-11-04-11-repot-file.md`)을, 이 기기와 비교는 계획 12(`docs/plans/2026-11-04-12-compare.md`)를 따른다. 각 계획 첫머리의 Global Constraints와 Review Focus를 먼저 읽는다.
 - 구현 중 스펙과 다른 결정을 내리면 같은 PR에서 스펙도 고친다. 계획만 고치고 스펙을 두면 두 문서가 어긋난다.
 
 ## 빌드와 테스트
