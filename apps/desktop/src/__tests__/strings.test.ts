@@ -27,13 +27,13 @@ test("counts use the plural form for the total", () => {
 });
 
 test("open errors map to messages; unknown errors pass through", async () => {
-  const { openErrorText, openedFromText, skippedItemsText } = await import("../strings");
+  const { openErrorText, openedFromParts, skippedItemsText } = await import("../strings");
   expect(openErrorText("newerVersion:2")).toBe("This file was made by a newer version of Repot. Update Repot to open it.");
   expect(openErrorText("notRepotFile")).toContain("repot.json");
   expect(openErrorText("readFailed")).toBe("The file couldn’t be read.");
   expect(openErrorText(new Error("boom"))).toBe("boom");
   expect(openErrorText("hasOwnProperty")).toBe("hasOwnProperty");
-  expect(openedFromText({ source: "macOs", createdAt: "2026-11-04T10:00Z" })).toBe("From a Repot file made on macOS, Nov\u00a04,\u00a02026");
+  expect(openedFromParts({ source: "macOs", createdAt: "2026-11-04T10:00Z" })).toEqual({ before: "From a Repot file made on macOS, ", date: "Nov 4, 2026", after: "" });
   expect(skippedItemsText(1)).toBe("1 item this version of Repot can’t read was skipped.");
 });
 
@@ -48,4 +48,12 @@ test("comparison summary counts each presence", async () => {
   const { comparedSummary, presenceText } = await import("../strings");
   expect(comparedSummary({ a: "missing", b: "present", c: "present", d: "differs" })).toBe("Missing: 1 · Already here: 2 · Different: 1");
   expect(presenceText("present")).toContain("skip");
+});
+
+test("every locale places the opened file's date once, so the screen can keep it on one line", async () => {
+  for (const code of ["en", "ko", "ja", "zh-Hans"]) {
+    const messages = (await import(`../locales/${code}.json`)).default as { openedFrom: string; comparedSummary: string };
+    expect(messages.openedFrom.split("{date}"), code).toHaveLength(2);
+    expect(messages.comparedSummary.split(" · "), code).toHaveLength(3);
+  }
 });

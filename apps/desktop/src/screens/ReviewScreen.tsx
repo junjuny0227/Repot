@@ -3,7 +3,7 @@ import { availabilityFor, presenceFor } from "../api";
 import { errorMessage } from "../errors";
 import { choosesPackages, defaultTarget, filterItems, type Filter } from "../logic";
 import { canExport, sessionSource, type Action, type State } from "../state";
-import { S, comparedSummary, openedFromText, selectedCount, skippedItemsText, statusText, withCount } from "../strings";
+import { S, comparedSummaryParts, openedFromParts, selectedCount, skippedItemsText, statusText, withCount } from "../strings";
 import type { AvailabilityMap, Category, Os, PackageManager, PresenceMap, Target } from "../types";
 import { LanguageSelect } from "./LanguageSelect";
 import { PackageSelect, TargetSelect } from "./TargetSelect";
@@ -46,9 +46,17 @@ export function ReviewScreen({ state, dispatch, onCompare }: { state: State; dis
         <Sidebar state={state} dispatch={dispatch} category={category} onCategory={setCategory} />
         {state.opened !== null && (
           <footer className="provider-groups opened-from">
-            <p>{openedFromText(state.opened)}</p>
+            {(() => {
+              const { before, date, after } = openedFromParts(state.opened);
+              return <p>{before}<span className="nowrap">{date}</span>{after}</p>;
+            })()}
             {state.opened.skippedItems > 0 && <p className="muted">{skippedItemsText(state.opened.skippedItems)}</p>}
-            {state.compared && <p className="muted">{Object.keys(state.presence).length > 0 ? comparedSummary(state.presence) : S.compareOtherOs}</p>}
+            {state.compared && <p className="muted">{Object.keys(state.presence).length > 0
+              ? comparedSummaryParts(state.presence).map((part, n, all) => (
+                  // The separator ends the previous pair, so a wrapped line never starts with "·".
+                  <span key={n}><span className="nowrap">{part}{n < all.length - 1 && " ·"}</span>{n < all.length - 1 && " "}</span>
+                ))
+              : S.compareOtherOs}</p>}
             <button className="compare-button" onClick={onCompare}>{state.compared ? S.compareAgain : S.compareButton}</button>
           </footer>
         )}
