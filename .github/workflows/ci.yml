@@ -493,10 +493,11 @@ jobs:
               (root / f'restore-{attempt}.log').write_text(result.stdout, encoding='utf-8')
               assert result.returncode == 1, 'Partial failure must exit 1 (spec section 10)'
               summary = result.stdout.split('Summary\n', 1)[1]
-              sections = re.fullmatch(r'OK:\n(.*?)Skipped:\n(.*?)Failed:\n(.*)', summary, re.S)
+              sections = re.fullmatch(r'OK:\n(.*?)Already done:\n(.*?)Not done:\n(.*?)Failed:\n(.*)', summary, re.S)
               assert sections, f'Malformed summary: {summary}'
               entries = lambda text: [line.strip()[2:] for line in text.splitlines() if line.strip()]
-              ok, skipped, failed = map(entries, sections.groups())
+              ok, skipped, not_done, failed = map(entries, sections.groups())
+              assert not not_done, f'A tool was missing: {not_done}'
               assert failed == [f'{manager} install {missing}'], f'Unexpected failures: {failed}'
               assert sorted(ok if attempt == 1 else skipped) == sorted(labels), summary
               assert not (skipped if attempt == 1 else ok), summary
@@ -529,7 +530,7 @@ jobs:
             $log | Write-Host
             if ($LASTEXITCODE -ne 0) { throw "Cross-OS restore $attempt failed" }
             if ($attempt -eq 1 -and $log -notmatch 'OK: winget install') { throw 'First restore did not install mapped package' }
-            if ($attempt -eq 2 -and $log -notmatch 'skipped: winget install') { throw 'Second restore was not idempotent' }
+            if ($attempt -eq 2 -and $log -notmatch 'already done: winget install') { throw 'Second restore was not idempotent' }
             $installed = winget list --id $id --exact --accept-source-agreements --disable-interactivity | Out-String
             if ($LASTEXITCODE -ne 0 -or $installed -notmatch [regex]::Escape($id)) { throw 'Mapped package not installed' }
             $log >> $env:GITHUB_STEP_SUMMARY
@@ -594,7 +595,7 @@ jobs:
           HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes
           test "$(cat smoke-home/.repot-smoke)" = "smoke"
           HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes > smoke/second.log
-          grep -q "skipped: copy ~/.repot-smoke" smoke/second.log
+          grep -q "already done: copy ~/.repot-smoke" smoke/second.log
       - name: Restore smoke test (PowerShell 5.1)
         if: runner.os == 'Windows'
         shell: powershell
@@ -608,4 +609,4 @@ jobs:
           if ((Get-Content "$HOME\.repot-smoke") -ne 'smoke') { exit 1 }
           $second = powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes | Out-String
           if ($LASTEXITCODE -ne 0) { exit 1 }
-          if ($second -notmatch 'skipped: copy') { exit 1 }
+          if ($second -notmatch 'already done: copy') { exit 1 }
