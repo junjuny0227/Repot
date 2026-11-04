@@ -166,6 +166,9 @@ repot export repot.json --only-missing        # 이 기기에 없는 것만 내�
 영어입니다. 비밀정보는 항상 가리고, 어디를 가렸는지 알려줍니다. 모든 옵션은
 `repot <명령> --help`로 봅니다.
 
+옛 기기에서 새 기기로 옮기는 전체 흐름, 모든 옵션, id로 항목 고르기, 스크립트용 JSON 출력과
+종료 코드는 [명령줄 도구 안내](crates/cli/README.md)(영어)에 정리돼 있습니다.
+
 ## 내보낸 파일 사용하기
 
 1. `repot-export-YYYY-MM-DD/` 폴더를 `files/`까지 **통째로** 대상 기기에 복사합니다.

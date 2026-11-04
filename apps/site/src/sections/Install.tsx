@@ -57,6 +57,9 @@ export function Install({ platform }: { platform: Platform }) {
             <pre>
               <code>{C.install.cliCommand[os]}</code>
             </pre>
+            <p>
+              <a href={C.install.cliGuideUrl}>{C.install.cliGuide}</a>
+            </p>
           </div>
         </div>
         <div>
