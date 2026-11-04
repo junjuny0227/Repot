@@ -173,7 +173,7 @@ fn commands(s: &Step) -> (String, bool, String) {
         }
         Step::InstallIdePlugin { ide, id, folder } => (
             format!(
-                "Test-Path (Join-Path (Get-JetBrainsPlugins {}) {})",
+                "Test-Path (Join-Path (Get-JetBrainsPluginDir {}) {})",
                 q(ide.prefix()),
                 q(folder)
             ),
@@ -221,7 +221,7 @@ function Get-JetBrainsConfig($Prefix, $Version) {
     Select-Object -Last 1
   if ($best) { $best.FullName } else { Join-Path $JbBase "$Prefix$Version" }
 }
-function Get-JetBrainsPlugins($Prefix) { Join-Path (Get-JetBrainsConfig $Prefix '') 'plugins' }
+function Get-JetBrainsPluginDir($Prefix) { Join-Path (Get-JetBrainsConfig $Prefix '') 'plugins' }
 function Find-JetBrainsCli($Command, $Dirs) {
   $found = Get-Command $Command -ErrorAction SilentlyContinue
   if ($found) { return $found.Source }

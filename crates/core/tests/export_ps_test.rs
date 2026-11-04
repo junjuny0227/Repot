@@ -228,7 +228,7 @@ fn jetbrains_helpers_appear_only_when_needed() {
         s.contains("$JbCli = Find-JetBrainsCli 'idea' @('IntelliJ IDEA Community Edition*')"),
         "{s}"
     );
-    assert!(s.contains("$installed = Test-Path (Join-Path (Get-JetBrainsPlugins 'IdeaIC') 'github-copilot-intellij')"), "{s}");
+    assert!(s.contains("$installed = Test-Path (Join-Path (Get-JetBrainsPluginDir 'IdeaIC') 'github-copilot-intellij')"), "{s}");
     assert!(s.contains("& $JbCli installPlugins 'com.github.copilot'"));
     assert!(
         s.contains("(Join-Path (Get-JetBrainsConfig 'IdeaIC' '2026.1') 'keymaps\\K.xml')"),
