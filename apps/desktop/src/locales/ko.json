@@ -155,7 +155,10 @@
     "onlyMissing": "이 기기에 없는 것만",
     "badgePresent": "이미 있음",
     "badgeDiffers": "내용 다름",
-    "thisMachine": "이 기기"
+    "thisMachine": "이 기기",
+    "badgeNotExported": "이전 내보내기에 없음",
+    "notExportedTitle": "이전 내보내기",
+    "notExportedText": "이 파일을 만든 내보내기의 목적지에서는 쓸 수 없어서, 그때는 내보내지 않고 파일에만 담아 둔 항목입니다. 처음에는 선택되어 있지 않으니 필요하면 직접 선택하세요."
   },
   "updates": {
     "settings": "설정",

@@ -79,6 +79,8 @@ export interface OpenedFile {
   createdAt: string;
   repotVersion: string;
   skippedItems: number;
+  /** Items the export that wrote the file could not include; they start unchecked (plan 13). */
+  notExported: string[];
 }
 export type UnavailableReason =
   | { differentOs: { source: Os } }

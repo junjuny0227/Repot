@@ -108,6 +108,12 @@ export function DetailPanel({
           </>
         )}
       </section>
+      {state.opened?.notExported.includes(item.id) && (
+        <section>
+          <h3 className="inspector-heading">{S.notExportedTitle}</h3>
+          <p>{S.notExportedText}</p>
+        </section>
+      )}
       {state.presence[item.id] !== undefined && (
         <section>
           <h3 className="inspector-heading">{S.thisMachine}</h3>

@@ -127,6 +127,7 @@ const opened = {
   createdAt: '2026-11-04T10:00Z',
   repotVersion: '0.5.0',
   skippedItems: 2,
+  notExported: [],
 };
 
 test("opening a Repot file goes to review with the file's source OS", () => {
@@ -140,6 +141,7 @@ test("opening a Repot file goes to review with the file's source OS", () => {
     createdAt: '2026-11-04T10:00Z',
     repotVersion: '0.5.0',
     skippedItems: 2,
+    notExported: [],
   });
   expect(sessionSource(s)).toBe('windows');
   expect(s.source).toBe('macOs');
@@ -206,4 +208,29 @@ test('a failed comparison returns to review', () => {
   s = reducer(reducer(s, { type: 'compareStarted' }), { type: 'compareFailed' });
   expect(s.screen).toBe('review');
   expect(s.compared).toBe(false);
+});
+
+test('items the last export left out start unchecked, after opening and after comparing', () => {
+  const ids = scan.items.map((i) => i.id).filter((id) => isAvailable(availMac[id]));
+  const [left, other] = ids;
+  const file = { ...opened, source: 'macOs' as const, notExported: [left] };
+  let s = reducer(reducer(initialState, { type: 'init', source: 'macOs' }), {
+    type: 'fileOpened',
+    file,
+    avail: availMac,
+  });
+  expect(s.checked.has(left)).toBe(false);
+  expect(s.checked.has(other)).toBe(true);
+  // The user can still choose it.
+  expect(reducer(s, { type: 'toggleItem', id: left }).checked.has(left)).toBe(true);
+  const presence = Object.fromEntries(ids.map((id) => [id, 'missing' as const]));
+  s = reducer(s, {
+    type: 'compareFinished',
+    target: 'macOs',
+    packages: 'brew',
+    avail: availMac,
+    presence,
+  });
+  expect(s.checked.has(left)).toBe(false);
+  expect(s.checked.has(other)).toBe(true);
 });

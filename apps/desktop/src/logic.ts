@@ -62,6 +62,16 @@ export function initialChecked(items: Item[], avail: AvailabilityMap): Set<strin
   return new Set(items.filter((i) => isAvailable(avail[i.id])).map((i) => i.id));
 }
 
+/** Items an opened file marks as left out of its export are never checked for the user (plan 13). */
+export function withoutNotExported(
+  checked: Set<string>,
+  notExported: readonly string[],
+): Set<string> {
+  const out = new Set(checked);
+  for (const id of notExported) out.delete(id);
+  return out;
+}
+
 /** After comparing with this machine, start with only what it is missing (plan 12). */
 export function missingChecked(
   items: Item[],
