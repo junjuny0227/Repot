@@ -106,7 +106,9 @@ export const withCount = (label: string, n: number): string => format(messages()
 /** "From a Repot file made on macOS, Nov 4, 2026" for an opened file. */
 export function openedFromText(opened: { source: Os; createdAt: string }): string {
   const date = new Date(opened.createdAt);
-  const shown = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
+  const formatted = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
+  // Keep the date on one line ("2026. 11. 4." must not break after "11.").
+  const shown = formatted.replace(/ /g, "\u00a0");
   return format(messages().openedFrom, { os: osLabel(opened.source), date: shown });
 }
 export const skippedItemsText = (count: number): string => plural(messages().skippedItems, count);
