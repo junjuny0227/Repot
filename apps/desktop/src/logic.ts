@@ -1,4 +1,4 @@
-import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, PackageManager, Selection, Target } from "./types";
+import type { Availability, AvailabilityMap, Category, ExportWarning, Item, Os, OutputFile, PackageManager, PresenceMap, Selection, Target } from "./types";
 import { TARGET_OPTIONS, itemDescription } from "./strings";
 
 export const CATEGORIES: Category[] = ["packageManager", "runtime", "globalPackage", "editor", "git", "shell"];
@@ -34,6 +34,11 @@ export function initialChecked(items: Item[], avail: AvailabilityMap): Set<strin
   return new Set(items.filter((i) => isAvailable(avail[i.id])).map((i) => i.id));
 }
 
+/** After comparing with this machine, start with only what it is missing (plan 12). */
+export function missingChecked(items: Item[], avail: AvailabilityMap, presence: PresenceMap): Set<string> {
+  return new Set(items.filter((i) => isAvailable(avail[i.id]) && presence[i.id] === "missing").map((i) => i.id));
+}
+
 export function applyTarget(checked: Set<string>, avail: AvailabilityMap): Set<string> {
   return new Set([...checked].filter((id) => isAvailable(avail[id])));
 }
@@ -48,15 +53,16 @@ export function setCategory(checked: Set<string>, items: Item[], avail: Availabi
   return next;
 }
 
-export interface Filter { query: string; onlyAvailable: boolean; onlyWarnings: boolean }
+export interface Filter { query: string; onlyAvailable: boolean; onlyWarnings: boolean; onlyMissing: boolean }
 
-export function filterItems(items: Item[], avail: AvailabilityMap, f: Filter): Item[] {
+export function filterItems(items: Item[], avail: AvailabilityMap, f: Filter, presence: PresenceMap = {}): Item[] {
   const q = f.query.trim().toLowerCase();
   return items.filter((i) =>
     // Search what the user sees: the description in the current language.
     (!q || i.name.toLowerCase().includes(q) || (itemDescription(i) ?? "").toLowerCase().includes(q)) &&
     (!f.onlyAvailable || isAvailable(avail[i.id])) &&
-    (!f.onlyWarnings || i.findings.length > 0));
+    (!f.onlyWarnings || i.findings.length > 0) &&
+    (!f.onlyMissing || presence[i.id] === "missing"));
 }
 
 export function secretLines(item: Item): number[] {

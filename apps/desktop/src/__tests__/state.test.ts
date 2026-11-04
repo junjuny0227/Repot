@@ -107,3 +107,30 @@ test("an opened file cannot reveal secrets, and a new scan or restart forgets it
   expect(s.opened).toBeNull();
   expect(sessionSource(s)).toBe("macOs");
 });
+
+test("comparing keeps the opened file and starts with only what this machine is missing", () => {
+  let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "fileOpened", file: opened, avail: availMac });
+  s = reducer(s, { type: "compareStarted" });
+  expect(s.screen).toBe("scanning");
+  expect(s.opened).not.toBeNull();
+  const ids = scan.items.map((i) => i.id);
+  const presence = Object.fromEntries(ids.map((id, n) => [id, n % 3 === 0 ? "present" : n % 3 === 1 ? "differs" : "missing"] as const));
+  s = reducer(s, { type: "compareFinished", target: "macOs", packages: "brew", avail: availMac, presence });
+  expect(s.screen).toBe("review");
+  expect(s.compared).toBe(true);
+  expect([...s.checked].sort()).toEqual(ids.filter((id) => presence[id] === "missing" && isAvailable(availMac[id])).sort());
+  // The user can still turn on an item that is already here or different.
+  const present = ids.find((id) => presence[id] === "present" && isAvailable(availMac[id]))!;
+  expect(reducer(s, { type: "toggleItem", id: present }).checked.has(present)).toBe(true);
+  // Another destination OS clears the marks; a new file or scan forgets the comparison.
+  expect(reducer(s, { type: "setTarget", target: "windows", avail: availWin, presence: {} }).presence).toEqual({});
+  expect(reducer(s, { type: "fileOpened", file: opened, avail: availMac }).compared).toBe(false);
+  expect(reducer(s, { type: "scanStarted" }).presence).toEqual({});
+});
+
+test("a failed comparison returns to review", () => {
+  let s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "fileOpened", file: opened, avail: availMac });
+  s = reducer(reducer(s, { type: "compareStarted" }), { type: "compareFailed" });
+  expect(s.screen).toBe("review");
+  expect(s.compared).toBe(false);
+});

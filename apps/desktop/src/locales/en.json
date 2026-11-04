@@ -92,6 +92,12 @@
     "invalid": "This Repot file is damaged and can’t be opened.",
     "readFailed": "The file couldn’t be read."
   },
+  "presence": {
+    "present": "Already on this machine. The restore script will skip it.",
+    "differs": "A file with different contents is already here. If you export it, the restore script backs up that file and replaces it.",
+    "missing": "Not on this machine yet."
+  },
+  "comparedSummary": "Missing: {missing} · Already here: {present} · Different: {differs}",
   "ui": {
     "currentOs": "This machine",
     "targetOs": "Destination OS",
@@ -144,7 +150,14 @@
     "mappingNote": "Matched using the package map built into Repot. Check it before you run the restore.",
     "language": "Language",
     "openFile": "Open a Repot file…",
-    "repotFileNote": "To choose again later, open repot.json in this folder with Repot."
+    "repotFileNote": "To choose again later, open repot.json in this folder with Repot.",
+    "compareButton": "Compare with this machine",
+    "compareAgain": "Compare again",
+    "compareOtherOs": "Choose this machine’s OS as the destination to see the comparison.",
+    "onlyMissing": "Missing on this machine only",
+    "badgePresent": "Already here",
+    "badgeDiffers": "Different here",
+    "thisMachine": "On this machine"
   },
   "updates": {
     "settings": "Settings",

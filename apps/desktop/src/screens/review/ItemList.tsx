@@ -40,6 +40,12 @@ export function ItemList({ items, state, dispatch, filter, onFilter, selectedId,
           <input type="checkbox" checked={filter.onlyWarnings} onChange={(e) => onFilter({ ...filter, onlyWarnings: e.target.checked })} />
           {S.onlyWarnings}
         </label>
+        {Object.keys(state.presence).length > 0 && (
+          <label className="check-label">
+            <input type="checkbox" checked={filter.onlyMissing} onChange={(e) => onFilter({ ...filter, onlyMissing: e.target.checked })} />
+            {S.onlyMissing}
+          </label>
+        )}
       </div>
       <div className="item-scroll">
         {items.length === 0 ? (
@@ -63,6 +69,8 @@ export function ItemList({ items, state, dispatch, filter, onFilter, selectedId,
                       <span className="item-name">{item.name}</span>
                       {item.version !== null && <span className="item-version">{item.version}</span>}
                       {mapped !== null && <span className="item-mapped" title={mappedTo(mapped.manager, mapped.name)}>→ {mapped.name}</span>}
+                      {state.presence[item.id] === "present" && <span className="item-presence present">{S.badgePresent}</span>}
+                      {state.presence[item.id] === "differs" && <span className="item-presence differs">{S.badgeDiffers}</span>}
                       <span className="badges">
                         {hasKind(item, "secret") && <span className="badge" role="img" title={S.badgeSecret} aria-label={S.badgeSecret}><WarningTriangle className="symbol secret" /></span>}
                         {hasKind(item, "duplicate") && <span className="badge" role="img" title={S.badgeDuplicate} aria-label={S.badgeDuplicate}><Duplicate className="symbol duplicate" /></span>}

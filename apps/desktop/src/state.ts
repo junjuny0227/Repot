@@ -1,5 +1,5 @@
-import type { AvailabilityMap, Category, Format, OpenedFile, Os, PackageManager, ProviderReport, ScanResult } from "./types";
-import { applyTarget, defaultTarget, initialChecked, isAvailable, revealKey, setCategory } from "./logic";
+import type { AvailabilityMap, Category, Format, OpenedFile, Os, PackageManager, PresenceMap, ProviderReport, ScanResult } from "./types";
+import { applyTarget, defaultTarget, initialChecked, isAvailable, missingChecked, revealKey, setCategory } from "./logic";
 
 export type Screen = "start" | "scanning" | "review" | "export" | "done";
 /** Where the items came from when a Repot file was opened instead of scanning. */
@@ -10,13 +10,17 @@ export interface State {
   /** Destination package manager; reset to the destination's default whenever the destination changes. */
   packages: PackageManager | null;
   providers: ProviderReport[]; scan: ScanResult | null; avail: AvailabilityMap;
+  /** Set after comparing an opened file with this machine; empty for other destinations. */
+  compared: boolean; presence: PresenceMap;
   checked: Set<string>; revealed: Set<string>; format: Format;
   exportedPath: string | null; error: string | null;
 }
 export type Action =
   | { type: "init"; source: Os }
-  | { type: "setTarget"; target: Os; avail?: AvailabilityMap }
-  | { type: "setPackages"; packages: PackageManager; avail: AvailabilityMap }
+  | { type: "setTarget"; target: Os; avail?: AvailabilityMap; presence?: PresenceMap }
+  | { type: "setPackages"; packages: PackageManager; avail: AvailabilityMap; presence?: PresenceMap }
+  | { type: "compareStarted" } | { type: "compareFailed" }
+  | { type: "compareFinished"; target: Os; packages: PackageManager | null; avail: AvailabilityMap; presence: PresenceMap }
   | { type: "scanStarted" }
   | { type: "progress"; report: ProviderReport }
   | { type: "scanFinished"; scan: ScanResult; avail: AvailabilityMap }
@@ -32,7 +36,7 @@ export type Action =
 
 export const initialState: State = {
   screen: "start", source: null, target: null, opened: null, packages: null,
-  providers: [], scan: null, avail: {},
+  providers: [], scan: null, avail: {}, compared: false, presence: {},
   checked: new Set(), revealed: new Set(), format: "script",
   exportedPath: null, error: null,
 };
@@ -58,14 +62,25 @@ export function reducer(prev: State, action: Action): State {
       return { ...state, source: action.source, target: action.source, packages: defaultTarget(action.source).packages };
     case "setTarget": {
       const packages = defaultTarget(action.target).packages;
+      const presence = action.presence ?? state.presence;
       return action.avail
-        ? { ...state, target: action.target, packages, avail: action.avail, checked: applyTarget(state.checked, action.avail) }
-        : { ...state, target: action.target, packages };
+        ? { ...state, target: action.target, packages, avail: action.avail, presence, checked: applyTarget(state.checked, action.avail) }
+        : { ...state, target: action.target, packages, presence };
     }
     case "setPackages":
-      return { ...state, packages: action.packages, avail: action.avail, checked: applyTarget(state.checked, action.avail) };
+      return { ...state, packages: action.packages, avail: action.avail, presence: action.presence ?? state.presence, checked: applyTarget(state.checked, action.avail) };
     case "scanStarted":
-      return { ...state, screen: "scanning", providers: [], opened: null };
+      return { ...state, screen: "scanning", providers: [], opened: null, compared: false, presence: {} };
+    case "compareStarted":
+      return { ...state, screen: "scanning", providers: [] };
+    case "compareFailed":
+      return { ...state, screen: "review" };
+    case "compareFinished":
+      return {
+        ...state, screen: "review", compared: true, target: action.target, packages: action.packages,
+        avail: action.avail, presence: action.presence,
+        checked: missingChecked(state.scan?.items ?? [], action.avail, action.presence),
+      };
     case "progress": {
       const exists = state.providers.some((p) => p.id === action.report.id);
       const providers = exists
@@ -81,7 +96,7 @@ export function reducer(prev: State, action: Action): State {
     case "fileOpened": {
       const { scan, ...opened } = action.file;
       return {
-        ...state, screen: "review", scan, providers: [], avail: action.avail, opened,
+        ...state, screen: "review", scan, providers: [], avail: action.avail, opened, compared: false, presence: {},
         checked: initialChecked(scan.items, action.avail), revealed: new Set(),
       };
     }

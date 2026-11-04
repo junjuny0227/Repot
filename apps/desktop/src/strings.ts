@@ -1,6 +1,6 @@
 import { format, getLocale, messages, plural, type Messages } from "./i18n";
 import { errorMessage } from "./errors";
-import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, PackageManager, ProviderStatus, UnavailableReason } from "./types";
+import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, PackageManager, Presence, PresenceMap, ProviderStatus, UnavailableReason } from "./types";
 
 // Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
 // these functions pick the message for the active locale and fill in the values.
@@ -110,6 +110,16 @@ export function openedFromText(opened: { source: Os; createdAt: string }): strin
   // Keep the date on one line ("2026. 11. 4." must not break after "11.").
   const shown = formatted.replace(/ /g, "\u00a0");
   return format(messages().openedFrom, { os: osLabel(opened.source), date: shown });
+}
+export const presenceText = (p: Presence): string => messages().presence[p];
+/** "Already here: 180 · Different: 2" after comparing with this machine. */
+export function comparedSummary(presence: PresenceMap): string {
+  const values = Object.values(presence);
+  return format(messages().comparedSummary, {
+    present: values.filter((p) => p === "present").length,
+    differs: values.filter((p) => p === "differs").length,
+    missing: values.filter((p) => p === "missing").length,
+  });
 }
 export const skippedItemsText = (count: number): string => plural(messages().skippedItems, count);
 /** `open_snapshot` rejects with an error kind; anything else is shown as it is. */

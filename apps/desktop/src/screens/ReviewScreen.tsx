@@ -1,41 +1,42 @@
 import { useMemo, useRef, useState, type Dispatch } from "react";
-import { availabilityFor } from "../api";
+import { availabilityFor, presenceFor } from "../api";
 import { errorMessage } from "../errors";
 import { choosesPackages, defaultTarget, filterItems, type Filter } from "../logic";
 import { canExport, sessionSource, type Action, type State } from "../state";
-import { S, openedFromText, selectedCount, skippedItemsText, statusText, withCount } from "../strings";
-import type { AvailabilityMap, Category, Os, PackageManager, Target } from "../types";
+import { S, comparedSummary, openedFromText, selectedCount, skippedItemsText, statusText, withCount } from "../strings";
+import type { AvailabilityMap, Category, Os, PackageManager, PresenceMap, Target } from "../types";
 import { LanguageSelect } from "./LanguageSelect";
 import { PackageSelect, TargetSelect } from "./TargetSelect";
 import { Sidebar } from "./review/Sidebar";
 import { ItemList } from "./review/ItemList";
 import { DetailPanel } from "./review/DetailPanel";
 
-export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Dispatch<Action> }) {
-  const [filter, setFilter] = useState<Filter>({ query: "", onlyAvailable: false, onlyWarnings: false });
+export function ReviewScreen({ state, dispatch, onCompare }: { state: State; dispatch: Dispatch<Action>; onCompare: () => void }) {
+  const [filter, setFilter] = useState<Filter>({ query: "", onlyAvailable: false, onlyWarnings: false, onlyMissing: false });
   const [category, setCategory] = useState<Category | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const request = useRef(0);
   const all = state.scan?.items ?? [];
   const items = useMemo(
-    () => filterItems(all, state.avail, filter).filter((i) => category === null || i.category === category),
-    [all, state.avail, filter, category],
+    () => filterItems(all, state.avail, filter, state.presence).filter((i) => category === null || i.category === category),
+    [all, state.avail, filter, category, state.presence],
   );
   const selected = all.find((i) => i.id === selectedId) ?? null;
   const notDetected = state.providers.filter((p) => p.status === "notDetected");
   const failed = state.providers.filter((p) => p.status === "timedOut" || (typeof p.status === "object" && "failed" in p.status));
 
   // Re-judge against the new destination. Only the latest request may update the state if the user changes it quickly.
-  const rejudge = (target: Target, apply: (avail: AvailabilityMap) => Action) => {
+  // After a comparison, presence is judged again too (empty for another OS).
+  const rejudge = (target: Target, apply: (avail: AvailabilityMap, presence?: PresenceMap) => Action) => {
     const id = ++request.current;
-    availabilityFor(target)
-      .then((avail) => { if (id === request.current) dispatch(apply(avail)); })
+    Promise.all([availabilityFor(target), state.compared ? presenceFor(target) : Promise.resolve(undefined)])
+      .then(([avail, presence]) => { if (id === request.current) dispatch(apply(avail, presence)); })
       .catch((e: unknown) => dispatch({ type: "error", message: errorMessage(e) }));
   };
   // A new destination starts again from its default package manager.
-  const changeTarget = (target: Os) => rejudge(defaultTarget(target), (avail) => ({ type: "setTarget", target, avail }));
+  const changeTarget = (target: Os) => rejudge(defaultTarget(target), (avail, presence) => ({ type: "setTarget", target, avail, presence }));
   const changePackages = (packages: PackageManager) => {
-    if (state.target !== null) rejudge({ os: state.target, packages }, (avail) => ({ type: "setPackages", packages, avail }));
+    if (state.target !== null) rejudge({ os: state.target, packages }, (avail, presence) => ({ type: "setPackages", packages, avail, presence }));
   };
 
   return (
@@ -47,6 +48,8 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
           <footer className="provider-groups opened-from">
             <p>{openedFromText(state.opened)}</p>
             {state.opened.skippedItems > 0 && <p className="muted">{skippedItemsText(state.opened.skippedItems)}</p>}
+            {state.compared && <p className="muted">{Object.keys(state.presence).length > 0 ? comparedSummary(state.presence) : S.compareOtherOs}</p>}
+            <button className="compare-button" onClick={onCompare}>{state.compared ? S.compareAgain : S.compareButton}</button>
           </footer>
         )}
         {state.opened === null && <footer className="provider-groups">

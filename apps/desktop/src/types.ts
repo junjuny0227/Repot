@@ -37,6 +37,9 @@ export type UnavailableReason =
 export type Availability =
   | "available" | { mapped: { manager: PackageManager; name: string } } | { unavailable: UnavailableReason };
 export type AvailabilityMap = Record<string, Availability>;
+/** Whether an opened file's item is already on this machine (plan 12). */
+export type Presence = "present" | "differs" | "missing";
+export type PresenceMap = Record<string, Presence>;
 export interface Selection { items: string[]; revealSecretLines: [string, number][] }
 export type Format = "script" | "manifest";
 export interface OutputFile { path: string; contents: string; executable: boolean }

@@ -24,3 +24,10 @@ test("openSnapshot sends the chosen path", async () => {
   await openSnapshot("/tmp/repot-export-2026-11-04/repot.json");
   expect(invoke.mock.calls).toEqual([["open_snapshot", { path: "/tmp/repot-export-2026-11-04/repot.json" }]]);
 });
+
+test("presenceFor sends the Target", async () => {
+  const { presenceFor } = await import("../api");
+  const target = { os: "macOs" as const, packages: "brew" as const };
+  await presenceFor(target);
+  expect(invoke.mock.calls).toEqual([["presence_for", { target }]]);
+});
