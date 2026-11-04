@@ -36,6 +36,10 @@ pub struct ItemV1 {
     pub details: DetailsV1,
     #[serde(default)]
     pub findings: Vec<Finding>,
+    /// The export that wrote this file could not include the item on its destination
+    /// (plan 13). Written only when true.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub not_exported: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -132,7 +136,7 @@ impl TargetPathV1 {
 
 impl ItemV1 {
     /// `config` must be `Some` exactly for config-file items.
-    pub fn from_item(item: &Item, config: Option<&StoredConfig>) -> Self {
+    pub fn from_item(item: &Item, config: Option<&StoredConfig>, not_exported: bool) -> Self {
         let details = match (&item.details, config) {
             (ItemDetails::Package { manager, kind }, _) => DetailsV1::Package {
                 manager: *manager,
@@ -198,6 +202,7 @@ impl ItemV1 {
                 })
                 .cloned()
                 .collect(),
+            not_exported,
         }
     }
 

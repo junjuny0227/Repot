@@ -191,7 +191,9 @@ fn cross_os_scripts_and_manifests() {
     ] {
         for format in [Format::Script, Format::Manifest] {
             let b = bundle(&items, target, format);
-            for f in &b.files {
+            // repot.json keeps unusable items for another destination (plan 13);
+            // nothing that runs or installs mentions them.
+            for f in b.files.iter().filter(|f| f.path != "repot.json") {
                 assert!(!f.contents.contains("rectangle"));
                 assert!(!f.contents.contains("install 'missing'"));
                 assert!(!f.contents.contains("owner/tap"));

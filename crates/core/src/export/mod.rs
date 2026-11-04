@@ -9,7 +9,7 @@ use crate::{
     snapshot,
 };
 use script::{ScriptHeader, ScriptPlan};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 /// Where an export reads config-file contents: the scanned machine (`Env`) or an
 /// opened Repot file.
@@ -94,6 +94,17 @@ pub fn build_export(
     let mut masked = vec![];
     let mut notes = vec![];
     let mut snapshot_items = vec![];
+    let mut unusable_items = vec![];
+    // Items this destination cannot use go into the Repot file only (plan 13), so the file
+    // can still be exported for another destination. Unchecked usable items stay out.
+    for item in req.items {
+        if let Availability::Unavailable(reason) = availability(item, req.source, req.target)
+            && reason != UnavailableReason::Unreadable
+            && let Some(stored) = not_exported_item(configs, req, item)
+        {
+            unusable_items.push(stored);
+        }
+    }
     for item in req.items.iter().filter(|item| selected.contains(&item.id)) {
         let item_id = item.id.clone();
         let mut pending_config = None;
@@ -110,30 +121,11 @@ pub fn build_export(
                 warnings.push(ExportWarning::ReadFailed { item_id });
                 continue;
             };
-            let reveal: Vec<_> = config.revealed.clone().unwrap_or_else(|| {
-                req.selection
-                    .reveal_secret_lines
-                    .iter()
-                    .filter(|(id, _)| id == &item.id)
-                    .map(|(_, line)| *line)
-                    .collect()
-            });
+            let reveal = reveal_lines(req, item, &config);
             let mut file =
                 payload::prepare_config(item, &config.text, &reveal, req.source, req.target.os);
             merge_masked(&mut file.masked, &file.path, &config.masked);
-            // The Repot file keeps the source machine's form so it can target any OS later.
-            let mut stored =
-                payload::prepare_config(item, &config.text, &reveal, req.source, req.source);
-            merge_masked(&mut stored.masked, &stored.path, &config.masked);
-            pending_config = Some(snapshot::StoredConfig {
-                content: stored.contents,
-                masked: stored
-                    .masked
-                    .into_iter()
-                    .map(|m| (m.line, m.name))
-                    .collect(),
-                revealed: reveal,
-            });
+            pending_config = Some(stored_config(item, &config, reveal, req.source));
             payloads.push(OutputFile {
                 path: format!("files/{}", file.path),
                 contents: file.contents,
@@ -142,24 +134,7 @@ pub fn build_export(
             masked.extend(file.masked);
             notes.extend(file.notes);
         } else {
-            // Only values that end up in the output are validated. Packages, globals and
-            // extensions install the latest version, so their scanned version (e.g. a brew
-            // cask's "17.0.21,17.70") is never written and must not block the item.
-            // Runtime names are display labels ("Rust toolchain"); steps use tool, runtime and
-            // version, so the name is not validated either.
-            let (name, extra, version) = match &item.details {
-                ItemDetails::ShellPlugin { url, .. } => {
-                    (Some(item.name.as_str()), Some(url.as_str()), None)
-                }
-                ItemDetails::Runtime { runtime, .. } => {
-                    (None, Some(runtime.as_str()), item.version.as_deref())
-                }
-                _ => (Some(item.name.as_str()), None, None),
-            };
-            if name.is_some_and(|v| !step::is_safe_value(v))
-                || version.is_some_and(|v| !step::is_safe_value(v))
-                || extra.is_some_and(|v| !step::is_safe_value(v))
-            {
+            if !values_are_safe(item) {
                 warnings.push(ExportWarning::InvalidValue { item_id });
                 continue;
             }
@@ -190,7 +165,11 @@ pub fn build_export(
             warnings.push(ExportWarning::InvalidValue { item_id });
             continue;
         }
-        snapshot_items.push((item.clone(), pending_config));
+        snapshot_items.push(snapshot::StoredItem {
+            item: item.clone(),
+            config: pending_config,
+            not_exported: false,
+        });
         steps.extend(item_steps.into_iter().filter(|s| match s {
             step::Step::AddTap { manager, name } if req.source != req.target.os => {
                 taps.insert((*manager, name.to_ascii_lowercase()))
@@ -231,6 +210,16 @@ pub fn build_export(
             files
         }
     };
+    // Keep the scan's order in the file whether or not an item was exported.
+    snapshot_items.extend(unusable_items);
+    let order: HashMap<&str, usize> = req
+        .items
+        .iter()
+        .enumerate()
+        .rev()
+        .map(|(n, item)| (item.id.as_str(), n))
+        .collect();
+    snapshot_items.sort_by_key(|stored| order[stored.item.id.as_str()]);
     files.push(OutputFile {
         path: snapshot::FILE_NAME.into(),
         contents: snapshot::render_snapshot(
@@ -244,6 +233,84 @@ pub fn build_export(
     payloads.sort_by(|a, b| a.path.cmp(&b.path));
     files.extend(payloads);
     ExportBundle { files, warnings }
+}
+/// Only values that end up in the output are validated. Packages, globals and extensions
+/// install the latest version, so their scanned version (e.g. a brew cask's "17.0.21,17.70")
+/// is never written and must not block the item. Runtime names are display labels ("Rust
+/// toolchain"); steps use tool, runtime and version, so the name is not validated either.
+fn values_are_safe(item: &Item) -> bool {
+    let (name, extra, version) = match &item.details {
+        ItemDetails::ConfigFile { .. } => return true,
+        ItemDetails::ShellPlugin { url, .. } => {
+            (Some(item.name.as_str()), Some(url.as_str()), None)
+        }
+        ItemDetails::Runtime { runtime, .. } => {
+            (None, Some(runtime.as_str()), item.version.as_deref())
+        }
+        _ => (Some(item.name.as_str()), None, None),
+    };
+    [name, extra, version]
+        .into_iter()
+        .flatten()
+        .all(step::is_safe_value)
+}
+
+/// A config file in the source machine's form, secrets masked except revealed lines, so
+/// the Repot file can target any OS later.
+fn stored_config(
+    item: &Item,
+    config: &ConfigText,
+    reveal: Vec<u32>,
+    source: Os,
+) -> snapshot::StoredConfig {
+    let mut stored = payload::prepare_config(item, &config.text, &reveal, source, source);
+    merge_masked(&mut stored.masked, &stored.path, &config.masked);
+    snapshot::StoredConfig {
+        content: stored.contents,
+        masked: stored
+            .masked
+            .into_iter()
+            .map(|m| (m.line, m.name))
+            .collect(),
+        revealed: reveal,
+    }
+}
+
+/// An item this destination cannot use, stored with the same rules as exported items.
+/// `None` when it cannot be stored safely (unreadable config, unsafe value).
+fn not_exported_item(
+    configs: &(impl ConfigSource + ?Sized),
+    req: &ExportRequest<'_>,
+    item: &Item,
+) -> Option<snapshot::StoredItem> {
+    if !values_are_safe(item) {
+        return None;
+    }
+    let config = match &item.details {
+        ItemDetails::ConfigFile { .. } => {
+            let config = configs.read_config(item)?;
+            let reveal = reveal_lines(req, item, &config);
+            Some(stored_config(item, &config, reveal, req.source))
+        }
+        _ => None,
+    };
+    Some(snapshot::StoredItem {
+        item: item.clone(),
+        config,
+        not_exported: true,
+    })
+}
+
+/// Lines shown as written: an opened file's record, else the user's choice in this session.
+fn reveal_lines(req: &ExportRequest<'_>, item: &Item, config: &ConfigText) -> Vec<u32> {
+    config.revealed.clone().unwrap_or_else(|| {
+        req.selection
+            .reveal_secret_lines
+            .iter()
+            .filter(|(id, _)| id == &item.id)
+            .map(|(_, line)| *line)
+            .collect()
+    })
 }
 /// Add masked lines an opened file already recorded; detection cannot see a bare `<REDACTED>`.
 fn merge_masked(

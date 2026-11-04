@@ -145,8 +145,19 @@ fn ids(text: &str) -> Vec<String> {
         .collect()
 }
 
+fn not_exported_ids(text: &str) -> Vec<String> {
+    let value: serde_json::Value = serde_json::from_str(text).unwrap();
+    value["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|i| i["notExported"] == true)
+        .map(|i| i["id"].as_str().unwrap().to_owned())
+        .collect()
+}
+
 #[test]
-fn every_export_writes_repot_json_with_only_exported_items() {
+fn every_export_writes_repot_json_with_exported_and_unusable_items() {
     let (env, items) = machine();
     let mut selection = all(&items, vec![]);
     selection.items.retain(|id| id != "npm:typescript"); // the user unchecked it
@@ -157,14 +168,36 @@ fn every_export_writes_repot_json_with_only_exported_items() {
         Os::MacOs,
         Target::default_for(Os::Windows),
     );
-    // rectangle is not in the package map and .zshrc needs zsh: both dropped with warnings.
+    // rectangle is not in the package map and .zshrc needs zsh: left out of the script with
+    // warnings, but kept in the file (marked) for another destination. The unchecked
+    // typescript stays out. The scan's order is kept.
+    let text = repot_json(&bundle);
     assert_eq!(
-        ids(repot_json(&bundle)),
+        ids(text),
         vec![
             "brew:formula:ripgrep",
+            "brew:cask:rectangle",
+            "shell:file:.zshrc",
             "git:file:.gitconfig",
             "shell:file:.config/starship.toml"
         ]
+    );
+    assert_eq!(
+        not_exported_ids(text),
+        vec!["brew:cask:rectangle", "shell:file:.zshrc"]
+    );
+    assert!(!bundle.files.iter().any(|f| f.path == "files/home/.zshrc"));
+    // A config file that was not exported is stored masked like an exported one.
+    assert!(!text.contains("sk-synthetic") && !text.contains("ghp_synthetic"));
+    let opened = parse_snapshot(text).unwrap().snapshot;
+    assert_eq!(
+        opened.not_exported.iter().collect::<Vec<_>>(),
+        vec!["brew:cask:rectangle", "shell:file:.zshrc"]
+    );
+    assert!(
+        opened.configs["shell:file:.zshrc"]
+            .content
+            .contains("<REDACTED>")
     );
     for format in [Format::Script, Format::Manifest] {
         let bundle = build_export(
@@ -299,7 +332,11 @@ fn rendered_file_shape_is_stable() {
     let items: Vec<_> = snap
         .items
         .iter()
-        .map(|i| (i.clone(), snap.configs.get(&i.id).cloned()))
+        .map(|i| snapshot::StoredItem {
+            item: i.clone(),
+            config: snap.configs.get(&i.id).cloned(),
+            not_exported: snap.not_exported.contains(&i.id),
+        })
         .collect();
     insta::assert_snapshot!(snapshot::render_snapshot(
         &snap.created_at,
@@ -431,4 +468,57 @@ fn opened_items_keep_their_findings() {
 #[test]
 fn created_at_is_iso_utc() {
     assert_eq!(meta().created_at(), "2026-11-04T10:00Z");
+}
+
+#[test]
+fn a_file_for_one_destination_can_be_exported_for_another() {
+    let (env, items) = machine();
+    let windows = export(
+        &env,
+        &items,
+        &all(&items, vec![]),
+        Os::MacOs,
+        Target::default_for(Os::Windows),
+    );
+    let snap = parse_snapshot(repot_json(&windows)).unwrap().snapshot;
+    let mac = Target::default_for(Os::MacOs);
+    // Exporting for a Mac from the Windows file: the marked items are usable again.
+    let chosen = all(&snap.items, vec![]);
+    let bundle = export(&snap, &snap.items, &chosen, snap.source, mac);
+    let script = &bundle
+        .files
+        .iter()
+        .find(|f| f.path == "restore.sh")
+        .unwrap()
+        .contents;
+    assert!(
+        script.contains("brew install --cask 'rectangle'"),
+        "{script}"
+    );
+    assert!(bundle.files.iter().any(|f| f.path == "files/home/.zshrc"));
+    assert!(not_exported_ids(repot_json(&bundle)).is_empty());
+    // Left unchecked, a marked item counts as removed by the user and leaves the new file.
+    let mut without = chosen.clone();
+    without.items.retain(|id| id != "brew:cask:rectangle");
+    let bundle = export(&snap, &snap.items, &without, snap.source, mac);
+    assert!(!ids(repot_json(&bundle)).contains(&"brew:cask:rectangle".to_owned()));
+}
+
+#[test]
+fn unreadable_or_unsafe_unusable_items_are_not_stored() {
+    let (env, mut items) = machine();
+    // .zshrc cannot be used on Windows and cannot be read either.
+    items[3].findings.push(Finding {
+        line: None,
+        kind: FindingKind::Unreadable,
+    });
+    items[1].name = "rect'angle".into();
+    let bundle = export(
+        &env,
+        &items,
+        &all(&items, vec![]),
+        Os::MacOs,
+        Target::default_for(Os::Windows),
+    );
+    assert!(not_exported_ids(repot_json(&bundle)).is_empty());
 }

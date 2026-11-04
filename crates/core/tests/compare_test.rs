@@ -103,6 +103,7 @@ fn file(items: Vec<Item>, configs: &[(&str, &str)]) -> Snapshot {
                 )
             })
             .collect::<BTreeMap<_, _>>(),
+        not_exported: Default::default(),
     }
 }
 fn ids(map: &std::collections::HashMap<String, Presence>, presence: Presence) -> Vec<&str> {
