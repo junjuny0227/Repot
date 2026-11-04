@@ -38,7 +38,8 @@ restore script you review before running. It never changes your device.
   you choose otherwise.
 - **Keeps a Repot file.** Every export also writes `repot.json` with the items you
   chose. Open it in Repot later to review again or export for another destination,
-  without the old machine.
+  without the old machine. On the new machine, **Compare with this machine** marks
+  what is already there and starts with only the missing items selected.
 - **Updates itself** (from 0.2.0). New versions install from inside the app, verified
   against Repot's update signing key.
 - **Speaks your language**: English, 한국어, 日本語 and 简体中文.
