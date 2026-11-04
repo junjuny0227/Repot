@@ -32,6 +32,13 @@ pub enum Step {
         editor: Editor,
         id: String,
     },
+    /// `<ide command> installPlugins <id>`; already there when `folder` exists in the
+    /// IDE's newest plugins folder on the destination.
+    InstallIdePlugin {
+        ide: JetBrainsIde,
+        id: String,
+        folder: String,
+    },
     CopyFile {
         src: String,
         dest: TargetPath,
@@ -55,7 +62,7 @@ impl Step {
             Self::AddTap { .. } | Self::InstallPackage { .. } => Section::Packages,
             Self::InstallRuntime { .. } => Section::Runtimes,
             Self::InstallGlobal { .. } => Section::GlobalPackages,
-            Self::InstallExtension { .. } => Section::Extensions,
+            Self::InstallExtension { .. } | Self::InstallIdePlugin { .. } => Section::Extensions,
             Self::CopyFile { .. } | Self::GitClone { .. } => Section::Files,
         }
     }
@@ -98,6 +105,11 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
         ItemDetails::Extension { editor } => Step::InstallExtension {
             editor: *editor,
             id: item.name.clone(),
+        },
+        ItemDetails::IdePlugin { ide, folder } => Step::InstallIdePlugin {
+            ide: *ide,
+            id: item.name.clone(),
+            folder: folder.clone(),
         },
         ItemDetails::ShellPlugin { url, target } => Step::GitClone {
             url: url.clone(),
@@ -184,6 +196,9 @@ pub fn guide_url(tool: &str) -> &'static str {
         "cursor" => "https://cursor.com",
         "git" => "https://git-scm.com",
         "oh-my-zsh" => "https://ohmyz.sh",
+        name if JetBrainsIde::ALL.iter().any(|ide| ide.product() == name) => {
+            crate::jetbrains::INSTALL_URL
+        }
         _ => "",
     }
 }

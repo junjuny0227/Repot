@@ -37,6 +37,9 @@ impl repot_core::env::Env for StrictEnv {
     ) -> Result<repot_core::env::CommandOutput, repot_core::env::EnvError> {
         self.0.run(p, a)
     }
+    fn read_bytes(&self, p: &std::path::Path) -> Result<Vec<u8>, repot_core::env::EnvError> {
+        self.0.read_bytes(p)
+    }
     fn read_file(&self, p: &std::path::Path) -> Result<String, repot_core::env::EnvError> {
         if p.to_string_lossy().contains("example.zsh-theme/") {
             return Err(repot_core::env::EnvError::Io("Not a directory".into()));

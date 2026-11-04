@@ -77,6 +77,11 @@
     "file:vscode-settings": "编辑器设置用于自定义应用的行为。",
     "file:vscode-keybindings": "编辑器键绑定用于自定义键盘快捷键。",
     "file:vscode-snippet": "编辑器代码片段提供可复用的代码模板。",
+    "file:jetbrains-codestyle": "代码样式方案用于设置 JetBrains IDE 的格式规则。",
+    "file:jetbrains-keymap": "JetBrains IDE 键盘映射用于自定义键盘快捷键。",
+    "file:jetbrains-colors": "配色方案用于设置 JetBrains IDE 的编辑器颜色。",
+    "file:jetbrains-templates": "实时模板在 JetBrains IDE 中提供可复用的代码片段。",
+    "file:jetbrains-options": "JetBrains IDE 选项文件保存字体和主题选择。",
     "plugin:oh-my-zsh": "oh-my-zsh 扩展用于自定义 Zsh 的行为或外观。"
   },
   "openedFrom": "{date}在 {os} 上创建的 Repot 文件",

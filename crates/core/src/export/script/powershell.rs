@@ -56,6 +56,7 @@ fn tool(s: &Step) -> Option<(&'static str, &'static str)> {
         Step::InstallRuntime { tool, .. } => Some((runtime_cmd(*tool), runtime_name(*tool))),
         Step::InstallGlobal { manager, .. } => Some((global_cmd(*manager), global_cmd(*manager))),
         Step::InstallExtension { editor, .. } => Some((editor_cmd(*editor), editor_cmd(*editor))),
+        Step::InstallIdePlugin { ide, .. } => Some((ide.command(), ide.product())),
         Step::CopyFile { .. } | Step::GitClone { .. } => None,
     }
 }
@@ -170,8 +171,74 @@ fn commands(s: &Step) -> (String, bool, String) {
                 format!("& {c} --install-extension {id}"),
             )
         }
+        Step::InstallIdePlugin { ide, id, folder } => (
+            format!(
+                "Test-Path (Join-Path (Get-JetBrainsPluginDir {}) {})",
+                q(ide.prefix()),
+                q(folder)
+            ),
+            true,
+            format!("& $JbCli installPlugins {}", q(id)),
+        ),
         _ => unreachable!("file steps use their own return codes"),
     }
+}
+
+/// The JetBrains IDE a tool tuple stands for, if any.
+fn jetbrains_ide(tool: (&str, &str)) -> Option<JetBrainsIde> {
+    JetBrainsIde::ALL
+        .into_iter()
+        .find(|ide| (ide.command(), ide.product()) == tool)
+}
+
+/// `Find-JetBrainsCli 'idea' @('IntelliJ IDEA 20*', …)`: the IDE's launcher or `$null`.
+fn jb_cli_call(ide: JetBrainsIde) -> String {
+    let dirs: Vec<String> = ide.windows_dirs().iter().map(|d| q(d)).collect();
+    format!(
+        "Find-JetBrainsCli {} @({})",
+        q(ide.command()),
+        dirs.join(", ")
+    )
+}
+
+/// Helpers for JetBrains steps and files, only when the plan has some (plan 14).
+fn write_jetbrains_helpers(out: &mut String, plan: &ScriptPlan) {
+    let used = plan.steps.iter().any(|s| match s {
+        Step::InstallIdePlugin { .. } => true,
+        Step::CopyFile { dest, .. } => matches!(dest, TargetPath::JetBrains { .. }),
+        _ => false,
+    });
+    if !used {
+        return;
+    }
+    out.push_str(r#"$JbBase = Join-Path $env:APPDATA 'JetBrains'
+# The IDE's newest settings folder here, or the source machine's version if it never ran.
+function Get-JetBrainsConfig($Prefix, $Version) {
+  $pattern = '^' + [regex]::Escape($Prefix) + '\d{4}\.\d{1,2}$'
+  $best = Get-ChildItem -Path $JbBase -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match $pattern } |
+    Sort-Object { $v = $_.Name.Substring($Prefix.Length).Split('.'); [int]$v[0] * 100 + [int]$v[1] } |
+    Select-Object -Last 1
+  if ($best) { $best.FullName } else { Join-Path $JbBase "$Prefix$Version" }
+}
+function Get-JetBrainsPluginDir($Prefix) { Join-Path (Get-JetBrainsConfig $Prefix '') 'plugins' }
+function Find-JetBrainsCli($Command, $Dirs) {
+  $found = Get-Command $Command -ErrorAction SilentlyContinue
+  if ($found) { return $found.Source }
+  $toolbox = Join-Path $env:LOCALAPPDATA "JetBrains\Toolbox\scripts\$Command.cmd"
+  if (Test-Path $toolbox) { return $toolbox }
+  foreach ($root in @((Join-Path $env:ProgramFiles 'JetBrains'), (Join-Path $env:LOCALAPPDATA 'Programs'))) {
+    foreach ($dir in $Dirs) {
+      $match = Get-ChildItem -Path (Join-Path $root $dir) -Directory -ErrorAction SilentlyContinue | Sort-Object Name | Select-Object -Last 1
+      if ($match) {
+        $exe = Join-Path $match.FullName "bin\$($Command)64.exe"
+        if (Test-Path $exe) { return $exe }
+      }
+    }
+  }
+  return $null
+}
+"#);
 }
 
 /// Lists every tool the steps need, once, before the user is asked to continue.
@@ -187,6 +254,17 @@ fn write_preflight(out: &mut String, plan: &ScriptPlan) {
     }
     out.push_str("Write-Host 'Tools this script uses:'\n");
     for t in tools {
+        if let Some(ide) = jetbrains_ide(t) {
+            writeln!(
+                out,
+                "if ({}) {{ Write-Host {} }} else {{ Write-Host {}; $script:PreflightMissing = $true }}",
+                jb_cli_call(ide),
+                q(&format!("  {}: found", t.1)),
+                q(&format!("  {}: not found yet. Install it from {}", t.1, guide_url(t.1)))
+            )
+            .unwrap();
+            continue;
+        }
         writeln!(
             out,
             "Test-Preflight {} {} {}",
@@ -219,6 +297,7 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         )
         .unwrap();
     }
+    write_jetbrains_helpers(&mut out, plan);
     write_preflight(&mut out, plan);
     out.push_str("if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -and $answer -cne 'Y') { exit 0 } }\n");
     let mut i = 0;
@@ -265,7 +344,20 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             }
             out.push_str("} else {\n");
         }
-        writeln!(out, "if (Test-Tool {}) {{", q(t.0)).unwrap();
+        if let Some(ide) = jetbrains_ide(t) {
+            writeln!(out, "$JbCli = {}\nif ($JbCli) {{", jb_cli_call(ide)).unwrap();
+            writeln!(
+                out,
+                "  Write-Host {}",
+                q(&format!(
+                    "  Close {} first: plugins cannot be installed while it is open.",
+                    t.1
+                ))
+            )
+            .unwrap();
+        } else {
+            writeln!(out, "if (Test-Tool {}) {{", q(t.0)).unwrap();
+        }
         for step in group {
             if let Some(origin) = step.mapped_origin() {
                 writeln!(out, "  # from {origin}").unwrap();

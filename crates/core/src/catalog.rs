@@ -24,6 +24,11 @@ pub const ENTRIES: &[(&str, &str)] = &[
     ("file:vscode-settings", "Editor settings customize application behavior."),
     ("file:vscode-keybindings", "Editor keybindings customize keyboard shortcuts."),
     ("file:vscode-snippet", "Editor snippets provide reusable code templates."),
+    ("file:jetbrains-codestyle", "A code style scheme sets formatting rules in a JetBrains IDE."),
+    ("file:jetbrains-keymap", "A JetBrains IDE keymap customizes keyboard shortcuts."),
+    ("file:jetbrains-colors", "A color scheme sets editor colors in a JetBrains IDE."),
+    ("file:jetbrains-templates", "Live templates provide reusable code snippets in a JetBrains IDE."),
+    ("file:jetbrains-options", "JetBrains IDE options store font and theme choices."),
     ("plugin:oh-my-zsh", "An oh-my-zsh extension customizes Zsh behavior or appearance."),
 ];
 

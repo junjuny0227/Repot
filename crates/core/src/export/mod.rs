@@ -247,6 +247,10 @@ fn values_are_safe(item: &Item) -> bool {
         ItemDetails::Runtime { runtime, .. } => {
             (None, Some(runtime.as_str()), item.version.as_deref())
         }
+        // The folder name ends up in the "already installed" check.
+        ItemDetails::IdePlugin { folder, .. } => {
+            (Some(item.name.as_str()), Some(folder.as_str()), None)
+        }
         _ => (Some(item.name.as_str()), None, None),
     };
     [name, extra, version]

@@ -33,6 +33,7 @@ enum Key {
     Runtime(crate::RuntimeTool, String, String),
     Global(crate::GlobalManager, String),
     Extension(crate::Editor, String),
+    IdePlugin(crate::JetBrainsIde, String),
     Place(String),
 }
 
@@ -61,6 +62,7 @@ fn key(step: &Step) -> Key {
         } => Key::Runtime(*tool, runtime.clone(), version.clone()),
         Step::InstallGlobal { manager, name } => Key::Global(*manager, name.to_lowercase()),
         Step::InstallExtension { editor, id } => Key::Extension(*editor, id.to_lowercase()),
+        Step::InstallIdePlugin { ide, id, .. } => Key::IdePlugin(*ide, id.to_lowercase()),
         Step::CopyFile { dest, .. } | Step::GitClone { dest, .. } => Key::Place(payload_path(dest)),
     }
 }

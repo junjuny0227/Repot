@@ -34,6 +34,12 @@ fn restore_command(path: &str, windows: bool) -> String {
         "dnf-packages.txt" => "sudo dnf install -y $(cat dnf-packages.txt)".into(),
         "pacman-packages.txt" => "sudo pacman -S --needed - < pacman-packages.txt".into(),
         ".tool-versions" => "mise install # or asdf install".into(),
+        "jetbrains-plugins.txt" => if windows {
+            "# Close the IDEs first; use the full path to idea64.exe etc. if the command is not on PATH\nGet-Content jetbrains-plugins.txt | ForEach-Object { $ide, $id = -split $_; & $ide installPlugins $id }"
+        } else {
+            "# Close the IDEs first; use the Toolbox script or the app's launcher if the command is not on PATH\nwhile read -r ide id; do \"$ide\" installPlugins \"$id\"; done < jetbrains-plugins.txt"
+        }
+        .into(),
         _ => {
             let (command, one) = match path {
                 "npm-global.txt" => ("npm install -g", false),
@@ -239,6 +245,18 @@ pub fn render_manifests(
         if !values.is_empty() {
             add(&mut files, path, lines(&values));
         }
+    }
+    // One `<ide command> <plugin id>` per line; README shows the loop (plan 14).
+    let plugins = steps
+        .iter()
+        .filter_map(|s| match s {
+            Step::InstallIdePlugin { ide, id, .. } => Some(format!("{} {id}", ide.command())),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    if !plugins.is_empty() {
+        let plugins = plugins.iter().map(String::as_str).collect::<Vec<_>>();
+        add(&mut files, "jetbrains-plugins.txt", lines(&plugins));
     }
     let windows = header.target == Os::Windows;
     let fence = if windows { "powershell" } else { "bash" };

@@ -48,6 +48,7 @@ fn tool(step: &Step) -> Option<(&'static str, &'static str)> {
         Step::InstallRuntime { tool, .. } => Some((runtime_cmd(*tool), runtime_name(*tool))),
         Step::InstallGlobal { manager, .. } => Some((global_cmd(*manager), global_cmd(*manager))),
         Step::InstallExtension { editor, .. } => Some((editor_cmd(*editor), editor_cmd(*editor))),
+        Step::InstallIdePlugin { ide, .. } => Some((ide.command(), ide.product())),
         Step::GitClone { .. } => Some(("git", "oh-my-zsh")),
         Step::CopyFile { .. } => None,
     }
@@ -171,6 +172,10 @@ fn commands(step: &Step, target: Os) -> (String, String) {
                 format!("{c} --install-extension {}", q(id)),
             )
         }
+        Step::InstallIdePlugin { ide, id, folder } => (
+            format!("[ -e \"$(jb_plugins {})/\"{} ]", q(ide.prefix()), q(folder)),
+            format!("\"$JB_CLI\" installPlugins {}", q(id)),
+        ),
         Step::GitClone { url, dest } => (
             format!("[ -d {} ]", bash_path(dest, target)),
             format!("git clone {} {}", q(url), bash_path(dest, target)),
@@ -186,8 +191,80 @@ fn preflight_check(tool: (&str, &str)) -> String {
         "nvm" => "[ -s \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" ]".into(),
         "sdkman" => "[ -s \"${SDKMAN_DIR:-$HOME/.sdkman}/bin/sdkman-init.sh\" ]".into(),
         "oh-my-zsh" => "have git && [ -d \"$HOME/.oh-my-zsh\" ]".into(),
+        _ if jetbrains_ide(tool).is_some() => format!("{} >/dev/null", jb_cli_call(tool)),
         _ => format!("have {}", q(tool.0)),
     }
+}
+
+/// The JetBrains IDE a tool tuple stands for, if any.
+fn jetbrains_ide(tool: (&str, &str)) -> Option<JetBrainsIde> {
+    JetBrainsIde::ALL
+        .into_iter()
+        .find(|ide| (ide.command(), ide.product()) == tool)
+}
+
+/// `jb_cli 'idea' 'IntelliJ IDEA.app' …`: prints the IDE's command-line launcher.
+fn jb_cli_call(tool: (&str, &str)) -> String {
+    let ide = jetbrains_ide(tool).expect("a JetBrains tool");
+    let mut call = format!("jb_cli {}", q(ide.command()));
+    for app in ide.mac_apps() {
+        call.push(' ');
+        call.push_str(&q(app));
+    }
+    call
+}
+
+/// Helpers for JetBrains steps and files, only when the plan has some. The settings
+/// folder of an IDE is its newest `<prefix><year>.<n>` folder on this machine, or the
+/// source machine's version if the IDE has never run here (plan 14).
+fn write_jetbrains_helpers(out: &mut String, plan: &ScriptPlan) {
+    let used = plan.steps.iter().any(|s| match s {
+        Step::InstallIdePlugin { .. } => true,
+        Step::CopyFile { dest, .. } => matches!(dest, TargetPath::JetBrains { .. }),
+        _ => false,
+    });
+    if !used {
+        return;
+    }
+    let mac = plan.header.target == Os::MacOs;
+    out.push_str(if mac {
+        "jb_base=\"$HOME/Library/Application Support/JetBrains\"\n"
+    } else {
+        "jb_base=\"${XDG_CONFIG_HOME:-$HOME/.config}/JetBrains\"\n"
+    });
+    out.push_str(
+        r#"jb_config() {
+  best=""; rank=-1
+  for d in "$jb_base/$1"[0-9]*; do
+    [ -d "$d" ] || continue
+    v=${d##*/"$1"}
+    case "$v" in [0-9][0-9][0-9][0-9].[0-9]|[0-9][0-9][0-9][0-9].[0-9][0-9]) ;; *) continue ;; esac
+    r=$(( ${v%%.*} * 100 + ${v#*.} ))
+    if [ "$r" -gt "$rank" ]; then best=$d; rank=$r; fi
+  done
+  if [ -n "$best" ]; then echo "$best"; else echo "$jb_base/$1$2"; fi
+}
+"#,
+    );
+    out.push_str(if mac {
+        "jb_plugins() { echo \"$(jb_config \"$1\" '')/plugins\"; }\n"
+    } else {
+        "jb_plugins() { c=$(jb_config \"$1\" ''); echo \"${XDG_DATA_HOME:-$HOME/.local/share}/JetBrains/${c##*/}\"; }\n"
+    });
+    out.push_str(r#"jb_cli() {
+  cmd=$1; shift
+  if c=$(command -v "$cmd" 2>/dev/null) && [ -x "$c" ]; then echo "$c"; return 0; fi
+  for c in "$HOME/Library/Application Support/JetBrains/Toolbox/scripts/$cmd" "$HOME/.local/share/JetBrains/Toolbox/scripts/$cmd"; do
+    if [ -x "$c" ]; then echo "$c"; return 0; fi
+  done
+  for app in "$@"; do
+    for c in "/Applications/$app/Contents/MacOS/$cmd" "$HOME/Applications/$app/Contents/MacOS/$cmd"; do
+      if [ -x "$c" ]; then echo "$c"; return 0; fi
+    done
+  done
+  return 1
+}
+"#);
 }
 
 /// Lists every tool the steps need, once, before the user is asked to continue.
@@ -238,6 +315,7 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         )
         .unwrap();
     }
+    write_jetbrains_helpers(&mut out, plan);
     write_preflight(&mut out, plan);
     out.push_str("if [ \"${1:-}\" != '--yes' ]; then\n  printf 'Continue? [y/N] '\n  read -r answer\n  case \"$answer\" in y|Y) ;; *) exit 0 ;; esac\nfi\n");
     let mut i = 0;
@@ -291,17 +369,30 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         {
             i += 1;
         }
-        writeln!(
-            out,
-            "if have {}{}; then",
-            q(t.0),
-            if t.1 == "oh-my-zsh" {
-                " && [ -d \"$HOME/.oh-my-zsh\" ]"
-            } else {
-                ""
-            }
-        )
-        .unwrap();
+        if jetbrains_ide(t).is_some() {
+            writeln!(out, "if JB_CLI=$({}); then", jb_cli_call(t)).unwrap();
+            writeln!(
+                out,
+                "  echo {}",
+                q(&format!(
+                    "  Close {} first: plugins cannot be installed while it is open.",
+                    t.1
+                ))
+            )
+            .unwrap();
+        } else {
+            writeln!(
+                out,
+                "if have {}{}; then",
+                q(t.0),
+                if t.1 == "oh-my-zsh" {
+                    " && [ -d \"$HOME/.oh-my-zsh\" ]"
+                } else {
+                    ""
+                }
+            )
+            .unwrap();
+        }
         for step in &plan.steps[start..i] {
             if let Some(origin) = step.mapped_origin() {
                 writeln!(out, "  # from {origin}").unwrap();

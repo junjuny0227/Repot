@@ -124,6 +124,9 @@ impl Env for RealEnv {
             .map(|bytes| String::from_utf8_lossy(&bytes).into_owned())
             .map_err(io_error)
     }
+    fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, EnvError> {
+        std::fs::read(path).map_err(io_error)
+    }
     fn list_dir(&self, path: &Path) -> Result<Vec<PathBuf>, EnvError> {
         let mut entries = std::fs::read_dir(path)
             .map_err(io_error)?

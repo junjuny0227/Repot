@@ -221,6 +221,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 | | `pipx` | `pipx list --json` | 패키지 METADATA `Summary` | Any |
 | | `cargo` | `cargo install --list` | 없음 | Any |
 | D 에디터 | `vscode` (VS Code, Cursor 공용) | 확장 폴더 `extensions.json`, User 폴더 `settings.json`·`keybindings.json`·`snippets/` | 확장 `package.json`, 설정 파일은 내장 | Any |
+| | `jetbrains` (IntelliJ IDEA, WebStorm, PyCharm 등, 계획 14) | IDE별 최신 버전 설정 폴더의 `codestyles/`·`keymaps/`·`colors/`·`templates/`와 글꼴·테마 선택 파일, 플러그인 폴더의 jar 속 `META-INF/plugin.xml` | plugin.xml `<description>`, 설정 파일은 내장 | Any |
 | E Git | `git` | `~/.gitconfig`, `~/.config/git/config`, `core.excludesFile`가 가리키는 파일 | 내장 | Any |
 | F 셸 | `shell` | `.zshrc`, `.zprofile`, `.bashrc`, `.bash_profile`, `.profile`, `config.fish`, PowerShell `$PROFILE`, oh-my-zsh 커스텀 플러그인·테마, `starship.toml` | 내장 | SameShell (`starship.toml`은 Any) |
 
@@ -312,6 +313,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - **Git**: `credential.helper`(`osxkeychain` ↔ `manager` 등), `core.autocrlf`, `gpg.program`, 절대 경로가 든 `core.editor` 같은 OS 전용 줄은 주석 처리하고, 목적지 OS용 대안을 주석으로 단다.
 - **VS Code/Cursor**: User 폴더 경로를 목적지 OS 기준으로 바꾼다(macOS `~/Library/Application Support/<App>/User`, Windows `%APPDATA%\<App>\User`, Linux `~/.config/<App>/User`). `keybindings.json`은 `cmd`/`ctrl` 차이에 대한 안내를 남긴다.
 - **PowerShell profile**: 목적지 OS의 `$PROFILE` 위치로 바꾼다.
+- **JetBrains**: 설정 폴더 기준 위치(macOS `~/Library/Application Support/JetBrains`, Windows `%APPDATA%\JetBrains`, Linux `~/.config/JetBrains`)를 목적지 OS로 바꾸고, 버전 폴더는 스크립트가 실행할 때 고른다(대상에 있는 같은 IDE의 최신 버전, 없으면 출발 기기의 버전 이름). 플러그인은 `<IDE 명령> installPlugins <id>`로 설치한다(계획 14).
 
 ## 10. 내보내기
 
@@ -394,6 +396,7 @@ repot-export-2026-11-02/
 ├── cargo.txt
 ├── vscode-extensions.txt
 ├── cursor-extensions.txt
+├── jetbrains-plugins.txt   # <IDE> <플러그인 id> 줄 (계획 14)
 └── files/                  # 설정 파일, README에 복사할 위치 안내
 ```
 

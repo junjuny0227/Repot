@@ -111,6 +111,20 @@ fn sample_plan(target: Os) -> ScriptPlan {
             },
         });
     }
+    // JetBrains helpers are emitted only with these steps; CI lints them (plan 14).
+    steps.push(Step::InstallIdePlugin {
+        ide: JetBrainsIde::IntelliJIdea,
+        id: "com.github.copilot".into(),
+        folder: "github-copilot-intellij".into(),
+    });
+    steps.push(Step::CopyFile {
+        src: "jetbrains/IntelliJIdea/codestyles/Default.xml".into(),
+        dest: TargetPath::JetBrains {
+            ide: JetBrainsIde::IntelliJIdea,
+            version: "2026.1".into(),
+            rel: "codestyles/Default.xml".into(),
+        },
+    });
     steps.push(Step::CopyFile {
         src: "home/.repot-sample".into(),
         dest: TargetPath::Home(".repot-sample".into()),
@@ -229,6 +243,11 @@ mod tests {
                 plan.steps
                     .iter()
                     .any(|s| matches!(s, Step::CopyFile { .. }))
+            );
+            assert!(
+                plan.steps
+                    .iter()
+                    .any(|s| matches!(s, Step::InstallIdePlugin { .. }))
             );
             assert_eq!(plan.masked.len(), 1);
             assert_eq!(plan.notes.len(), 1);

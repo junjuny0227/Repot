@@ -26,6 +26,7 @@ fn default_provider_ids_are_ordered() {
             "pipx",
             "cargo",
             "vscode",
+            "jetbrains",
             "git",
             "shell"
         ]

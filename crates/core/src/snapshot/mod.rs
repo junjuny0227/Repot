@@ -178,6 +178,14 @@ fn is_safe_item(item: &ItemV1) -> bool {
     }
     match &item.details {
         DetailsV1::ConfigFile { target, .. } => is_safe_target(target),
+        // The folder name is joined to the plugins folder by the restore script.
+        DetailsV1::IdePlugin { folder, .. } => {
+            crate::export::step::is_safe_value(folder)
+                && !folder.contains('/')
+                && !folder.contains(':')
+                && folder != "."
+                && folder != ".."
+        }
         DetailsV1::ShellPlugin { url, target } => {
             url.starts_with("https://")
                 && crate::export::step::is_safe_value(url)
@@ -188,6 +196,11 @@ fn is_safe_item(item: &ItemV1) -> bool {
 }
 
 fn is_safe_target(target: &TargetPathV1) -> bool {
+    if let TargetPathV1::JetBrains { version, .. } = target
+        && !crate::jetbrains::is_version(version)
+    {
+        return false;
+    }
     let Some(rel) = target.relative() else {
         return true;
     };

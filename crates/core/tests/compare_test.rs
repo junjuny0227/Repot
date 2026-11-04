@@ -325,3 +325,66 @@ fn an_unreadable_file_on_this_machine_counts_as_different() {
     );
     assert_eq!(result["shell:file:.zshrc"], Presence::Differs);
 }
+
+#[test]
+fn jetbrains_plugins_and_settings_compare_across_versions() {
+    let plugin = |folder: &str| {
+        item(
+            "jetbrains:IntelliJIdea:plugin:com.github.copilot",
+            "com.github.copilot",
+            "jetbrains",
+            Portability::Any,
+            ItemDetails::IdePlugin {
+                ide: JetBrainsIde::IntelliJIdea,
+                folder: folder.into(),
+            },
+        )
+    };
+    let style = |version: &str, source: &str| {
+        item(
+            "jetbrains:IntelliJIdea:file:codestyles/Default.xml",
+            "codestyles/Default.xml",
+            "jetbrains",
+            Portability::Any,
+            ItemDetails::ConfigFile {
+                source: source.into(),
+                target: TargetPath::JetBrains {
+                    ide: JetBrainsIde::IntelliJIdea,
+                    version: version.into(),
+                    rel: "codestyles/Default.xml".into(),
+                },
+            },
+        )
+    };
+    let snap = file(
+        vec![
+            plugin("copilot-old-folder"),
+            style("2025.3", "/old/Default.xml"),
+        ],
+        &[(
+            "jetbrains:IntelliJIdea:file:codestyles/Default.xml",
+            "<code_scheme/>\n",
+        )],
+    );
+    let new = "/Users/new/Library/Application Support/JetBrains/IntelliJIdea2026.1/codestyles/Default.xml";
+    let env = FakeEnv::new(Os::MacOs, "/Users/new").with_file(new, "<code_scheme/>\n");
+    // A newer IDE version and another plugin folder name are still the same thing.
+    let machine = vec![plugin("github-copilot-intellij"), style("2026.1", new)];
+    let result = compare(
+        &snap.items,
+        snap.source,
+        Target::default_for(Os::MacOs),
+        &snap,
+        &machine,
+        Os::MacOs,
+        &env,
+    );
+    assert_eq!(
+        result["jetbrains:IntelliJIdea:plugin:com.github.copilot"],
+        Presence::Present
+    );
+    assert_eq!(
+        result["jetbrains:IntelliJIdea:file:codestyles/Default.xml"],
+        Presence::Present
+    );
+}

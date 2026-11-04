@@ -202,3 +202,42 @@ fn runtime_default_only_runs_after_successful_install() {
     let s = render_powershell(&windows_plan());
     assert!(s.contains("if ($LASTEXITCODE -eq 0) { & nvm use '20.11.0' }"));
 }
+
+#[test]
+fn jetbrains_helpers_appear_only_when_needed() {
+    let plain = render_powershell(&windows_plan());
+    assert!(!plain.contains("Get-JetBrainsConfig"));
+    let mut p = windows_plan();
+    p.steps = vec![
+        Step::InstallIdePlugin {
+            ide: JetBrainsIde::IdeaIc,
+            id: "com.github.copilot".into(),
+            folder: "github-copilot-intellij".into(),
+        },
+        Step::CopyFile {
+            src: "jetbrains/IdeaIC/keymaps/K.xml".into(),
+            dest: TargetPath::JetBrains {
+                ide: JetBrainsIde::IdeaIc,
+                version: "2026.1".into(),
+                rel: "keymaps/K.xml".into(),
+            },
+        },
+    ];
+    let s = render_powershell(&p);
+    assert!(
+        s.contains("$JbCli = Find-JetBrainsCli 'idea' @('IntelliJ IDEA Community Edition*')"),
+        "{s}"
+    );
+    assert!(s.contains("$installed = Test-Path (Join-Path (Get-JetBrainsPluginDir 'IdeaIC') 'github-copilot-intellij')"), "{s}");
+    assert!(s.contains("& $JbCli installPlugins 'com.github.copilot'"));
+    assert!(
+        s.contains("(Join-Path (Get-JetBrainsConfig 'IdeaIC' '2026.1') 'keymaps\\K.xml')"),
+        "{s}"
+    );
+    assert!(
+        s.contains(
+            "Add-NotDone 'idea installPlugins com.github.copilot' 'IntelliJ IDEA CE not found'"
+        ),
+        "{s}"
+    );
+}
