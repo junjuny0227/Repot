@@ -36,6 +36,9 @@ restore script you review before running. It never changes your device.
   You decide whether to run it on the new machine.
 - **Masks secrets.** Tokens found in config files are replaced with `<REDACTED>` unless
   you choose otherwise.
+- **Keeps a Repot file.** Every export also writes `repot.json` with the items you
+  chose. Open it in Repot later to review again or export for another destination,
+  without the old machine.
 - **Updates itself** (from 0.2.0). New versions install from inside the app, verified
   against Repot's update signing key.
 - **Speaks your language**: English, 한국어, 日本語 and 简体中文.
@@ -74,7 +77,7 @@ restore script you review before running. It never changes your device.
 
 Within the same OS (and Linux distribution family), package-manager entries keep
 their original manager and name. For a different OS, Repot uses only the package map
-built into the app (about 150 developer tools and apps): macOS destinations use
+built into the app (about 285 developer tools and apps): macOS destinations use
 Homebrew, Windows destinations use the **Package manager** you pick (winget by
 default, Scoop or Chocolatey), and Linux destinations use apt, dnf or pacman for the
 distribution family. Packages without a name in the map, Homebrew taps, and Linux
@@ -169,7 +172,7 @@ selection.
 - winget and Cargo entries have no local descriptions.
 - Cross-manager duplicates are detected only by identical names (case-insensitive),
   not automatically removed.
-- The cross-OS package map covers about 150 packages, each checked against the
+- The cross-OS package map covers about 285 packages, each checked against the
   destination manager's default repositories (official Scoop buckets included).
   Other packages cannot move to a different OS. Check mapped names before you run
   the restore.
@@ -180,6 +183,9 @@ selection.
 - Volta scans runtimes only, not global packages installed through Volta.
 - rustup scans toolchains only, not components or targets.
 - Scoop does not preserve custom bucket URLs other than its default bucket.
+- `repot.json` holds only the items its export contained. Items left out because they
+  could not move to that destination cannot be exported from the file later, and
+  masked secrets stay masked.
 
 ## Build from source
 
