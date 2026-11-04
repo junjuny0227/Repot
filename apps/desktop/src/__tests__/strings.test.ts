@@ -33,7 +33,7 @@ test("open errors map to messages; unknown errors pass through", async () => {
   expect(openErrorText("readFailed")).toBe("The file couldn’t be read.");
   expect(openErrorText(new Error("boom"))).toBe("boom");
   expect(openErrorText("hasOwnProperty")).toBe("hasOwnProperty");
-  expect(openedFromText({ source: "macOs", createdAt: "2026-11-04T10:00Z" })).toBe("From a Repot file made on macOS, Nov 4, 2026");
+  expect(openedFromText({ source: "macOs", createdAt: "2026-11-04T10:00Z" })).toBe("From a Repot file made on macOS, Nov\u00a04,\u00a02026");
   expect(skippedItemsText(1)).toBe("1 item this version of Repot can’t read was skipped.");
 });
 
