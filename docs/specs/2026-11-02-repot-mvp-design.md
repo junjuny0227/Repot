@@ -34,11 +34,12 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - 내보내기 폴더에 Repot이 다시 읽는 파일 `repot.json`을 함께 쓰고, 시작 화면에서 열어 다시 검토·내보내기 (계획 11, §10)
 - 열린 `repot.json`을 이 기기 스캔과 비교해 "이미 있음 / 내용 다름 / 없음"을 보여주고 "없음"만 처음 선택 (계획 12)
 - `repot.json`에 목적지에서 쓸 수 없어 빠진 항목도 "이번 내보내기에 없음" 표시와 함께 저장해, 다른 목적지로 다시 내보낼 수 있게 함 (계획 13)
+- JetBrains IDE의 설정(코드 스타일, 키맵, 색 구성표, 라이브 템플릿, 글꼴·테마 선택)과 사용자가 설치한 플러그인 (계획 14)
 
 ### 제외 (MVP 이후 검토)
 
 - 앱 안에서 복원 실행, 두 기기 직접 연결
-- SSH(키·config), JetBrains IDE
+- SSH(키·config)
 - 온라인 정보 조회, AI 설명
 - Flatpak, Snap
 - 스캔 결과 전체 저장 (`repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 뺀 항목은 담지 않는다)
@@ -343,6 +344,7 @@ pub enum Step {
     InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool },
     InstallGlobal { manager: GlobalManager, name: String },
     InstallExtension { editor: Editor, id: String },
+    InstallIdePlugin { ide: JetBrainsIde, id: String, folder: String }, // installPlugins, folder로 이미 있음 확인
     CopyFile { src: String /* files/ 기준 상대 경로, '/' 구분 */, dest: TargetPath },
     GitClone { url: String, dest: TargetPath },           // oh-my-zsh 커스텀 플러그인
 }
@@ -350,7 +352,7 @@ pub enum Step {
 
 `export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다. 다른 OS 패키지는 §9 패키지 대응표의 이름으로 바꾸고 `mapped_from`에 원래 이름을 남긴다. 렌더러는 그 단계 위에 `# from brew: ripgrep` 같은 영어 주석을 달고, 대응에 Scoop bucket이 필요하면 `AddTap`을 먼저 만든다. 두 출발 항목이 같은 목적지 이름으로 대응되면 첫 항목만 내보내고 경고한다. 내보내기 README에는 대응된 패키지 목록을 적는다.
 
-`TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
+`TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile`, `JetBrains { ide, version, rel }` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
 ### ① 통합 스크립트
 
@@ -425,7 +427,7 @@ repot-export-2026-11-02/
 ### 검토 화면
 
 - 왼쪽: 사이드바. 카테고리 목록과 항목 수, 각 줄 끝의 카테고리 전체 선택/해제 체크박스
-- 가운데: 항목 목록. 체크박스, 이름, 버전, 설명 한 줄, 배지(비밀정보·중복·목적지 OS에서 사용 불가를 SF 스타일 아이콘으로 표시하고, 각각 접근성 이름을 단다). 검색과 필터("사용 가능만", "경고 있는 것만")
+- 가운데: 항목 목록. 체크박스, 이름, (JetBrains 항목은) IDE 이름, 버전(길면 말줄임), 설명 한 줄, 배지(비밀정보·중복·목적지 OS에서 사용 불가를 SF 스타일 아이콘으로 표시하고, 각각 접근성 이름을 단다). 검색과 필터("사용 가능만", "경고 있는 것만")
 - 오른쪽: 상세 패널. 설명, 원본 위치, 이식성 판정 이유, Finding 목록, 비밀정보 줄별 "원본으로 내보내기" 토글
 - 기본 체크 상태: 목적지 OS에서 사용 가능한 항목은 모두 체크된 상태로 시작한다.
 - 상단에서 목적지 OS를 바꾸면 사용 가능 여부를 즉시 다시 판정한다. 사용 불가가 된 항목의 체크는 해제된다.
@@ -493,10 +495,11 @@ repot-export-2026-11-02/
 - scoop은 기본 bucket 이외의 사용자 지정 bucket URL을 보존하지 않는다.
 - `repot.json`과 이 기기 비교는 내보낼 스크립트가 쓰는 매니저 기준이다. 다른 매니저로 설치한 패키지와 다른 버전의 런타임은 "없음"으로 본다.
 - `repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 체크를 끈 항목은 나중에 다시 내보낼 수 없다. 파일 안에서 가린 비밀정보는 되살릴 수 없다. 0.6 이하 앱은 `notExported` 표시를 몰라 그 항목을 보통 항목처럼 보여준다.
+- JetBrains는 IDE별 최신 버전 설정 폴더만 읽는다. 플러그인은 JetBrains Marketplace에서 `installPlugins`로 받으므로 사용자 지정 저장소나 디스크에서 설치한 플러그인은 복원되지 않고, 설치 중에는 IDE를 닫아야 한다. IDE 자체는 설치하지 않는다(없으면 Toolbox 안내). 0.6 이하 앱은 JetBrains 항목이 든 `repot.json`을 열 때 그 항목을 건너뛴다.
 
 ## 16. 향후 방향
 
 - "새 기기에서 앱으로 복원" 기능 (`repot.json`과 `Step` 모델을 그대로 재사용)
-- SSH(암호화 내보내기 포함), JetBrains, Flatpak, Snap Provider
+- SSH(암호화 내보내기 포함), Flatpak, Snap Provider
 - 사용자 동의 하의 온라인 설명 보강
 - `core`를 재사용하는 CLI (`cargo install repot`, 입력과 출력에 `repot.json` 사용)
