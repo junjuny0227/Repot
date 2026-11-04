@@ -55,6 +55,9 @@ impl repot_core::env::Env for StrictEnv {
     fn exists(&self, p: &std::path::Path) -> bool {
         self.0.exists(p)
     }
+    fn file_len(&self, p: &std::path::Path) -> Result<u64, repot_core::env::EnvError> {
+        self.0.file_len(p)
+    }
 }
 #[test]
 fn ignores_regular_theme_files() {

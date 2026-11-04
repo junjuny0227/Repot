@@ -10,6 +10,7 @@ pub mod package_map;
 pub mod providers;
 pub mod scan;
 pub mod secrets;
+pub mod session;
 pub mod snapshot;
 pub use env::real::RealEnv;
 pub use env::{Env, FakeEnv};

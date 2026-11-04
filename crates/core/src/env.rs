@@ -40,6 +40,8 @@ pub trait Env: Send + Sync {
     fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, EnvError>;
     fn list_dir(&self, path: &Path) -> Result<Vec<PathBuf>, EnvError>;
     fn exists(&self, path: &Path) -> bool;
+    /// Size in bytes, to refuse oversized files before reading them.
+    fn file_len(&self, path: &Path) -> Result<u64, EnvError>;
     fn temp_file(&self, name: &str) -> PathBuf;
     fn remove_file(&self, path: &Path);
     fn read_link(&self, path: &Path) -> Option<PathBuf>;
@@ -156,6 +158,16 @@ impl Env for FakeEnv {
             .get(path)
             .cloned()
             .unwrap_or(Err(EnvError::NotFound))
+    }
+    fn file_len(&self, path: &Path) -> Result<u64, EnvError> {
+        if let Some(bytes) = self.bytes.get(path) {
+            return Ok(bytes.len() as u64);
+        }
+        self.files
+            .get(path)
+            .cloned()
+            .unwrap_or(Err(EnvError::NotFound))
+            .map(|text| text.len() as u64)
     }
     fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, EnvError> {
         if let Some(bytes) = self.bytes.get(path) {

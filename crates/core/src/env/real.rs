@@ -138,6 +138,9 @@ impl Env for RealEnv {
     fn exists(&self, path: &Path) -> bool {
         path.exists()
     }
+    fn file_len(&self, path: &Path) -> Result<u64, EnvError> {
+        path.metadata().map(|m| m.len()).map_err(io_error)
+    }
 }
 fn executable(path: &Path) -> bool {
     let Ok(metadata) = path.metadata() else {
