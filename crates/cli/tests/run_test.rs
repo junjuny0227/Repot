@@ -137,9 +137,29 @@ fn destination_and_packages_are_checked() {
     let v = json(&o);
     assert_eq!(v["target"]["packages"], "scoop");
     assert!(v["folder"].is_null());
-    // The Mac-only cask is not selected for Windows.
+    // The Mac-only cask is not selected for Windows, and the user is told so.
     let selected = v["selected"].as_array().unwrap();
     assert!(!selected.iter().any(|id| id == "brew:cask:rectangle"));
+    assert!(
+        v["leftOut"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|x| x["id"] == "brew:cask:rectangle"),
+        "{v}"
+    );
+    let o = repot(
+        mac(true),
+        &[
+            "export",
+            "--dry-run",
+            "--to",
+            "windows",
+            "--packages",
+            "scoop",
+        ],
+    );
+    assert!(o.err.contains("note: left out rectangle: "), "{}", o.err);
     let o = repot(mac(true), &["export", "--dry-run", "--packages", "winget"]);
     assert_eq!(o.code, 1);
     assert_eq!(o.err, "error: --packages winget cannot be used for macOS\n");
@@ -219,6 +239,15 @@ fn compare_and_only_missing_use_this_machine() {
     );
     assert_eq!(o.code, 0, "{}", o.err);
     assert_eq!(json(&o)["selected"], serde_json::json!(["npm:typescript"]));
+    let o = repot(
+        newer(),
+        &["export", "/x/repot.json", "--only-missing", "--dry-run"],
+    );
+    assert!(
+        o.out.starts_with("1 item for macOS (Homebrew)\n"),
+        "{}",
+        o.out
+    );
     // Nothing missing is a result, not an error.
     let o = repot(
         mac(true).with_file("/x/repot.json", &file),

@@ -3,6 +3,7 @@
 
 use crate::args::{Cli, Command, ExportArgs};
 use crate::text;
+use repot_core::availability::{Availability, UnavailableReason};
 use repot_core::compare::Presence;
 use repot_core::env::Env;
 use repot_core::export::{ExportBundle, ExportMeta, write_export};
@@ -306,6 +307,7 @@ fn export_command(ctx: &mut Context, args: &ExportArgs) -> Outcome {
         return Ok(());
     }
     let selected = selection_of(&session, target, presence.as_ref(), args)?;
+    let left_out = left_out(&session, target, &selected);
     let selection = Selection {
         items: selected.clone(),
         reveal_secret_lines: vec![],
@@ -320,6 +322,14 @@ fn export_command(ctx: &mut Context, args: &ExportArgs) -> Outcome {
         )
         .map_err(|e| Failure(e.into()))?;
     report_warnings(ctx, &session, &selected, &bundle)?;
+    for (item, reason) in &left_out {
+        writeln!(
+            ctx.err,
+            "note: left out {}: {}",
+            item.name,
+            text::reason(reason)
+        )?;
+    }
     let folder = if args.dry_run {
         None
     } else {
@@ -337,6 +347,10 @@ fn export_command(ctx: &mut Context, args: &ExportArgs) -> Outcome {
             "selected": selected,
             "files": files,
             "warnings": bundle.warnings,
+            "leftOut": left_out
+                .iter()
+                .map(|(item, reason)| serde_json::json!({ "id": item.id, "reason": reason }))
+                .collect::<Vec<_>>(),
         });
         serde_json::to_writer_pretty(&mut *ctx.out, &value).map_err(|e| Failure(e.to_string()))?;
         writeln!(ctx.out)?;
@@ -346,10 +360,11 @@ fn export_command(ctx: &mut Context, args: &ExportArgs) -> Outcome {
         .packages
         .map(|m| format!(" ({})", text::manager(m)))
         .unwrap_or_default();
+    let count = selected.len() - bundle.warnings.len();
     writeln!(
         ctx.out,
-        "{} items for {}{packages}",
-        selected.len() - bundle.warnings.len(),
+        "{count} {} for {}{packages}",
+        if count == 1 { "item" } else { "items" },
         text::os(target.os)
     )?;
     match &folder {
@@ -384,6 +399,26 @@ fn export_command(ctx: &mut Context, args: &ExportArgs) -> Outcome {
         }
     }
     Ok(())
+}
+
+/// Items the destination cannot use, which the export leaves out unless `--include` names them.
+/// The app shows these greyed out; the command line says so on stderr.
+fn left_out<'a>(
+    session: &'a Session,
+    target: Target,
+    selected: &[String],
+) -> Vec<(&'a Item, UnavailableReason)> {
+    let avail = session.availability(target);
+    session
+        .scan
+        .items
+        .iter()
+        .filter(|item| !selected.contains(&item.id))
+        .filter_map(|item| match avail.get(&item.id) {
+            Some(Availability::Unavailable(reason)) => Some((item, reason.clone())),
+            _ => None,
+        })
+        .collect()
 }
 
 fn report_warnings(
