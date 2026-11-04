@@ -52,7 +52,7 @@
       },
       "export": {
         "title": "Export",
-        "text": "Save a readable restore script or a bundle of native manifests. Copy the folder to the new machine, read it, and run it yourself."
+        "text": "Save a readable restore script or a bundle of native manifests. Copy the folder to the new machine, read it, and run it yourself. The folder also includes repot.json, which Repot can open later to review again."
       }
     },
     "screenshotAlt": "Repot's export window previewing restore.sh: a file list on the left and the commented Bash script on the right."
