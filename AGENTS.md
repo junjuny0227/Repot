@@ -45,6 +45,7 @@
 | `apps/desktop/src-tauri/icons/icon.icns` | `apps/desktop/app-icon-macos.svg` (macOS 템플릿: 1024 캔버스, 824 판, 100px 여백) | 위 명령 다음에 `tmp=$(mktemp -d) && pnpm tauri icon app-icon-macos.svg -o "$tmp" && cp "$tmp/icon.icns" src-tauri/icons/icon.icns && rm -rf "$tmp"` | 빌드, Dock에서 다른 앱과 크기 비교 |
 | `apps/site/public/screenshots/*.webp` | 앱 화면 캡처 PNG(2200×1440, `03-review-*`, `05-export-script-*`) | 계획 6 Task 2의 `cwebp -metadata icc -q 82 -alpha_q 100` (1100폭은 `-resize 1100 0`) | 사이트 화면 확인 |
 | `pnpm-lock.yaml`, `Cargo.lock` | 의존성 선언 | `pnpm install`, `cargo` | CI `--frozen-lockfile` |
+| `junjuny0227/homebrew-tap`의 `Formula/repot.rb`, `junjuny0227/scoop-bucket`의 `bucket/repot.json` | `scripts/cli-packages.mjs`와 릴리스의 `repot-cli-*.sha256` | 릴리스 공개 시 `cli-packages.yml`(다시 돌리려면 `workflow_dispatch`에 태그) | `node --test scripts/cli-packages.test.mjs`, 같은 워크플로의 `brew install`·`scoop install` |
 | `crates/core/data/package-map.provenance.json` | 생성기가 추가한 대응 값의 근거(방법, 확률, 카탈로그 날짜) | `pnpm package-map:gen run`, 사람 확인은 `pnpm package-map:gen apply-review` | Node 테스트, `cargo test`의 데이터 테스트, CI `package-map` 작업 |
 
 - core 모델의 직렬화 모양을 바꾸면 `scan.json`을 반드시 다시 생성한다. TS 타입은 손으로 맞추고 이 fixture 테스트로만 검증한다.

@@ -50,6 +50,14 @@ export function Install({ platform }: { platform: Platform }) {
           <p className="footnote">
             <a href={RELEASES_URL}>{C.install.allReleases}</a>
           </p>
+          <div className="footnote">
+            <p>
+              <strong>{C.install.cliTitle}</strong> {C.install.cliText}
+            </p>
+            <pre>
+              <code>{C.install.cliCommand[os]}</code>
+            </pre>
+          </div>
         </div>
         <div>
           <h3 className="group-title">{C.install.firstLaunch}</h3>

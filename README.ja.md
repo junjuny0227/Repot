@@ -134,7 +134,19 @@ Repot は既定で起動時に一度、GitHub でアップデートを確認し�
 使えます。アプリと同じルールを使い、このマシンを読み取るだけで、書き出しフォルダーを 1 つだけ
 作り、ネットワークは使いません。
 
-[GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) から
+Homebrew（macOS、Linux）または Scoop（Windows）でインストールします。
+
+```sh
+brew install junjuny0227/tap/repot
+```
+
+```powershell
+scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
+scoop install repot/repot
+```
+
+どちらもリリースの公開時に更新されるので、`brew upgrade` / `scoop update repot` で最新に保てます。
+パッケージマネージャーを使わない場合は [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) から
 `repot-cli-<バージョン>-<target>.tar.gz`（macOS、Linux）または `.zip`（Windows）を
 ダウンロードし、`.sha256` ファイルで確認してから `repot` を `PATH` に置きます。macOS で
 ブラウザからダウンロードしたファイルは隔離されるため、`xattr -d com.apple.quarantine repot` を

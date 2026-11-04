@@ -135,7 +135,19 @@ Repot은 기본으로 실행할 때 한 번 GitHub에서 업데이트를 확인�
 쓸 수 있습니다. 앱과 같은 규칙을 쓰고, 이 기기를 읽기만 하며, 내보내기 폴더 하나만 쓰고,
 네트워크를 쓰지 않습니다.
 
-[GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest)에서
+Homebrew(macOS, Linux)나 Scoop(Windows)으로 설치합니다.
+
+```sh
+brew install junjuny0227/tap/repot
+```
+
+```powershell
+scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
+scoop install repot/repot
+```
+
+릴리스가 공개되면 둘 다 갱신되므로 `brew upgrade` / `scoop update repot`으로 최신을 유지합니다.
+패키지 매니저 없이 쓰려면 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest)에서
 `repot-cli-<버전>-<target>.tar.gz`(macOS, Linux)나 `.zip`(Windows)을 받아 `.sha256`
 파일로 확인한 뒤 `repot`을 `PATH`에 둡니다. macOS에서 브라우저로 받은 파일은 격리되므로
 `xattr -d com.apple.quarantine repot`을 한 번 실행합니다. Rust가 있으면
