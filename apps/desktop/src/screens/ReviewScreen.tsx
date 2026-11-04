@@ -2,8 +2,8 @@ import { useMemo, useRef, useState, type Dispatch } from "react";
 import { availabilityFor } from "../api";
 import { errorMessage } from "../errors";
 import { choosesPackages, defaultTarget, filterItems, type Filter } from "../logic";
-import { canExport, type Action, type State } from "../state";
-import { S, selectedCount, statusText, withCount } from "../strings";
+import { canExport, sessionSource, type Action, type State } from "../state";
+import { S, openedFromText, selectedCount, skippedItemsText, statusText, withCount } from "../strings";
 import type { AvailabilityMap, Category, Os, PackageManager, Target } from "../types";
 import { LanguageSelect } from "./LanguageSelect";
 import { PackageSelect, TargetSelect } from "./TargetSelect";
@@ -43,7 +43,13 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
       <aside className="sidebar-pane">
         <div className="sidebar-titlebar" data-tauri-drag-region="deep" />
         <Sidebar state={state} dispatch={dispatch} category={category} onCategory={setCategory} />
-        <footer className="provider-groups">
+        {state.opened !== null && (
+          <footer className="provider-groups opened-from">
+            <p>{openedFromText(state.opened)}</p>
+            {state.opened.skippedItems > 0 && <p className="muted">{skippedItemsText(state.opened.skippedItems)}</p>}
+          </footer>
+        )}
+        {state.opened === null && <footer className="provider-groups">
           <details>
             <summary>{withCount(S.notDetected, notDetected.length)}</summary>
             <ul>{notDetected.map((p) => <li key={p.id} className="mono">{p.id}</li>)}</ul>
@@ -64,7 +70,7 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
               ))}
             </ul>
           </details>
-        </footer>
+        </footer>}
         <div className="sidebar-language">
           <LanguageSelect />
         </div>
@@ -77,7 +83,7 @@ export function ReviewScreen({ state, dispatch }: { state: State; dispatch: Disp
           </div>
           <div className="spacer" />
           <TargetSelect value={state.target} onChange={changeTarget} />
-          {choosesPackages(state.source, state.target) && <PackageSelect value={state.packages} onChange={changePackages} />}
+          {choosesPackages(sessionSource(state), state.target) && <PackageSelect value={state.packages} onChange={changePackages} />}
           <button className="primary" disabled={!canExport(state)} onClick={() => dispatch({ type: "goExport" })}>{S.nextExport}</button>
         </header>
         <div className="review-body">

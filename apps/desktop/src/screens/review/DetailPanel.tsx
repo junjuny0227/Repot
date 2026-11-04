@@ -68,9 +68,9 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
                 <li key={n} className="finding">
                   <div className="finding-text">
                     <FindingIcon finding={f} />
-                    <p className="selectable">{findingText(f)}</p>
+                    <p className="selectable">{findingText(f, state.opened !== null)}</p>
                   </div>
-                  {secret && (
+                  {secret && state.opened === null && (
                     <label className="reveal">
                       <span>{S.revealSecret}</span>
                       <input

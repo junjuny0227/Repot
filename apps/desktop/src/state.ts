@@ -1,9 +1,12 @@
-import type { AvailabilityMap, Category, Format, Os, PackageManager, ProviderReport, ScanResult } from "./types";
+import type { AvailabilityMap, Category, Format, OpenedFile, Os, PackageManager, ProviderReport, ScanResult } from "./types";
 import { applyTarget, defaultTarget, initialChecked, isAvailable, revealKey, setCategory } from "./logic";
 
 export type Screen = "start" | "scanning" | "review" | "export" | "done";
+/** Where the items came from when a Repot file was opened instead of scanning. */
+export type OpenedInfo = Omit<OpenedFile, "scan">;
 export interface State {
-  screen: Screen; source: Os | null; target: Os | null;
+  /** `source` is this machine; an opened file brings its own source OS in `opened`. */
+  screen: Screen; source: Os | null; target: Os | null; opened: OpenedInfo | null;
   /** Destination package manager; reset to the destination's default whenever the destination changes. */
   packages: PackageManager | null;
   providers: ProviderReport[]; scan: ScanResult | null; avail: AvailabilityMap;
@@ -17,6 +20,7 @@ export type Action =
   | { type: "scanStarted" }
   | { type: "progress"; report: ProviderReport }
   | { type: "scanFinished"; scan: ScanResult; avail: AvailabilityMap }
+  | { type: "fileOpened"; file: OpenedFile; avail: AvailabilityMap }
   | { type: "toggleItem"; id: string }
   | { type: "setCategory"; category: Category; on: boolean }
   | { type: "toggleReveal"; id: string; line: number }
@@ -27,11 +31,14 @@ export type Action =
   | { type: "restart" };
 
 export const initialState: State = {
-  screen: "start", source: null, target: null, packages: null,
+  screen: "start", source: null, target: null, opened: null, packages: null,
   providers: [], scan: null, avail: {},
   checked: new Set(), revealed: new Set(), format: "script",
   exportedPath: null, error: null,
 };
+
+/** The OS the reviewed items come from: the opened file's, or this machine's. */
+export const sessionSource = (state: State): Os | null => state.opened?.source ?? state.source;
 
 export function canExport(state: State): boolean {
   return state.screen === "review" && state.checked.size > 0;
@@ -58,7 +65,7 @@ export function reducer(prev: State, action: Action): State {
     case "setPackages":
       return { ...state, packages: action.packages, avail: action.avail, checked: applyTarget(state.checked, action.avail) };
     case "scanStarted":
-      return { ...state, screen: "scanning", providers: [] };
+      return { ...state, screen: "scanning", providers: [], opened: null };
     case "progress": {
       const exists = state.providers.some((p) => p.id === action.report.id);
       const providers = exists
@@ -71,12 +78,21 @@ export function reducer(prev: State, action: Action): State {
         ...state, screen: "review", scan: action.scan, providers: action.scan.providers, avail: action.avail,
         checked: initialChecked(action.scan.items, action.avail), revealed: new Set(),
       };
+    case "fileOpened": {
+      const { scan, ...opened } = action.file;
+      return {
+        ...state, screen: "review", scan, providers: [], avail: action.avail, opened,
+        checked: initialChecked(scan.items, action.avail), revealed: new Set(),
+      };
+    }
     case "toggleItem":
       if (!isAvailable(state.avail[action.id])) return state;
       return { ...state, checked: toggled(state.checked, action.id) };
     case "setCategory":
       return { ...state, checked: setCategory(state.checked, state.scan?.items ?? [], state.avail, action.category, action.on) };
     case "toggleReveal":
+      // An opened file stores secrets masked; there is no original value to export.
+      if (state.opened !== null) return state;
       return { ...state, revealed: toggled(state.revealed, revealKey(action.id, action.line)) };
     case "goExport":
       return canExport(state) ? { ...state, screen: "export" } : state;

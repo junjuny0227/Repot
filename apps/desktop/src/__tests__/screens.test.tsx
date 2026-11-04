@@ -15,15 +15,16 @@ const noop = () => {};
 
 test("start screen shows the detected OS and defaults the destination to it", () => {
   const s = reducer(initialState, { type: "init", source: { linux: "fedora" } });
-  const html = renderToStaticMarkup(<StartScreen state={s} dispatch={noop} onScan={noop} />);
+  const html = renderToStaticMarkup(<StartScreen state={s} dispatch={noop} onScan={noop} onOpen={noop} />);
   expect(html).toContain(osLabel({ linux: "fedora" }));
   expect(html).toMatch(/<option[^>]*selected=""[^>]*>Linux \(Fedora\)<\/option>/);
   expect(html).toMatch(new RegExp(`<button[^>]*>${S.scanButton}</button>`));
+  expect(html).toMatch(new RegExp(`<button[^>]*>${S.openFile}</button>`));
   expect(html).not.toMatch(/<button[^>]*disabled/);
 });
 
 test("start screen disables scanning until the OS is detected", () => {
-  const html = renderToStaticMarkup(<StartScreen state={initialState} dispatch={noop} onScan={noop} />);
+  const html = renderToStaticMarkup(<StartScreen state={initialState} dispatch={noop} onScan={noop} onOpen={noop} />);
   expect(html).toContain(S.detectingOs);
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>/);
 });

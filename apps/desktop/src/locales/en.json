@@ -22,6 +22,8 @@
     "unreadable": "This file could not be read, so it will not be exported.",
     "secret": "Looks like a secret. It will be masked unless you allow the original value.",
     "secretNamed": "Looks like a secret ({name}). It will be masked unless you allow the original value.",
+    "secretStored": "Masked in the Repot file. Fill in the value after restoring.",
+    "secretStoredNamed": "Masked in the Repot file ({name}). Fill in the value after restoring.",
     "osSpecificLine": "{key} is specific to this OS and will be commented out on a different OS.",
     "duplicate": "Also detected by {provider}."
   },
@@ -78,6 +80,18 @@
     "file:vscode-snippet": "Editor snippets provide reusable code templates.",
     "plugin:oh-my-zsh": "An oh-my-zsh extension customizes Zsh behavior or appearance."
   },
+  "openedFrom": "From a Repot file made on {os}, {date}",
+  "skippedItems": {
+    "one": "{count} item this version of Repot can’t read was skipped.",
+    "other": "{count} items this version of Repot can’t read were skipped."
+  },
+  "openError": {
+    "tooLarge": "This file is too large to be a Repot file.",
+    "notRepotFile": "This isn’t a Repot file. Choose a repot.json from an export folder.",
+    "newerVersion": "This file was made by a newer version of Repot. Update Repot to open it.",
+    "invalid": "This Repot file is damaged and can’t be opened.",
+    "readFailed": "The file couldn’t be read."
+  },
   "ui": {
     "currentOs": "This machine",
     "targetOs": "Destination OS",
@@ -128,7 +142,9 @@
     "startOver": "Start over",
     "secretLimit": "Secret detection is pattern-based and may miss some secrets. Review files before sharing.",
     "mappingNote": "Matched using the package map built into Repot. Check it before you run the restore.",
-    "language": "Language"
+    "language": "Language",
+    "openFile": "Open a Repot file…",
+    "repotFileNote": "To choose again later, open repot.json in this folder with Repot."
   },
   "updates": {
     "settings": "Settings",

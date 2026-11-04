@@ -31,6 +31,7 @@ export function DoneScreen({ state, dispatch }: { state: State; dispatch: Dispat
               <li key={step} className="row"><span className="step-number" aria-hidden="true">{n + 1}</span><span>{step}</span></li>
             ))}
           </ol>
+          <p className="muted note section-footer">{S.repotFileNote}</p>
         </section>
         <div className="actions">
           <button className="large" onClick={() => dispatch({ type: "restart" })}>{S.startOver}</button>

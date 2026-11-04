@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
-import { availabilityFor, detectOs, runScan } from "./api";
+import { availabilityFor, chooseRepotFile, detectOs, openSnapshot, runScan } from "./api";
 import { initialState, reducer } from "./state";
 import { currentTarget } from "./logic";
 import { errorMessage } from "./errors";
-import { S } from "./strings";
+import { S, openErrorText } from "./strings";
 import { useLocale } from "./i18n";
 import { StartScreen } from "./screens/StartScreen";
 import { ScanScreen } from "./screens/ScanScreen";
@@ -45,12 +45,28 @@ export default function App() {
     }
   }, []);
 
+  // Opening a Repot file skips the scan. A failure leaves the start screen as it was.
+  const openFile = useCallback(async () => {
+    if (updates.busy()) return;
+    try {
+      const path = await chooseRepotFile();
+      if (path === null) return;
+      const file = await openSnapshot(path);
+      const target = currentTarget(latest.current);
+      if (target === null) throw new Error(S.detectingOs);
+      const avail = await availabilityFor(target);
+      dispatch({ type: "fileOpened", file, avail });
+    } catch (e) {
+      dispatch({ type: "error", message: openErrorText(e) });
+    }
+  }, []);
+
   return (
     <main className={`app screen-${state.screen}`}>
       {state.error !== null && (
         <div className="error" role="alert"><ExclamationCircle /><strong>{S.errorTitle}</strong> <span>{state.error}</span></div>
       )}
-      {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} />}
+      {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} onOpen={openFile} />}
       {state.screen === "scanning" && <ScanScreen state={state} />}
       {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} />}
       {state.screen === "export" && <ExportScreen state={state} dispatch={dispatch} />}

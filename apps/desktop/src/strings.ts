@@ -1,4 +1,5 @@
-import { format, messages, plural, type Messages } from "./i18n";
+import { format, getLocale, messages, plural, type Messages } from "./i18n";
+import { errorMessage } from "./errors";
 import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, PackageManager, ProviderStatus, UnavailableReason } from "./types";
 
 // Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
@@ -40,17 +41,19 @@ export function statusText(s: ProviderStatus): string {
   return s.failed.message;
 }
 
-function findingBody(f: Finding): string {
+function findingBody(f: Finding, fromFile: boolean): string {
   const m = messages().finding;
   const k = f.kind;
   if (k === "unreadable") return m.unreadable;
+  // An opened Repot file already stores secrets masked; there is no original to allow.
+  if ("secret" in k && fromFile) return k.secret.name ? format(m.secretStoredNamed, { name: k.secret.name }) : m.secretStored;
   if ("secret" in k) return k.secret.name ? format(m.secretNamed, { name: k.secret.name }) : m.secret;
   if ("osSpecificLine" in k) return format(m.osSpecificLine, { key: k.osSpecificLine.key });
   return format(m.duplicate, { provider: k.duplicate.otherProvider });
 }
 
-export function findingText(f: Finding): string {
-  const text = findingBody(f);
+export function findingText(f: Finding, fromFile = false): string {
+  const text = findingBody(f, fromFile);
   // Line numbers are identifiers, so they are not grouped like counts (1234, not 1,234).
   return f.line === null ? text : format(messages().finding.atLine, { line: String(f.line), text });
 }
@@ -100,6 +103,20 @@ export function originText(o: Origin): string {
 export const mappedTo = (manager: PackageManager, name: string): string => format(messages().mappedTo, { manager: managerLabel(manager), name });
 export const availableOn = (target: Os): string => format(messages().availableOn, { os: osLabel(target) });
 export const withCount = (label: string, n: number): string => format(messages().withCount, { label, count: n });
+/** "From a Repot file made on macOS, Nov 4, 2026" for an opened file. */
+export function openedFromText(opened: { source: Os; createdAt: string }): string {
+  const date = new Date(opened.createdAt);
+  const shown = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
+  return format(messages().openedFrom, { os: osLabel(opened.source), date: shown });
+}
+export const skippedItemsText = (count: number): string => plural(messages().skippedItems, count);
+/** `open_snapshot` rejects with an error kind; anything else is shown as it is. */
+export function openErrorText(e: unknown): string {
+  const raw = errorMessage(e);
+  const m: Record<string, string> = messages().openError;
+  const kind = raw.startsWith("newerVersion:") ? "newerVersion" : raw;
+  return Object.hasOwn(m, kind) ? m[kind] : raw;
+}
 export const selectedCount = (checked: number, total: number): string => plural(messages().selectedCount, total, { checked, total });
 export const selectCategory = (label: string): string => format(messages().selectCategory, { category: label });
 export const revealSecretLine = (line: number): string => format(messages().revealSecretLine, { line: String(line) });

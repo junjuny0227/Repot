@@ -82,6 +82,7 @@ button.source-item { height: 28px; padding: 0 8px; }
 .sidebar-language .language-field { display: flex; }
 .sidebar-language .popup { flex: 1; min-width: 0; }
 .sidebar-language .popup select { width: 100%; min-width: 0; }
+.provider-groups.opened-from { gap: 4px; padding: 10px 18px 12px; color: var(--label-2); }
 .provider-groups pre { margin-top: 4px; padding: 6px; max-height: 160px; overflow: auto; border-radius: 6px; background-color: var(--fill); font-size: 10px; line-height: 13px; }
 
 /* Main column. */

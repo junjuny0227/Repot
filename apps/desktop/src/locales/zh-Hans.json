@@ -22,6 +22,8 @@
     "unreadable": "无法读取此文件，因此不会导出。",
     "secret": "疑似敏感信息。除非允许导出原始值，否则会遮盖后再导出。",
     "secretNamed": "{name} 疑似敏感信息。除非允许导出原始值，否则会遮盖后再导出。",
+    "secretStored": "Repot 文件中已遮盖保存的密钥信息。恢复后请填写该值。",
+    "secretStoredNamed": "Repot 文件中已遮盖保存的密钥信息（{name}）。恢复后请填写该值。",
     "osSpecificLine": "{key} 仅适用于当前系统，在其他系统上会被注释掉。",
     "duplicate": "{provider} 也检测到了此项。"
   },
@@ -77,6 +79,17 @@
     "file:vscode-snippet": "编辑器代码片段提供可复用的代码模板。",
     "plugin:oh-my-zsh": "oh-my-zsh 扩展用于自定义 Zsh 的行为或外观。"
   },
+  "openedFrom": "{date}在 {os} 上创建的 Repot 文件",
+  "skippedItems": {
+    "other": "已跳过 {count} 个此版本 Repot 无法读取的项目。"
+  },
+  "openError": {
+    "tooLarge": "文件太大，不是 Repot 文件。",
+    "notRepotFile": "这不是 Repot 文件。请选择导出文件夹中的 repot.json。",
+    "newerVersion": "此文件由更新版本的 Repot 创建。请更新 Repot 后再打开。",
+    "invalid": "Repot 文件已损坏，无法打开。",
+    "readFailed": "无法读取文件。"
+  },
   "ui": {
     "currentOs": "这台电脑",
     "targetOs": "目标系统",
@@ -127,7 +140,9 @@
     "startOver": "重新开始",
     "secretLimit": "敏感信息检测基于模式匹配，可能会有遗漏。分享前请检查文件。",
     "mappingNote": "此名称根据 Repot 内置的对照表匹配。运行恢复前请检查。",
-    "language": "语言"
+    "language": "语言",
+    "openFile": "打开 Repot 文件…",
+    "repotFileNote": "以后要重新选择，请用 Repot 打开此文件夹中的 repot.json。"
   },
   "updates": {
     "settings": "设置",

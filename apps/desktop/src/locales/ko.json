@@ -22,6 +22,8 @@
     "unreadable": "이 파일을 읽을 수 없어 내보내지 않습니다.",
     "secret": "비밀 정보로 보입니다. '원래 값으로 내보내기'를 켜지 않으면 가린 채 내보냅니다.",
     "secretNamed": "{name} 값은 비밀 정보로 보입니다. '원래 값으로 내보내기'를 켜지 않으면 가린 채 내보냅니다.",
+    "secretStored": "Repot 파일에 가린 채 저장된 비밀 정보입니다. 복원한 뒤 값을 채우세요.",
+    "secretStoredNamed": "Repot 파일에 가린 채 저장된 비밀 정보({name})입니다. 복원한 뒤 값을 채우세요.",
     "osSpecificLine": "{key} 설정은 이 OS 전용이라 다른 OS에서는 주석 처리됩니다.",
     "duplicate": "{provider}에서도 감지되었습니다."
   },
@@ -77,6 +79,17 @@
     "file:vscode-snippet": "에디터 스니펫은 다시 쓸 수 있는 코드 틀을 제공합니다.",
     "plugin:oh-my-zsh": "oh-my-zsh 확장은 Zsh의 동작이나 모양을 바꿉니다."
   },
+  "openedFrom": "{os}에서 {date}에 만든 Repot 파일",
+  "skippedItems": {
+    "other": "이 버전의 Repot이 읽을 수 없는 항목 {count}개를 건너뛰었습니다."
+  },
+  "openError": {
+    "tooLarge": "Repot 파일이라기에는 너무 큰 파일입니다.",
+    "notRepotFile": "Repot 파일이 아닙니다. 내보내기 폴더의 repot.json을 고르세요.",
+    "newerVersion": "더 새 버전의 Repot으로 만든 파일입니다. Repot을 업데이트한 뒤 여세요.",
+    "invalid": "손상된 Repot 파일이라 열 수 없습니다.",
+    "readFailed": "파일을 읽을 수 없습니다."
+  },
   "ui": {
     "currentOs": "이 기기",
     "targetOs": "대상 OS",
@@ -127,7 +140,9 @@
     "startOver": "처음으로",
     "secretLimit": "비밀 정보 감지는 패턴 기반이라 일부를 놓칠 수 있습니다. 공유하기 전에 파일을 검토하십시오.",
     "mappingNote": "Repot 내장 대응표를 기준으로 맞춘 이름입니다. 복원을 실행하기 전에 확인하세요.",
-    "language": "언어"
+    "language": "언어",
+    "openFile": "Repot 파일 열기…",
+    "repotFileNote": "나중에 다시 고르려면 이 폴더의 repot.json을 Repot에서 여세요."
   },
   "updates": {
     "settings": "설정",

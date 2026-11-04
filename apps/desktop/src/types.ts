@@ -28,6 +28,8 @@ export interface Item {
 export type ProviderStatus = "running" | "notDetected" | "timedOut" | { ok: { count: number } } | { failed: { message: string; detail: string } };
 export interface ProviderReport { id: string; category: Category; status: ProviderStatus }
 export interface ScanResult { items: Item[]; providers: ProviderReport[] }
+/** A Repot file (`repot.json`) opened instead of scanning; `scan.providers` is empty. */
+export interface OpenedFile { scan: ScanResult; source: Os; createdAt: string; repotVersion: string; skippedItems: number }
 export type UnavailableReason =
   | { differentOs: { source: Os } } | { shellUnsupported: Shell } | { noCounterpart: RuntimeTool }
   | "noPackageManager" | { notInPackageMap: { manager: PackageManager } } | { noPackageInManager: { manager: PackageManager } }
