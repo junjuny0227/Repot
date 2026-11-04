@@ -1,9 +1,8 @@
-use repot_core::availability::{Availability, availability_map};
-use repot_core::compare::{Presence, compare};
-use repot_core::export::{
-    ExportBundle, ExportMeta, ExportRequest, Format, build_export, write_export,
-};
-use repot_core::snapshot::{self, Snapshot, SnapshotError};
+use repot_core::availability::Availability;
+use repot_core::compare::Presence;
+use repot_core::export::{ExportBundle, ExportMeta, Format, write_export};
+use repot_core::session::{OpenError, Session};
+use repot_core::snapshot::SnapshotError;
 use repot_core::{Env, PROVIDER_TIMEOUT, Selection, Target, default_providers};
 use repot_core::{os::Os, scan::ScanResult};
 use std::{
@@ -14,24 +13,8 @@ use std::{
 use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_opener::OpenerExt;
 
-/// What the review and export screens work on: a scan of this machine or an opened
-/// Repot file. Source OS, items and config contents always come from the same place.
-#[derive(Clone)]
-pub struct Session {
-    pub source: Os,
-    pub scan: ScanResult,
-    pub configs: Configs,
-    /// This machine's scan, taken to compare an opened Repot file with it.
-    pub machine: Option<ScanResult>,
-}
-#[derive(Clone)]
-pub enum Configs {
-    /// Read config files from this machine.
-    Live,
-    /// Use the contents stored in an opened Repot file.
-    Snapshot(Arc<Snapshot>),
-}
-
+/// The review session itself lives in core (shared with the CLI, plan 15); this layer
+/// keeps the current one and turns its results into command responses.
 pub struct AppState {
     pub env: Arc<dyn Env>,
     /// The OS this app runs on; the source of a new scan.
@@ -63,22 +46,23 @@ impl AppState {
         format: Format,
         meta: ExportMeta,
     ) -> Result<ExportBundle, String> {
-        target.validate().map_err(str::to_owned)?;
-        let session = self.session()?;
-        let request = ExportRequest {
-            items: &session.scan.items,
-            selection,
-            source: session.source,
-            target,
-            format,
-            meta,
-        };
-        Ok(match &session.configs {
-            Configs::Live => build_export(self.env.as_ref(), &request),
-            Configs::Snapshot(snapshot) => build_export(snapshot.as_ref(), &request),
-        })
+        self.session()?
+            .preview(self.env.as_ref(), selection, target, format, meta)
+            .map_err(str::to_owned)
     }
 }
+
+/// Scan this machine off the main thread, reporting progress as `scan://progress`.
+async fn scan_this_machine(app: AppHandle, env: Arc<dyn Env>) -> Result<ScanResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        repot_core::scan(env, default_providers(), PROVIDER_TIMEOUT, &|report| {
+            let _ = app.emit("scan://progress", report);
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 pub fn detect_os(state: State<AppState>) -> Os {
     state.machine
@@ -86,20 +70,8 @@ pub fn detect_os(state: State<AppState>) -> Os {
 
 #[tauri::command]
 pub async fn scan(app: AppHandle, state: State<'_, AppState>) -> Result<ScanResult, String> {
-    let env = Arc::clone(&state.env);
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        repot_core::scan(env, default_providers(), PROVIDER_TIMEOUT, &|report| {
-            let _ = app.emit("scan://progress", report);
-        })
-    })
-    .await
-    .map_err(|e| e.to_string())?;
-    state.set_session(Session {
-        source: state.machine,
-        scan: result.clone(),
-        configs: Configs::Live,
-        machine: None,
-    })?;
+    let result = scan_this_machine(app, Arc::clone(&state.env)).await?;
+    state.set_session(Session::from_scan(state.machine, result.clone()))?;
     Ok(result)
 }
 
@@ -108,14 +80,7 @@ pub async fn scan(app: AppHandle, state: State<'_, AppState>) -> Result<ScanResu
 #[tauri::command]
 pub async fn scan_machine(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
     state.session()?;
-    let env = Arc::clone(&state.env);
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        repot_core::scan(env, default_providers(), PROVIDER_TIMEOUT, &|report| {
-            let _ = app.emit("scan://progress", report);
-        })
-    })
-    .await
-    .map_err(|e| e.to_string())?;
+    let result = scan_this_machine(app, Arc::clone(&state.env)).await?;
     state.update_session(|session| session.machine = Some(result))
 }
 
@@ -127,35 +92,9 @@ pub fn presence_for(
     target: Target,
 ) -> Result<HashMap<String, Presence>, String> {
     target.validate().map_err(str::to_owned)?;
-    let session = state.session()?;
-    let Some(machine) = session
-        .machine
-        .as_ref()
-        .filter(|_| target.os == state.machine)
-    else {
-        return Ok(HashMap::new());
-    };
-    let items = &session.scan.items;
-    Ok(match &session.configs {
-        Configs::Live => compare(
-            items,
-            session.source,
-            target,
-            state.env.as_ref(),
-            &machine.items,
-            state.machine,
-            state.env.as_ref(),
-        ),
-        Configs::Snapshot(snapshot) => compare(
-            items,
-            session.source,
-            target,
-            snapshot.as_ref(),
-            &machine.items,
-            state.machine,
-            state.env.as_ref(),
-        ),
-    })
+    Ok(state
+        .session()?
+        .presence(state.env.as_ref(), state.machine, target))
 }
 
 #[derive(serde::Serialize)]
@@ -171,47 +110,33 @@ pub struct OpenedFile {
 }
 
 /// Error kinds the UI translates (`readFailed` covers missing or unreadable files).
-fn open_error(error: SnapshotError) -> String {
+fn open_error(error: OpenError) -> String {
     match error {
-        SnapshotError::TooLarge => "tooLarge".into(),
-        SnapshotError::NotRepotFile => "notRepotFile".into(),
-        SnapshotError::NewerVersion { found } => format!("newerVersion:{found}"),
-        SnapshotError::Invalid => "invalid".into(),
+        OpenError::ReadFailed => "readFailed".into(),
+        OpenError::Snapshot(SnapshotError::TooLarge) => "tooLarge".into(),
+        OpenError::Snapshot(SnapshotError::NotRepotFile) => "notRepotFile".into(),
+        OpenError::Snapshot(SnapshotError::NewerVersion { found }) => {
+            format!("newerVersion:{found}")
+        }
+        OpenError::Snapshot(SnapshotError::Invalid) => "invalid".into(),
     }
 }
 
 /// Open a Repot file the user chose. On failure the current session stays as it was.
 #[tauri::command]
 pub fn open_snapshot(state: State<AppState>, path: String) -> Result<OpenedFile, String> {
-    let path = Path::new(&path);
-    // Refuse oversized files before reading them into memory.
-    if std::fs::metadata(path).is_ok_and(|m| m.len() > snapshot::MAX_BYTES as u64) {
-        return Err(open_error(SnapshotError::TooLarge));
-    }
-    let text = state
-        .env
-        .read_file(path)
-        .map_err(|_| "readFailed".to_owned())?;
-    let opened = snapshot::parse_snapshot(&text).map_err(open_error)?;
-    let snapshot = Arc::new(opened.snapshot);
-    let scan = ScanResult {
-        items: snapshot.items.clone(),
-        providers: vec![],
+    let (session, info) =
+        Session::open(state.env.as_ref(), Path::new(&path)).map_err(open_error)?;
+    let opened = OpenedFile {
+        scan: session.scan.clone(),
+        source: session.source,
+        created_at: info.created_at,
+        repot_version: info.repot_version,
+        skipped_items: info.skipped_items,
+        not_exported: session.not_exported().iter().cloned().collect(),
     };
-    state.set_session(Session {
-        source: snapshot.source,
-        scan: scan.clone(),
-        configs: Configs::Snapshot(Arc::clone(&snapshot)),
-        machine: None,
-    })?;
-    Ok(OpenedFile {
-        scan,
-        source: snapshot.source,
-        created_at: snapshot.created_at.clone(),
-        repot_version: snapshot.repot_version.clone(),
-        skipped_items: opened.skipped_items,
-        not_exported: snapshot.not_exported.iter().cloned().collect(),
-    })
+    state.set_session(session)?;
+    Ok(opened)
 }
 
 #[tauri::command]
@@ -220,12 +145,7 @@ pub fn availability_for(
     target: Target,
 ) -> Result<HashMap<String, Availability>, String> {
     target.validate().map_err(str::to_owned)?;
-    let session = state.session()?;
-    Ok(availability_map(
-        &session.scan.items,
-        session.source,
-        target,
-    ))
+    Ok(state.session()?.availability(target))
 }
 #[tauri::command]
 pub fn preview_export(
