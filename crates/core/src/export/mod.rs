@@ -6,9 +6,36 @@ use crate::{
     Env, Item, ItemDetails, Selection, Target,
     availability::{Availability, UnavailableReason, availability},
     os::Os,
+    snapshot,
 };
 use script::{ScriptHeader, ScriptPlan};
 use std::collections::HashSet;
+
+/// Where an export reads config-file contents: the scanned machine (`Env`) or an
+/// opened Repot file.
+pub struct ConfigText {
+    pub text: String,
+    /// Lines already masked in `text` (an opened file), with the secret's name if known.
+    pub masked: Vec<(u32, Option<String>)>,
+    /// Lines to keep as written. `None` means use the request's selection.
+    pub revealed: Option<Vec<u32>>,
+}
+pub trait ConfigSource {
+    /// `None` when the item has no readable config contents.
+    fn read_config(&self, item: &Item) -> Option<ConfigText>;
+}
+impl<E: Env + ?Sized> ConfigSource for E {
+    fn read_config(&self, item: &Item) -> Option<ConfigText> {
+        let ItemDetails::ConfigFile { source, .. } = &item.details else {
+            return None;
+        };
+        Some(ConfigText {
+            text: self.read_file(source).ok()?,
+            masked: vec![],
+            revealed: None,
+        })
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +79,11 @@ pub struct ExportBundle {
 }
 
 /// Assemble an in-memory preview; item failures become warnings, never a failed export.
-pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
+/// The bundle always includes `repot.json` with exactly the items it exports.
+pub fn build_export(
+    configs: &(impl ConfigSource + ?Sized),
+    req: &ExportRequest<'_>,
+) -> ExportBundle {
     let selected: HashSet<_> = req.selection.items.iter().collect();
     let mut targets = HashSet::new();
     let mut package_targets = HashSet::new();
@@ -62,29 +93,47 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
     let mut steps = vec![];
     let mut masked = vec![];
     let mut notes = vec![];
+    let mut snapshot_items = vec![];
     for item in req.items.iter().filter(|item| selected.contains(&item.id)) {
         let item_id = item.id.clone();
+        let mut pending_config = None;
         if let Availability::Unavailable(reason) = availability(item, req.source, req.target) {
             warnings.push(ExportWarning::Unavailable { item_id, reason });
             continue;
         }
-        if let ItemDetails::ConfigFile { source, target } = &item.details {
+        if let ItemDetails::ConfigFile { target, .. } = &item.details {
             if !targets.insert(paths::payload_path(target)) {
                 warnings.push(ExportWarning::DuplicateTarget { item_id });
                 continue;
             }
-            let Ok(content) = env.read_file(source) else {
+            let Some(config) = configs.read_config(item) else {
                 warnings.push(ExportWarning::ReadFailed { item_id });
                 continue;
             };
-            let reveal: Vec<_> = req
-                .selection
-                .reveal_secret_lines
-                .iter()
-                .filter(|(id, _)| id == &item.id)
-                .map(|(_, line)| *line)
-                .collect();
-            let file = payload::prepare_config(item, &content, &reveal, req.source, req.target.os);
+            let reveal: Vec<_> = config.revealed.clone().unwrap_or_else(|| {
+                req.selection
+                    .reveal_secret_lines
+                    .iter()
+                    .filter(|(id, _)| id == &item.id)
+                    .map(|(_, line)| *line)
+                    .collect()
+            });
+            let mut file =
+                payload::prepare_config(item, &config.text, &reveal, req.source, req.target.os);
+            merge_masked(&mut file.masked, &file.path, &config.masked);
+            // The Repot file keeps the source machine's form so it can target any OS later.
+            let mut stored =
+                payload::prepare_config(item, &config.text, &reveal, req.source, req.source);
+            merge_masked(&mut stored.masked, &stored.path, &config.masked);
+            pending_config = Some(snapshot::StoredConfig {
+                content: stored.contents,
+                masked: stored
+                    .masked
+                    .into_iter()
+                    .map(|m| (m.line, m.name))
+                    .collect(),
+                revealed: reveal,
+            });
             payloads.push(OutputFile {
                 path: format!("files/{}", file.path),
                 contents: file.contents,
@@ -141,6 +190,7 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
             warnings.push(ExportWarning::InvalidValue { item_id });
             continue;
         }
+        snapshot_items.push((item.clone(), pending_config));
         steps.extend(item_steps.into_iter().filter(|s| match s {
             step::Step::AddTap { manager, name } if req.source != req.target.os => {
                 taps.insert((*manager, name.to_ascii_lowercase()))
@@ -181,9 +231,41 @@ pub fn build_export(env: &dyn Env, req: &ExportRequest<'_>) -> ExportBundle {
             files
         }
     };
+    files.push(OutputFile {
+        path: snapshot::FILE_NAME.into(),
+        contents: snapshot::render_snapshot(
+            &req.meta.created_at(),
+            &req.meta.repot_version,
+            req.source,
+            &snapshot_items,
+        ),
+        executable: false,
+    });
     payloads.sort_by(|a, b| a.path.cmp(&b.path));
     files.extend(payloads);
     ExportBundle { files, warnings }
+}
+/// Add masked lines an opened file already recorded; detection cannot see a bare `<REDACTED>`.
+fn merge_masked(
+    masked: &mut Vec<payload::MaskedLine>,
+    file: &str,
+    known: &[(u32, Option<String>)],
+) {
+    for (line, name) in known {
+        match masked.iter_mut().find(|m| m.line == *line) {
+            Some(existing) => {
+                if existing.name.is_none() {
+                    existing.name = name.clone();
+                }
+            }
+            None => masked.push(payload::MaskedLine {
+                file: file.into(),
+                line: *line,
+                name: name.clone(),
+            }),
+        }
+    }
+    masked.sort_by_key(|m| m.line);
 }
 pub mod paths;
 pub mod payload;

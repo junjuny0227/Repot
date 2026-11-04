@@ -207,6 +207,8 @@ fn cross_os_scripts_and_manifests() {
             let output = b
                 .files
                 .iter()
+                // repot.json is pinned by snapshot_test; keep these snapshots about mapping.
+                .filter(|f| f.path != "repot.json")
                 .map(|f| format!("=== {} ===\n{}", f.path, f.contents))
                 .collect::<Vec<_>>()
                 .join("\n");

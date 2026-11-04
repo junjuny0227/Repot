@@ -1,0 +1,256 @@
+---
+source: crates/core/tests/snapshot_test.rs
+expression: "snapshot::render_snapshot(&snap.created_at, &snap.repot_version, snap.source,\n&items)"
+---
+{
+  "format": "repot",
+  "schemaVersion": 1,
+  "createdAt": "2026-11-04T10:00Z",
+  "repotVersion": "0.5.0",
+  "source": {
+    "os": "macOs"
+  },
+  "items": [
+    {
+      "id": "brew:formula:ripgrep",
+      "provider": "brew",
+      "category": "packageManager",
+      "name": "ripgrep",
+      "version": "14.1.1",
+      "description": "Search tool like grep and The Silver Searcher",
+      "catalogId": null,
+      "origin": {
+        "command": "brew leaves --installed-on-request"
+      },
+      "portability": "package",
+      "details": {
+        "package": {
+          "manager": "brew",
+          "kind": "formula"
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "brew:cask:firefox",
+      "provider": "brew",
+      "category": "packageManager",
+      "name": "firefox",
+      "version": null,
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "command": "brew list --cask"
+      },
+      "portability": "package",
+      "details": {
+        "package": {
+          "manager": "brew",
+          "kind": "cask"
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "nvm:node:22.11.0",
+      "provider": "nvm",
+      "category": "runtime",
+      "name": "Node.js",
+      "version": "22.11.0",
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "command": "nvm ls"
+      },
+      "portability": {
+        "mapped": "nvm"
+      },
+      "details": {
+        "runtime": {
+          "tool": "nvm",
+          "runtime": "node",
+          "isDefault": true
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "npm:typescript",
+      "provider": "npm",
+      "category": "globalPackage",
+      "name": "typescript",
+      "version": "5.6.3",
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "command": "npm ls -g --depth=0 --json"
+      },
+      "portability": "any",
+      "details": {
+        "globalPackage": {
+          "manager": "npm"
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "vscode:code:ext:rust-lang.rust-analyzer",
+      "provider": "vscode",
+      "category": "editor",
+      "name": "rust-lang.rust-analyzer",
+      "version": null,
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "command": "code --list-extensions --show-versions"
+      },
+      "portability": "any",
+      "details": {
+        "extension": {
+          "editor": "vsCode"
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "git:file:.gitconfig",
+      "provider": "git",
+      "category": "git",
+      "name": ".gitconfig",
+      "version": null,
+      "description": null,
+      "catalogId": "file:gitconfig",
+      "origin": {
+        "path": "/Users/me/.gitconfig"
+      },
+      "portability": "any",
+      "details": {
+        "configFile": {
+          "source": "/Users/me/.gitconfig",
+          "target": {
+            "home": ".gitconfig"
+          },
+          "content": "[user]\n\tname = Me\n[credential]\n\thelper = osxkeychain\n[url \"https://<REDACTED>@github.com/\"]\n\tinsteadOf = https://github.com/\n",
+          "maskedLines": [
+            {
+              "line": 5,
+              "name": null
+            }
+          ],
+          "revealedLines": []
+        }
+      },
+      "findings": [
+        {
+          "line": 4,
+          "kind": {
+            "osSpecificLine": {
+              "key": "credential.helper"
+            }
+          }
+        },
+        {
+          "line": 5,
+          "kind": {
+            "secret": {
+              "name": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shell:file:.zshrc",
+      "provider": "shell",
+      "category": "shell",
+      "name": ".zshrc",
+      "version": null,
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "path": "/Users/me/.zshrc"
+      },
+      "portability": {
+        "sameShell": "zsh"
+      },
+      "details": {
+        "configFile": {
+          "source": "/Users/me/.zshrc",
+          "target": {
+            "home": ".zshrc"
+          },
+          "content": "export PATH=\"$HOME/bin:$PATH\"\nexport GITHUB_TOKEN=<REDACTED>\n",
+          "maskedLines": [
+            {
+              "line": 2,
+              "name": "GITHUB_TOKEN"
+            }
+          ],
+          "revealedLines": []
+        }
+      },
+      "findings": [
+        {
+          "line": 2,
+          "kind": {
+            "secret": {
+              "name": "GITHUB_TOKEN"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "vscode:code:file:settings.json",
+      "provider": "vscode",
+      "category": "editor",
+      "name": "settings.json",
+      "version": null,
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "path": "/Users/me/Library/Application Support/Code/User/settings.json"
+      },
+      "portability": "any",
+      "details": {
+        "configFile": {
+          "source": "/Users/me/Library/Application Support/Code/User/settings.json",
+          "target": {
+            "editorUser": {
+              "editor": "vsCode",
+              "rel": "settings.json"
+            }
+          },
+          "content": "{ \"editor.fontSize\": 14 }\n",
+          "maskedLines": [],
+          "revealedLines": []
+        }
+      },
+      "findings": []
+    },
+    {
+      "id": "shell:omz:plugins/zsh-autosuggestions",
+      "provider": "shell",
+      "category": "shell",
+      "name": "zsh-autosuggestions",
+      "version": null,
+      "description": null,
+      "catalogId": null,
+      "origin": {
+        "path": "/Users/me/.oh-my-zsh/custom/plugins/zsh-autosuggestions/.git/config"
+      },
+      "portability": {
+        "sameShell": "zsh"
+      },
+      "details": {
+        "shellPlugin": {
+          "url": "https://github.com/zsh-users/zsh-autosuggestions",
+          "target": {
+            "home": ".oh-my-zsh/custom/plugins/zsh-autosuggestions"
+          }
+        }
+      },
+      "findings": []
+    }
+  ]
+}

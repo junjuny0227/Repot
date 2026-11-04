@@ -140,7 +140,11 @@ fn filters_unavailable_and_invalid_items() {
     );
     assert_eq!(
         b.files.iter().map(|f| f.path.as_str()).collect::<Vec<_>>(),
-        vec!["restore.ps1", "files/home/.config/starship.toml"]
+        vec![
+            "restore.ps1",
+            "repot.json",
+            "files/home/.config/starship.toml"
+        ]
     );
 }
 #[test]
