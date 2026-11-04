@@ -8,7 +8,7 @@ use crate::os::Os;
 use crate::scan::mark_duplicates;
 use crate::{Item, ItemDetails};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 pub use v1::StoredConfig;
 use v1::{DetailsV1, ItemV1, SCHEMA_VERSION, TargetPathV1};
 
@@ -26,6 +26,18 @@ pub struct Snapshot {
     pub items: Vec<Item>,
     /// Config-file contents by item id.
     pub configs: BTreeMap<String, StoredConfig>,
+    /// Ids of items the export that wrote the file could not include (plan 13).
+    pub not_exported: BTreeSet<String>,
+}
+
+/// One item to write into the file.
+#[derive(Debug, Clone, PartialEq)]
+pub struct StoredItem {
+    pub item: Item,
+    /// `Some` exactly for config-file items.
+    pub config: Option<StoredConfig>,
+    /// Unusable on this export's destination, kept so another destination can use it.
+    pub not_exported: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -74,12 +86,12 @@ struct Envelope {
     items: Vec<serde_json::Value>,
 }
 
-/// Render the file for the items an export actually contains.
+/// Render the file for an export's items and the ones its destination could not use.
 pub fn render_snapshot(
     created_at: &str,
     repot_version: &str,
     source: Os,
-    items: &[(Item, Option<StoredConfig>)],
+    items: &[StoredItem],
 ) -> String {
     let file = FileOut {
         format: FORMAT,
@@ -89,7 +101,7 @@ pub fn render_snapshot(
         source: Source { os: source },
         items: items
             .iter()
-            .map(|(item, config)| ItemV1::from_item(item, config.as_ref()))
+            .map(|s| ItemV1::from_item(&s.item, s.config.as_ref(), s.not_exported))
             .collect(),
     };
     let mut text = serde_json::to_string_pretty(&file).expect("Repot file serializes");
@@ -123,6 +135,7 @@ pub fn parse_snapshot(text: &str) -> Result<OpenedSnapshot, SnapshotError> {
     let mut ids = HashSet::new();
     let mut items = vec![];
     let mut configs = BTreeMap::new();
+    let mut not_exported = BTreeSet::new();
     let mut skipped_items = 0;
     for raw in envelope.items {
         let Ok(item) = serde_json::from_value::<ItemV1>(raw) else {
@@ -133,7 +146,11 @@ pub fn parse_snapshot(text: &str) -> Result<OpenedSnapshot, SnapshotError> {
             skipped_items += 1;
             continue;
         }
+        let not_exported_item = item.not_exported;
         let (item, config) = item.into_item();
+        if not_exported_item {
+            not_exported.insert(item.id.clone());
+        }
         if let Some(config) = config {
             configs.insert(item.id.clone(), config);
         }
@@ -147,6 +164,7 @@ pub fn parse_snapshot(text: &str) -> Result<OpenedSnapshot, SnapshotError> {
             source: envelope.source.os,
             items,
             configs,
+            not_exported,
         },
         skipped_items,
     })
