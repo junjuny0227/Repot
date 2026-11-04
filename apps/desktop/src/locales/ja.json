@@ -77,6 +77,11 @@
     "file:vscode-settings": "エディタの設定は、アプリの動作をカスタマイズします。",
     "file:vscode-keybindings": "エディタのキーバインドは、キーボードショートカットをカスタマイズします。",
     "file:vscode-snippet": "エディタのスニペットは、再利用できるコードのひな形です。",
+    "file:jetbrains-codestyle": "コードスタイルスキームは、JetBrains IDE の整形ルールを決めます。",
+    "file:jetbrains-keymap": "JetBrains IDE のキーマップは、キーボードショートカットをカスタマイズします。",
+    "file:jetbrains-colors": "カラースキームは、JetBrains IDE のエディタの色を決めます。",
+    "file:jetbrains-templates": "ライブテンプレートは、JetBrains IDE で再利用できるコードのひな形です。",
+    "file:jetbrains-options": "JetBrains IDE のオプションには、フォントとテーマの選択が保存されます。",
     "plugin:oh-my-zsh": "oh-my-zsh の拡張機能は、Zsh の動作や見た目をカスタマイズします。"
   },
   "openedFrom": "{os} で {date} に作成した Repot ファイル",
