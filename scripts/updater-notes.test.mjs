@@ -16,6 +16,12 @@ const published = `## Highlights
 
 > **Unsigned beta.** Not code-signed or notarized yet; see the README for first launch on macOS and Windows.
 
+### Which file do I download?
+
+| Your computer | Download |
+|---|---|
+| Mac with Intel | \`Repot_0.4.2_x64.dmg\` |
+
 <!-- Release notes generated using configuration in .github/release.yml at v0.4.2 -->
 
 ## What's Changed

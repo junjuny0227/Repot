@@ -11,7 +11,8 @@ export function updaterNotes(body) {
   if (start === -1) return '';
   const section = [];
   for (const line of lines.slice(start + 1)) {
-    if (/^#{1,2}\s/.test(line)) break;
+    // Any heading up to ### ends Highlights; the release body's download table starts with ###.
+    if (/^#{1,3}\s/.test(line)) break;
     if (/^\s*>/.test(line)) continue;
     section.push(line);
   }
@@ -20,7 +21,7 @@ export function updaterNotes(body) {
     .replace(/<!--[\s\S]*?-->/g, '')
     .split('\n')
     .map(line => line
-      .replace(/^#{3,6}\s+/, '')
+      .replace(/^#{4,6}\s+/, '')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
       .replace(/(\*\*|__)(.+?)\1/g, '$2')
       .replace(/`([^`]+)`/g, '$1')
