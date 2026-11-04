@@ -128,7 +128,7 @@ export async function parseWinget(stream) {
         .subarray(start, start + length)
         .toString()
         .replace(/\0.*$/s, '');
-    let name = longName ?? [text(345, 155), text(0, 100)].filter(Boolean).join('/');
+    const name = longName ?? [text(345, 155), text(0, 100)].filter(Boolean).join('/');
     longName = undefined;
     const size = parseInt(text(124, 12).trim() || '0', 8),
       type = text(156, 1);
@@ -282,11 +282,11 @@ export async function loadCatalogs({
   await rename(join(cacheDir, 'catalogs.json.partial'), join(cacheDir, 'catalogs.json'));
   await writeFile(
     join(cacheDir, 'sources.json'),
-    JSON.stringify(
+    `${JSON.stringify(
       { snapshotDate: new Date().toISOString(), snapshotSha256: hash(snapshot), sources },
       null,
       2,
-    ) + '\n',
+    )}\n`,
   );
   return JSON.parse(snapshot);
 }

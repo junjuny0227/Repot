@@ -40,10 +40,10 @@ export function DoneScreen({ state, dispatch }: { state: State; dispatch: Dispat
           <p className="muted note section-footer">{S.repotFileNote}</p>
         </section>
         <div className="actions">
-          <button className="large" onClick={() => dispatch({ type: 'restart' })}>
+          <button type="button" className="large" onClick={() => dispatch({ type: 'restart' })}>
             {S.startOver}
           </button>
-          <button className="primary large" onClick={openFolder}>
+          <button type="button" className="primary large" onClick={openFolder}>
             {S.openFolder}
           </button>
         </div>

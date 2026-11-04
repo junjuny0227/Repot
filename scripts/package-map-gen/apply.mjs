@@ -130,7 +130,7 @@ export async function applyDecisions(
   const mapName = mapPath instanceof URL ? mapPath.pathname : mapPath;
   const provenanceName = provenancePath instanceof URL ? provenancePath.pathname : provenancePath;
   // Serialize cooperating writers and always re-read the latest files inside the lock.
-  const lock = await open(mapName + '.lock', 'wx');
+  const lock = await open(`${mapName}.lock`, 'wx');
   try {
     const original = await readFile(mapPath, 'utf8');
     let previous;
@@ -145,11 +145,11 @@ export async function applyDecisions(
       rows,
     );
     if (!dryRun && result.added.length) {
-      const mapTmp = mapName + '.tmp',
-        provenanceTmp = provenanceName + '.tmp';
+      const mapTmp = `${mapName}.tmp`,
+        provenanceTmp = `${provenanceName}.tmp`;
       try {
-        await writeFile(mapTmp, JSON.stringify(result.map, null, 2) + '\n');
-        await writeFile(provenanceTmp, JSON.stringify(result.provenance, null, 2) + '\n');
+        await writeFile(mapTmp, `${JSON.stringify(result.map, null, 2)}\n`);
+        await writeFile(provenanceTmp, `${JSON.stringify(result.provenance, null, 2)}\n`);
         await rename(provenanceTmp, provenanceName);
         try {
           await rename(mapTmp, mapName);
@@ -166,6 +166,6 @@ export async function applyDecisions(
     return result;
   } finally {
     await lock.close();
-    await rm(mapName + '.lock');
+    await rm(`${mapName}.lock`);
   }
 }

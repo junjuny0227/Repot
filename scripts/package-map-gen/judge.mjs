@@ -81,8 +81,8 @@ async function readJson(path, fallback) {
   }
 }
 async function save(path, value) {
-  await writeFile(path + '.tmp', JSON.stringify(value, null, 2) + '\n');
-  await rename(path + '.tmp', path);
+  await writeFile(`${path}.tmp`, `${JSON.stringify(value, null, 2)}\n`);
+  await rename(`${path}.tmp`, path);
 }
 // A serial queue deliberately stays below the maximum of two in-flight calls.
 export function createJudge({
@@ -104,7 +104,7 @@ export function createJudge({
     const payload = buildRequest(source, row),
       hash = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
     const responses = join(cacheDir, 'responses'),
-      cachePath = join(responses, hash + '.json');
+      cachePath = join(responses, `${hash}.json`);
     const cached = await readJson(cachePath, null);
     if (cached) {
       const result = decode(cached, row);

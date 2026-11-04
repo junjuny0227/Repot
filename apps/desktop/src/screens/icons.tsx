@@ -256,7 +256,7 @@ const GLYPHS: Record<Category | 'all', ReactNode> = {
 export function CategoryIcon({ category }: { category: Category | 'all' }) {
   return (
     <span className={`category-icon icon-${category}`} aria-hidden="true">
-      <svg width="14" height="14" viewBox="0 0 16 16" focusable="false">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
         {GLYPHS[category]}
       </svg>
     </span>

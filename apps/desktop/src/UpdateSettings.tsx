@@ -61,8 +61,10 @@ export function UpdateNotice({ screen }: { screen: Screen }) {
         </div>
       ) : (
         <div className="actions">
-          <button onClick={() => updates.later()}>{t.later}</button>
-          <button className="primary" onClick={() => void updates.install()}>
+          <button type="button" onClick={() => updates.later()}>
+            {t.later}
+          </button>
+          <button type="button" className="primary" onClick={() => void updates.install()}>
             {t.install}
           </button>
         </div>
@@ -83,7 +85,7 @@ export function UpdateSettings() {
   }, [open]);
   return (
     <>
-      <button className="settings-button" onClick={() => setOpen(true)}>
+      <button type="button" className="settings-button" onClick={() => setOpen(true)}>
         {t.settings}
       </button>
       <dialog
@@ -108,6 +110,7 @@ export function UpdateSettings() {
         )}
         <div className="actions">
           <button
+            type="button"
             disabled={state.phase === 'checking' || updates.busy()}
             onClick={() => {
               setOpen(false);
@@ -116,7 +119,7 @@ export function UpdateSettings() {
           >
             {t.checkNow}
           </button>
-          <button className="primary" onClick={() => setOpen(false)}>
+          <button type="button" className="primary" onClick={() => setOpen(false)}>
             {t.done}
           </button>
         </div>

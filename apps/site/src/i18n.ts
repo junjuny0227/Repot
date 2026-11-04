@@ -33,6 +33,7 @@ export const LOCALES: readonly { code: Locale; name: string; path: string }[] = 
 export const isLocale = (value: unknown): value is Locale =>
   typeof value === 'string' && Object.hasOwn(MESSAGES, value);
 export const messagesFor = (locale: Locale): Messages => MESSAGES[locale];
+// biome-ignore lint/style/noNonNullAssertion: LOCALES lists every Locale (checked by i18n.test.ts).
 export const localeInfo = (locale: Locale) => LOCALES.find((l) => l.code === locale)!;
 
 /** Supported locale a BCP 47 tag asks for, or null. Chinese maps by script: only Simplified is supported. */

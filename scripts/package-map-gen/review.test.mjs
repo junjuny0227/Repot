@@ -24,7 +24,7 @@ test('review persists blank decisions and metadata, preserves edits on rerun, hu
   try {
     await writeFile(mapPath, JSON.stringify({ version: 1, packages: {} }));
     await writeReview([row], options);
-    let review = JSON.parse(await readFile(reviewPath));
+    const review = JSON.parse(await readFile(reviewPath));
     assert.equal(review.items[0].decision, '');
     assert.equal(review.items[0].candidates[0].kindFlag, true);
     assert.equal((await applyReview(options)).added.length, 0);

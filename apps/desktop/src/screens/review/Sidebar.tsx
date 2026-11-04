@@ -18,6 +18,7 @@ export function Sidebar({ state, dispatch, category, onCategory }: Props) {
   return (
     <nav className="sidebar">
       <button
+        type="button"
         className={`source-item category-all ${category === null ? 'active' : ''}`}
         aria-current={category === null ? 'true' : undefined}
         onClick={() => onCategory(null)}
@@ -35,6 +36,7 @@ export function Sidebar({ state, dispatch, category, onCategory }: Props) {
           return (
             <li key={c} className={`source-item category ${category === c ? 'active' : ''}`}>
               <button
+                type="button"
                 className="source-button"
                 aria-current={category === c ? 'true' : undefined}
                 onClick={() => onCategory(c)}

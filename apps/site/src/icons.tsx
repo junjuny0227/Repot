@@ -81,7 +81,7 @@ const GLYPHS: Record<ToolKey | PrincipleKey, ReactNode> = {
 export function SymbolTile({ name }: { name: ToolKey | PrincipleKey }) {
   return (
     <span className={`tile tile-${name}`} aria-hidden="true">
-      <svg viewBox="0 0 16 16" focusable="false">
+      <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
         {GLYPHS[name]}
       </svg>
     </span>

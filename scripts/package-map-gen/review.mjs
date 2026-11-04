@@ -44,8 +44,8 @@ export async function writeReview(
     ),
   };
   await mkdir(dirname(reviewPath), { recursive: true });
-  await writeFile(reviewPath + '.tmp', JSON.stringify(review, null, 2) + '\n');
-  await rename(reviewPath + '.tmp', reviewPath);
+  await writeFile(`${reviewPath}.tmp`, `${JSON.stringify(review, null, 2)}\n`);
+  await rename(`${reviewPath}.tmp`, reviewPath);
   return review;
 }
 export async function applyReview({

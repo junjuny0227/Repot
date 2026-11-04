@@ -24,6 +24,7 @@ function Buttons({ platform, macArch }: { platform: Platform; macArch: 'mac-arm'
         <p className="download-title" id="mac-download">
           {C.hero.downloadFor.mac}
         </p>
+        {/* biome-ignore lint/a11y/useSemanticElements: a fieldset would change the layout of the link row. */}
         <div className="button-row" role="group" aria-labelledby="mac-download">
           {ordered.map((d, i) => (
             <a key={d.id} className={`button large${i === 0 ? ' primary' : ''}`} href={d.url}>

@@ -2,7 +2,7 @@
 // so titles and descriptions have one source: the locale JSON files.
 import { LOCALES, type Locale, localeInfo, messagesFor, SITE_ORIGIN } from './i18n.ts';
 
-const escape = (s: string) =>
+const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 export const pageUrl = (locale: Locale): string => `${SITE_ORIGIN}${localeInfo(locale).path}`;
 
@@ -10,8 +10,8 @@ export const pageUrl = (locale: Locale): string => `${SITE_ORIGIN}${localeInfo(l
 export function headTags(locale: Locale): string {
   const { meta } = messagesFor(locale);
   return [
-    `<title>${escape(meta.title)}</title>`,
-    `<meta name="description" content="${escape(meta.description)}" />`,
+    `<title>${escapeHtml(meta.title)}</title>`,
+    `<meta name="description" content="${escapeHtml(meta.description)}" />`,
     `<link rel="canonical" href="${pageUrl(locale)}" />`,
     ...LOCALES.map(
       (l) => `<link rel="alternate" hreflang="${l.code}" href="${pageUrl(l.code)}" />`,
@@ -25,8 +25,8 @@ export function noscript(locale: Locale): string {
   const { meta } = messagesFor(locale);
   return `<noscript>
       <p style="font-family: system-ui, sans-serif; padding: 24px">
-        ${escape(meta.noscript)}
-        <a href="https://github.com/junjuny0227/Repot/releases">${escape(meta.noscriptLink)}</a>
+        ${escapeHtml(meta.noscript)}
+        <a href="https://github.com/junjuny0227/Repot/releases">${escapeHtml(meta.noscriptLink)}</a>
       </p>
     </noscript>`;
 }

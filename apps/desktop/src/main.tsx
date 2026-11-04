@@ -13,6 +13,7 @@ document.documentElement.dataset.platform = /Mac OS X|Macintosh/.test(navigator.
 // Pick the language before the first render so the window never flashes English.
 setLocale(initialLocale(), false);
 
+// biome-ignore lint/style/noNonNullAssertion: index.html always has #root.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

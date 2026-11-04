@@ -121,7 +121,7 @@ export function ReviewScreen({
                   : S.compareOtherOs}
               </p>
             )}
-            <button className="compare-button" onClick={onCompare}>
+            <button type="button" className="compare-button" onClick={onCompare}>
               {state.compared ? S.compareAgain : S.compareButton}
             </button>
           </footer>
@@ -172,6 +172,7 @@ export function ReviewScreen({
             <PackageSelect value={state.packages} onChange={changePackages} />
           )}
           <button
+            type="button"
             className="primary"
             disabled={!canExport(state)}
             onClick={() => dispatch({ type: 'goExport' })}

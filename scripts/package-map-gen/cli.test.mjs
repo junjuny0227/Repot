@@ -8,7 +8,7 @@ import { record } from './normalize.mjs';
 import { applyReview } from './review.mjs';
 
 const source = (id, kind = 'formula') => ({
-  ...record(id, [id], ['https://github.com/a/' + id], kind === 'formula' ? 'cli' : 'gui'),
+  ...record(id, [id], [`https://github.com/a/${id}`], kind === 'formula' ? 'cli' : 'gui'),
   brew_kind: kind,
 });
 const brew = [

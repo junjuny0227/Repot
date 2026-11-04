@@ -28,7 +28,7 @@ function strings(obj: unknown): string[] {
   if (typeof obj === 'string') return [obj];
   return Object.values(obj as Record<string, unknown>).flatMap(strings);
 }
-const escape = (s: string) =>
+const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 function renderAll(): string {
@@ -108,8 +108,7 @@ function renderAll(): string {
 test('language picker lists every locale in its own language', () => {
   setLocale('ja', false);
   const html = renderToStaticMarkup(<LanguageSelect />);
-  for (const { code, name } of LOCALES)
-    expect(html).toContain(`<option value="${code}" lang="${code}"`);
+  for (const { code } of LOCALES) expect(html).toContain(`<option value="${code}" lang="${code}"`);
   expect(html).toContain('>English<');
   expect(html).toContain('>한국어<');
   expect(html).toContain('>日本語<');
@@ -133,10 +132,10 @@ test('screens render in every locale without English leftovers', () => {
     // (catches copy hard-coded in a component as well as untranslated messages).
     const leftovers = strings(en)
       .filter((s) => s.includes(' ') && !s.includes('{'))
-      .filter((s) => english.includes(escape(s)) && html.includes(escape(s)));
+      .filter((s) => english.includes(escapeHtml(s)) && html.includes(escapeHtml(s)));
     expect(leftovers, code).toEqual([]);
-    expect(html).toContain(escape(S.reviewTitle));
-    expect(html).toContain(escape(nextSteps('windows', 'script')[1]));
+    expect(html).toContain(escapeHtml(S.reviewTitle));
+    expect(html).toContain(escapeHtml(nextSteps('windows', 'script')[1]));
   }
 });
 

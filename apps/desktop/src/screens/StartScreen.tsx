@@ -45,10 +45,10 @@ export function StartScreen({
           />
         </div>
         <div className="actions">
-          <button className="large" disabled={!ready} onClick={onOpen}>
+          <button type="button" className="large" disabled={!ready} onClick={onOpen}>
             {S.openFile}
           </button>
-          <button className="primary large" disabled={!ready} onClick={onScan}>
+          <button type="button" className="primary large" disabled={!ready} onClick={onScan}>
             {S.scanButton}
           </button>
         </div>

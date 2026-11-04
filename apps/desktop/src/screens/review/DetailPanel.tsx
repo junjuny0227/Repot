@@ -136,6 +136,7 @@ export function DetailPanel({
                       <span>{S.revealSecret}</span>
                       <input
                         type="checkbox"
+                        // biome-ignore lint/a11y/useAriaPropsForRole: a checkbox input already exposes its checked state.
                         role="switch"
                         className="switch"
                         aria-label={revealSecretLine(line)}

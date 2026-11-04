@@ -103,6 +103,7 @@ export function ExportView({
   const fileButton = (f: OutputFile, label: string) => (
     <li key={f.path}>
       <button
+        type="button"
         className={`file ${f.path === selectedPath ? 'active' : ''}`}
         aria-current={f.path === selectedPath ? 'true' : undefined}
         onClick={() => onSelect(f.path)}
@@ -140,10 +141,15 @@ export function ExportView({
           ))}
         </fieldset>
         <div className="spacer" />
-        <button disabled={saving} onClick={() => dispatch({ type: 'backToReview' })}>
+        <button type="button" disabled={saving} onClick={() => dispatch({ type: 'backToReview' })}>
           {S.back}
         </button>
-        <button className="primary" disabled={saving || bundle === null} onClick={onSave}>
+        <button
+          type="button"
+          className="primary"
+          disabled={saving || bundle === null}
+          onClick={onSave}
+        >
           {saving ? S.saving : S.save}
         </button>
       </header>

@@ -1,7 +1,7 @@
 // CI-only repository queries. repot-core remains offline and dependency-free.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
 const managers = ['brew', 'brewCask', 'winget', 'scoop', 'choco', 'apt', 'dnf', 'pacman'];
 const escaped = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -60,6 +60,7 @@ export function commandFor(manager, name) {
 
 export function classify(manager, name, result) {
   if (result.error || result.status === null) return 'transient';
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: strips ANSI color codes (ESC [ … m).
   const text = `${result.stdout ?? ''}\n${result.stderr ?? ''}`.replace(/\x1b\[[0-9;]*m/g, '');
   // Errors can coexist with a misleading empty-result message or partial metadata.
   // A successful query can contain release notes mentioning old network bugs.

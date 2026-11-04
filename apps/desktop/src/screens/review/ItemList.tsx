@@ -89,6 +89,7 @@ export function ItemList({
                     onChange={() => dispatch({ type: 'toggleItem', id: item.id })}
                   />
                   <button
+                    type="button"
                     className="item-body"
                     aria-pressed={item.id === selectedId}
                     onClick={() => onSelect(item.id)}
