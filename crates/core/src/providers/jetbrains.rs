@@ -108,7 +108,7 @@ fn first_sentence(html: &str) -> Option<String> {
         .trim_start_matches("<![CDATA[")
         .trim_end_matches("]]>");
     // Without CDATA the HTML arrives escaped (`&lt;p&gt;`).
-    let html = html.replace("&lt;", "<").replace("&gt;", ">");
+    let html = without_headings(&html.replace("&lt;", "<").replace("&gt;", ">"));
     let mut text = String::new();
     let mut in_tag = false;
     for c in html.chars() {
@@ -140,6 +140,37 @@ fn first_sentence(html: &str) -> Option<String> {
     };
     let sentence: String = sentence.chars().take(200).collect();
     (!sentence.is_empty()).then_some(sentence)
+}
+
+/// Drops `<h1>`…`<h6>` blocks: a heading such as "What's GitHub Copilot" is not the first
+/// sentence of the description.
+fn without_headings(html: &str) -> String {
+    let mut out = String::new();
+    let mut rest = html;
+    while let Some(start) = (1..=6)
+        .filter_map(|n| {
+            rest.to_ascii_lowercase()
+                .find(&format!("<h{n}"))
+                .map(|i| (i, n))
+        })
+        .min()
+    {
+        let (start, n) = start;
+        out.push_str(&rest[..start]);
+        let close = format!("</h{n}>");
+        match rest[start..].to_ascii_lowercase().find(&close) {
+            Some(end) => {
+                out.push(' ');
+                rest = &rest[start + end + close.len()..];
+            }
+            None => {
+                rest = &rest[start..];
+                break;
+            }
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 fn plugin_info(xml: &str) -> Option<PluginInfo> {
@@ -306,6 +337,18 @@ mod tests {
         assert_eq!(
             plugin_info(escaped).and_then(|p| p.description),
             Some("Gone soon.".into())
+        );
+        assert_eq!(
+            first_sentence(
+                "<body><h2>What's GitHub Copilot</h2><p><a href=\"x\">GitHub Copilot</a> is \
+                 your assistant. More.</p></body>"
+            ),
+            Some("GitHub Copilot is your assistant.".into())
+        );
+        // Not a heading tag: <hr> and <header> text stays.
+        assert_eq!(
+            first_sentence("<hr><p>Plain text.</p>"),
+            Some("Plain text.".into())
         );
         assert_eq!(
             first_sentence("<p>Inspections for <a href=\"x\">Spring</a>.</p>"),

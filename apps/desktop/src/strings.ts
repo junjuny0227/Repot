@@ -6,6 +6,7 @@ import type {
   Finding,
   Format,
   Item,
+  JetBrainsIde,
   Origin,
   Os,
   PackageManager,
@@ -87,6 +88,34 @@ const MANAGER_LABELS: Record<PackageManager, string> = {
 /** Tool names stay untranslated (spec §11). */
 export function managerLabel(m: PackageManager): string {
   return MANAGER_LABELS[m];
+}
+
+const JETBRAINS_LABELS: Record<JetBrainsIde, string> = {
+  intelliJIdea: 'IntelliJ IDEA',
+  ideaIc: 'IntelliJ IDEA CE',
+  webStorm: 'WebStorm',
+  pyCharm: 'PyCharm',
+  pyCharmCe: 'PyCharm CE',
+  goLand: 'GoLand',
+  rustRover: 'RustRover',
+  cLion: 'CLion',
+  phpStorm: 'PhpStorm',
+  rubyMine: 'RubyMine',
+  dataGrip: 'DataGrip',
+  rider: 'Rider',
+};
+
+/** The JetBrains IDE a plugin or settings file belongs to, so two IDEs' items can be told apart. */
+export function ideLabel(item: Item): string | null {
+  const d = item.details;
+  if ('idePlugin' in d) return JETBRAINS_LABELS[d.idePlugin.ide];
+  if (
+    'configFile' in d &&
+    typeof d.configFile.target === 'object' &&
+    'jetBrains' in d.configFile.target
+  )
+    return JETBRAINS_LABELS[d.configFile.target.jetBrains.ide];
+  return null;
 }
 
 export function reasonText(r: UnavailableReason): string {

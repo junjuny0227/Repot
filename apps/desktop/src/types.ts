@@ -17,10 +17,24 @@ export type RuntimeTool =
   | 'rustup'
   | 'sdkman';
 export type Editor = 'vsCode' | 'cursor';
+export type JetBrainsIde =
+  | 'intelliJIdea'
+  | 'ideaIc'
+  | 'webStorm'
+  | 'pyCharm'
+  | 'pyCharmCe'
+  | 'goLand'
+  | 'rustRover'
+  | 'cLion'
+  | 'phpStorm'
+  | 'rubyMine'
+  | 'dataGrip'
+  | 'rider';
 export type TargetPath =
   | { home: string }
   | { editorUser: { editor: Editor; rel: string } }
-  | 'powerShellProfile';
+  | 'powerShellProfile'
+  | { jetBrains: { ide: JetBrainsIde; version: string; rel: string } };
 export type Origin = { command: string } | { path: string };
 export type Portability =
   | 'any'
@@ -33,6 +47,7 @@ export type ItemDetails =
   | { runtime: { tool: RuntimeTool; runtime: string; isDefault: boolean } }
   | { globalPackage: { manager: string } }
   | { extension: { editor: Editor } }
+  | { idePlugin: { ide: JetBrainsIde; folder: string } }
   | { configFile: { source: string; target: TargetPath } }
   | { shellPlugin: { url: string; target: TargetPath } };
 export type FindingKind =

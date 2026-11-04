@@ -331,6 +331,22 @@ button.source-item {
   font-weight: 400;
   color: var(--label-2);
 }
+/* Plugin versions can be long (1.19.0-261-macos-arm64): in the list the version gives up
+   space before the name does, and the detail panel shows it whole. */
+.item-title .item-version {
+  flex: 0 1000 auto;
+  min-width: 3em;
+  max-width: 10em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.item-ide {
+  flex: none;
+  font-size: var(--caption);
+  font-weight: 400;
+  color: var(--label-2);
+}
 .item-mapped {
   min-width: 0;
   overflow: hidden;
@@ -361,6 +377,7 @@ button.source-item {
   color: var(--on-accent);
 }
 .item.selected .item-version,
+.item.selected .item-ide,
 .item.selected .item-mapped,
 .item.selected .item-description,
 .item.selected.unavailable .item-name {

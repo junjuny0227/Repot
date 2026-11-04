@@ -70,7 +70,7 @@ Repot はコンピュータにインストールされているものを読み�
 | パッケージ | Homebrew, winget, Scoop, Chocolatey, apt, dnf, pacman |
 | ランタイム | nvm, nvm-windows, fnm, Volta, pyenv（pyenv-win を含む）, rustup, SDKMAN! |
 | グローバルパッケージ | npm, pnpm, pipx, Cargo |
-| エディタ | VS Code と Cursor：拡張機能、設定、キーバインド、スニペット |
+| エディタ | VS Code と Cursor：拡張機能、設定、キーバインド、スニペット。JetBrains IDE（IntelliJ IDEA、WebStorm、PyCharm など）：プラグイン、コードスタイル、キーマップ、カラースキーム、ライブテンプレート |
 | Git | ユーザー設定とグローバル ignore ファイル |
 | シェル | zsh、Bash、fish、PowerShell のプロファイル、oh-my-zsh のカスタムプラグインとテーマ、Starship |
 

@@ -5,6 +5,7 @@ import {
   availableOn,
   categoryLabel,
   findingText,
+  ideLabel,
   itemDescription,
   originText,
   presenceText,
@@ -53,6 +54,7 @@ export function DetailPanel({
   const source = 'package' in item.details ? item.details.package.manager : null;
   const checked = state.checked.has(item.id);
   const description = itemDescription(item);
+  const ide = ideLabel(item);
   const hasSecret = item.findings.some((f) => typeof f.kind === 'object' && 'secret' in f.kind);
   return (
     <aside className="detail inspector">
@@ -62,6 +64,7 @@ export function DetailPanel({
           <h2 className="selectable">{item.name}</h2>
           <p className="muted note">
             {categoryLabel(item.category)}
+            {ide !== null && <> · {ide}</>}
             {item.version !== null && (
               <>
                 {' '}

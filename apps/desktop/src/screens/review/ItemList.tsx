@@ -1,7 +1,7 @@
 import type { Dispatch } from 'react';
 import { type Filter, isAvailable, mapping } from '../../logic';
 import type { Action, State } from '../../state';
-import { itemDescription, mappedTo, S } from '../../strings';
+import { ideLabel, itemDescription, mappedTo, S } from '../../strings';
 import type { Item } from '../../types';
 import { Duplicate, Magnifier, NoSign, WarningTriangle } from '../icons';
 
@@ -75,6 +75,7 @@ export function ItemList({
             {items.map((item) => {
               const available = isAvailable(state.avail[item.id]);
               const mapped = mapping(state.avail[item.id]);
+              const ide = ideLabel(item);
               return (
                 <li
                   key={item.id}
@@ -96,6 +97,7 @@ export function ItemList({
                   >
                     <span className="item-title">
                       <span className="item-name">{item.name}</span>
+                      {ide !== null && <span className="item-ide">{ide}</span>}
                       {item.version !== null && (
                         <span className="item-version">{item.version}</span>
                       )}

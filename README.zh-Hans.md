@@ -65,7 +65,7 @@ Repot 读取电脑上已安装的内容，逐项提供说明，并导出恢复�
 | 软件包 | Homebrew、winget、Scoop、Chocolatey、apt、dnf、pacman |
 | 运行时 | nvm、nvm-windows、fnm、Volta、pyenv（包括 pyenv-win）、rustup、SDKMAN! |
 | 全局软件包 | npm、pnpm、pipx、Cargo |
-| 编辑器 | VS Code 和 Cursor：扩展、设置、键盘快捷键、代码片段 |
+| 编辑器 | VS Code 和 Cursor：扩展、设置、键盘快捷键、代码片段。JetBrains IDE（IntelliJ IDEA、WebStorm、PyCharm 等）：插件、代码样式、键盘映射、配色方案、实时模板 |
 | Git | 用户配置和全局忽略文件 |
 | Shell | zsh、Bash、fish 和 PowerShell 配置文件、oh-my-zsh 自定义插件与主题、Starship |
 

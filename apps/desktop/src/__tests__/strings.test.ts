@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import {
   categoryLabel,
   findingText,
+  ideLabel,
   nextSteps,
   osLabel,
   reasonText,
@@ -12,6 +13,7 @@ import {
   TARGET_OPTIONS,
   warningText,
 } from '../strings';
+import type { Item } from '../types';
 
 test('labels all targets and structured reports', () => {
   expect(TARGET_OPTIONS.map(osLabel)).toEqual([
@@ -95,4 +97,27 @@ test("every locale places the opened file's date once, so the screen can keep it
     expect(messages.openedFrom.split('{date}'), code).toHaveLength(2);
     expect(messages.comparedSummary.split(' · '), code).toHaveLength(3);
   }
+});
+
+test('names the JetBrains IDE of plugins and settings files only', () => {
+  const base: Item = {
+    id: 'x',
+    provider: 'jetbrains',
+    category: 'editor',
+    name: 'com.github.copilot',
+    version: null,
+    description: null,
+    catalogId: null,
+    origin: { path: '/x' },
+    portability: 'any',
+    details: { idePlugin: { ide: 'dataGrip', folder: 'github-copilot-intellij' } },
+    findings: [],
+  };
+  expect(ideLabel(base)).toBe('DataGrip');
+  const target = { jetBrains: { ide: 'cLion' as const, version: '2026.1', rel: 'keymaps/K.xml' } };
+  expect(ideLabel({ ...base, details: { configFile: { source: '/x', target } } })).toBe('CLion');
+  expect(
+    ideLabel({ ...base, details: { configFile: { source: '/x', target: { home: '.zshrc' } } } }),
+  ).toBe(null);
+  expect(ideLabel({ ...base, details: { extension: { editor: 'cursor' } } })).toBe(null);
 });
