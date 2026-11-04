@@ -36,6 +36,8 @@ pub trait Env: Send + Sync {
     fn which(&self, program: &str) -> bool;
     fn run(&self, program: &str, args: &[&str]) -> Result<CommandOutput, EnvError>;
     fn read_file(&self, path: &Path) -> Result<String, EnvError>;
+    /// Binary contents (e.g. a plugin jar).
+    fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, EnvError>;
     fn list_dir(&self, path: &Path) -> Result<Vec<PathBuf>, EnvError>;
     fn exists(&self, path: &Path) -> bool;
     fn temp_file(&self, name: &str) -> PathBuf;
@@ -52,6 +54,7 @@ pub struct FakeEnv {
     programs: BTreeSet<String>,
     commands: BTreeMap<CommandKey, Result<CommandOutput, EnvError>>,
     files: BTreeMap<PathBuf, Result<String, EnvError>>,
+    bytes: BTreeMap<PathBuf, Vec<u8>>,
     links: BTreeMap<PathBuf, PathBuf>,
 }
 impl FakeEnv {
@@ -63,8 +66,13 @@ impl FakeEnv {
             programs: BTreeSet::new(),
             commands: BTreeMap::new(),
             files: BTreeMap::new(),
+            bytes: BTreeMap::new(),
             links: BTreeMap::new(),
         }
+    }
+    pub fn with_bytes(mut self, path: impl Into<PathBuf>, content: Vec<u8>) -> Self {
+        self.bytes.insert(path.into(), content);
+        self
     }
     pub fn with_var(mut self, name: &str, value: &str) -> Self {
         self.vars.insert(name.into(), value.into());
@@ -141,15 +149,29 @@ impl Env for FakeEnv {
             .unwrap_or(Err(EnvError::NotFound))
     }
     fn read_file(&self, path: &Path) -> Result<String, EnvError> {
+        if let Some(bytes) = self.bytes.get(path) {
+            return Ok(String::from_utf8_lossy(bytes).into_owned());
+        }
         self.files
             .get(path)
             .cloned()
             .unwrap_or(Err(EnvError::NotFound))
     }
+    fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, EnvError> {
+        if let Some(bytes) = self.bytes.get(path) {
+            return Ok(bytes.clone());
+        }
+        self.files
+            .get(path)
+            .cloned()
+            .unwrap_or(Err(EnvError::NotFound))
+            .map(String::into_bytes)
+    }
     fn list_dir(&self, path: &Path) -> Result<Vec<PathBuf>, EnvError> {
         let children: BTreeSet<_> = self
             .files
             .keys()
+            .chain(self.bytes.keys())
             .chain(self.links.keys())
             .filter_map(|file| {
                 let rel = file.strip_prefix(path).ok()?;
@@ -166,6 +188,7 @@ impl Env for FakeEnv {
     fn exists(&self, path: &Path) -> bool {
         self.files
             .keys()
+            .chain(self.bytes.keys())
             .chain(self.links.keys())
             .any(|file| file.starts_with(path))
     }
