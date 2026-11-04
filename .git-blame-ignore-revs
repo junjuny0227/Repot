@@ -1,0 +1,5 @@
+# Bulk formatting commits; hidden from `git blame` (GitHub reads this file automatically).
+# Locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: format TypeScript, JavaScript, JSON and CSS with Biome
+19ead88696bf1bbc7db6b5d0ebecf63baeae7d5b
