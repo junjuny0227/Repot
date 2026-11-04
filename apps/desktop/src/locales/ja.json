@@ -155,7 +155,10 @@
     "onlyMissing": "このコンピュータにないものだけ",
     "badgePresent": "インストール済み",
     "badgeDiffers": "内容が異なる",
-    "thisMachine": "このコンピュータ"
+    "thisMachine": "このコンピュータ",
+    "badgeNotExported": "前回は書き出していない",
+    "notExportedTitle": "前回の書き出し",
+    "notExportedText": "このファイルを作った書き出しでは移行先で使えなかったため、ファイルに保存だけして書き出さなかった項目です。最初は選択されていないので、必要なら自分で選択してください。"
   },
   "updates": {
     "settings": "設定",

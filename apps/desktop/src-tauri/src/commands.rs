@@ -166,6 +166,8 @@ pub struct OpenedFile {
     created_at: String,
     repot_version: String,
     skipped_items: usize,
+    /// Items the export that wrote the file could not include (plan 13).
+    not_exported: Vec<String>,
 }
 
 /// Error kinds the UI translates (`readFailed` covers missing or unreadable files).
@@ -208,6 +210,7 @@ pub fn open_snapshot(state: State<AppState>, path: String) -> Result<OpenedFile,
         created_at: snapshot.created_at.clone(),
         repot_version: snapshot.repot_version.clone(),
         skipped_items: opened.skipped_items,
+        not_exported: snapshot.not_exported.iter().cloned().collect(),
     })
 }
 

@@ -6,6 +6,7 @@ import {
   missingChecked,
   revealKey,
   setCategory,
+  withoutNotExported,
 } from './logic';
 import type {
   AvailabilityMap,
@@ -160,7 +161,10 @@ export function reducer(prev: State, action: Action): State {
         packages: action.packages,
         avail: action.avail,
         presence: action.presence,
-        checked: missingChecked(state.scan?.items ?? [], action.avail, action.presence),
+        checked: withoutNotExported(
+          missingChecked(state.scan?.items ?? [], action.avail, action.presence),
+          state.opened?.notExported ?? [],
+        ),
       };
     case 'progress': {
       const exists = state.providers.some((p) => p.id === action.report.id);
@@ -190,7 +194,7 @@ export function reducer(prev: State, action: Action): State {
         opened,
         compared: false,
         presence: {},
-        checked: initialChecked(scan.items, action.avail),
+        checked: withoutNotExported(initialChecked(scan.items, action.avail), opened.notExported),
         revealed: new Set(),
       };
     }

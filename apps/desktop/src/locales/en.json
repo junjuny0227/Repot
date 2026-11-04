@@ -157,7 +157,10 @@
     "onlyMissing": "Missing on this machine only",
     "badgePresent": "Already here",
     "badgeDiffers": "Different here",
-    "thisMachine": "On this machine"
+    "thisMachine": "On this machine",
+    "badgeNotExported": "Not in last export",
+    "notExportedTitle": "Last export",
+    "notExportedText": "The export that made this file could not use this item on its destination, so it was saved here but not exported then. It is not selected; select it if you want it this time."
   },
   "updates": {
     "settings": "Settings",

@@ -110,6 +110,9 @@ export function ItemList({
                       {state.presence[item.id] === 'differs' && (
                         <span className="item-presence differs">{S.badgeDiffers}</span>
                       )}
+                      {state.opened?.notExported.includes(item.id) && (
+                        <span className="item-presence">{S.badgeNotExported}</span>
+                      )}
                       <span className="badges">
                         {hasKind(item, 'secret') && (
                           <span

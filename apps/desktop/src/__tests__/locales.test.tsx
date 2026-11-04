@@ -63,6 +63,7 @@ function renderAll(): string {
       createdAt: '2026-11-04T10:00Z',
       repotVersion: '0.5.0',
       skippedItems: 2,
+      notExported: [scan.items[0].id],
     },
     avail,
   });

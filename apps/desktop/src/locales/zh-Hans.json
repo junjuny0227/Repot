@@ -155,7 +155,10 @@
     "onlyMissing": "仅显示此电脑缺少的项目",
     "badgePresent": "已存在",
     "badgeDiffers": "内容不同",
-    "thisMachine": "此电脑"
+    "thisMachine": "此电脑",
+    "badgeNotExported": "上次未导出",
+    "notExportedTitle": "上次导出",
+    "notExportedText": "生成此文件的那次导出无法在其目标系统上使用此项目，因此当时只保存在文件中而未导出。它默认未被选中，如有需要请自行选择。"
   },
   "updates": {
     "settings": "设置",
