@@ -167,7 +167,7 @@ repot export repot.json --only-missing        # このマシンにないもの�
 `repot <コマンド> --help` で確認できます。
 
 古いマシンから新しいマシンへの移行の流れ、すべてのオプション、id による項目の選択、スクリプト向けの
-JSON 出力と終了コードは [コマンドラインツールガイド](crates/cli/README.md)（英語）にまとめています。
+JSON 出力と終了コードは [コマンドラインツールガイド](crates/cli/README.ja.md)にまとめています。
 
 ## 書き出したファイルの使い方
 

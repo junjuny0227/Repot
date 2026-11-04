@@ -154,7 +154,7 @@ repot export repot.json --only-missing        # 只导出本机缺少的内容
 遮盖的位置。运行 `repot <命令> --help` 查看全部选项。
 
 从旧电脑迁移到新电脑的完整流程、全部选项、按 id 选择项目，以及供脚本使用的 JSON 输出和退出码，
-请参阅[命令行工具指南](crates/cli/README.md)（英文）。
+请参阅[命令行工具指南](crates/cli/README.zh-Hans.md)。
 
 ## 使用导出内容
 

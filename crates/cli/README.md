@@ -1,5 +1,7 @@
 # repot command-line tool
 
+English · [한국어](README.ko.md) · [日本語](README.ja.md) · [简体中文](README.zh-Hans.md)
+
 `repot` moves a development environment to a new machine from a terminal. It does what
 the [Repot app](../../README.md) does — scan, compare with a Repot file, export a restore
 script — for machines without a desktop, over SSH, or in your own scripts.
@@ -135,7 +137,7 @@ Not installed: winget, scoop, choco, apt, dnf, pacman, ...
 ### `repot compare <FILE>`
 
 Compares a Repot file (`repot.json` from an export or from the app) with this machine.
-See [Only what is missing](#moving-to-a-new-machine) for the groups.
+See **Only what is missing** above for what each group means.
 
 ### `repot export [FILE]`
 
