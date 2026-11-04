@@ -25,6 +25,16 @@ impl ExportMeta {
             date,
         }
     }
+    /// ISO 8601 UTC minute derived from `generated_at` ("2026-11-04 10:00 UTC" → "2026-11-04T10:00Z").
+    pub fn created_at(&self) -> String {
+        let time = self
+            .generated_at
+            .strip_prefix(&self.date)
+            .and_then(|rest| rest.trim().strip_suffix("UTC"))
+            .map(str::trim)
+            .unwrap_or("00:00");
+        format!("{}T{time}Z", self.date)
+    }
 }
 /// Gregorian date from Unix epoch days, using Howard Hinnant's civil-from-days algorithm.
 pub fn civil_from_days(days_since_epoch: i64) -> (i32, u32, u32) {

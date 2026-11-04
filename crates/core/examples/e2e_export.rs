@@ -110,7 +110,7 @@ mod tests {
         for os in [Os::MacOs, Os::Windows, Os::Linux(LinuxFamily::Debian)] {
             let bundle = e2e_bundle(os);
             assert!(bundle.warnings.is_empty());
-            assert_eq!(bundle.files.len(), 2);
+            assert_eq!(bundle.files.len(), 3); // script, repot.json, payload
             let payload = bundle
                 .files
                 .iter()
