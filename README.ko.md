@@ -167,7 +167,7 @@ repot export repot.json --only-missing        # 이 기기에 없는 것만 내�
 `repot <명령> --help`로 봅니다.
 
 옛 기기에서 새 기기로 옮기는 전체 흐름, 모든 옵션, id로 항목 고르기, 스크립트용 JSON 출력과
-종료 코드는 [명령줄 도구 안내](crates/cli/README.md)(영어)에 정리돼 있습니다.
+종료 코드는 [명령줄 도구 안내](crates/cli/README.ko.md)에 정리돼 있습니다.
 
 ## 내보낸 파일 사용하기
 

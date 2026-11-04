@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest';
+import { content } from '../content';
 import { bestLocale, LOCALES, suggestion } from '../i18n';
 
 // Every locale file must match en.json so no page shows a missing or raw placeholder.
@@ -92,4 +93,16 @@ test('only the English page suggests, once, and only another language', () => {
   // Translated pages never suggest; the visitor got there by choice or by link.
   expect(suggestion('ko', null, ['ja'])).toBeNull();
   expect(suggestion('ja', null, ['en'])).toBeNull();
+});
+
+// Keys only (not loaded): the guides that exist in the repository.
+const guides = import.meta.glob('../../../../crates/cli/README*.md');
+
+test('each locale links the command-line guide written in its language', () => {
+  for (const { code } of LOCALES) {
+    const url = content(code).install.cliGuideUrl;
+    const file = url.replace('https://github.com/junjuny0227/Repot/blob/main/', '');
+    expect(file).toBe(code === 'en' ? 'crates/cli/README.md' : `crates/cli/README.${code}.md`);
+    expect(Object.keys(guides), file).toContain(`../../../../${file}`);
+  }
 });
