@@ -123,7 +123,19 @@ Repot 默认在启动时向 GitHub 检查一次更新。打开语言选择器旁
 `repot` 在终端中完成同样的扫描、比较和导出，适用于没有图形界面的电脑或脚本。它与应用使用
 相同的规则，只读取本机，只写入一个导出文件夹，并且不使用网络。
 
-从 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) 下载
+使用 Homebrew（macOS、Linux）或 Scoop（Windows）安装：
+
+```sh
+brew install junjuny0227/tap/repot
+```
+
+```powershell
+scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
+scoop install repot/repot
+```
+
+发布新版本时两者都会更新，因此可用 `brew upgrade` / `scoop update repot` 保持最新。
+不使用包管理器时，从 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) 下载
 `repot-cli-<版本>-<target>.tar.gz`（macOS、Linux）或 `.zip`（Windows），用 `.sha256`
 文件校验后，把 `repot` 放到 `PATH` 中。在 macOS 上用浏览器下载的文件会被隔离，请运行一次
 `xattr -d com.apple.quarantine repot`。如果已安装 Rust，也可以运行

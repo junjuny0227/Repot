@@ -1,0 +1,108 @@
+name: CLI packages
+
+# Updates the Homebrew tap and the Scoop bucket for the repot CLI (plan 15, Task 5) once a
+# release is published, then installs from both as a user would. The formula and manifest
+# are rendered by scripts/cli-packages.mjs from the release's .sha256 files.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish to the tap and bucket (e.g. v0.8.0)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-packages
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node --test scripts/cli-packages.test.mjs
+      - name: Render the formula and manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" --pattern 'repot-cli-*.sha256' -D sha
+          node scripts/cli-packages.mjs "$TAG" sha out
+      - uses: actions/checkout@v6
+        with:
+          repository: junjuny0227/homebrew-tap
+          token: ${{ secrets.TAP_TOKEN }}
+          path: tap
+      - uses: actions/checkout@v6
+        with:
+          repository: junjuny0227/scoop-bucket
+          token: ${{ secrets.TAP_TOKEN }}
+          path: bucket
+      - name: Push
+        run: |
+          set -euo pipefail
+          push() {
+            local repo=$1 file=$2
+            mkdir -p "$repo/$(dirname "$file")"
+            cp "out/$file" "$repo/$file"
+            cd "$repo"
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add "$file"
+            if git diff --cached --quiet; then
+              echo "$repo: $file already at $TAG"
+            else
+              git commit -q -m "repot ${TAG#v}"
+              git push -q
+              echo "$repo: $file updated to $TAG"
+            fi
+            cd ..
+          }
+          push tap Formula/repot.rb
+          push bucket bucket/repot.json
+
+  brew:
+    needs: update
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: brew install
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          set -euo pipefail
+          # Ubuntu runners ship Homebrew without putting it on PATH.
+          if [[ "$RUNNER_OS" == Linux ]]; then eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"; fi
+          brew install junjuny0227/tap/repot
+          test "$(repot --version)" = "repot ${TAG#v}"
+          brew test junjuny0227/tap/repot
+
+  scoop:
+    needs: update
+    runs-on: windows-latest
+    steps:
+      - name: scoop install
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-Expression "& {$(Invoke-RestMethod https://get.scoop.sh)} -RunAsAdmin"
+          $env:PATH = "$env:USERPROFILE\scoop\shims;$env:PATH"
+          scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
+          scoop install repot/repot
+          if ($LASTEXITCODE -ne 0) { throw 'scoop install failed' }
+          $version = (repot --version)
+          if ($version -ne "repot $($env:TAG.TrimStart('v'))") { throw "unexpected version: $version" }
+          Write-Output $version

@@ -140,7 +140,20 @@ is installed.
 a desktop or for scripts. It uses the same rules as the app, only reads this machine,
 writes one export folder and never uses the network.
 
-Download `repot-cli-<version>-<target>.tar.gz` (macOS, Linux) or `.zip` (Windows) from
+Install it with Homebrew (macOS, Linux) or Scoop (Windows):
+
+```sh
+brew install junjuny0227/tap/repot
+```
+
+```powershell
+scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
+scoop install repot/repot
+```
+
+Both are updated when a release is published, so `brew upgrade` / `scoop update repot`
+keep it current. Without a package manager, download
+`repot-cli-<version>-<target>.tar.gz` (macOS, Linux) or `.zip` (Windows) from
 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest), check it
 against its `.sha256` file, and put `repot` on your `PATH`. Archives downloaded with a
 browser are quarantined on macOS: run `xattr -d com.apple.quarantine repot` once. With
