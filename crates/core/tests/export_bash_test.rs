@@ -301,10 +301,18 @@ fn jetbrains_files_go_to_the_newest_version_folder_and_plugins_install_once() {
         ],
     );
     let path = format!("{}:/usr/bin:/bin", bin.display());
+    // CI runners set XDG_*; point them inside the fake home like a default desktop.
+    let config = home.join(".config");
+    let data = home.join(".local/share");
     let out = run_script(
         &p,
         dir.path(),
-        &[("HOME", home.to_str().unwrap()), ("PATH", &path)],
+        &[
+            ("HOME", home.to_str().unwrap()),
+            ("PATH", &path),
+            ("XDG_CONFIG_HOME", config.to_str().unwrap()),
+            ("XDG_DATA_HOME", data.to_str().unwrap()),
+        ],
     );
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(out.status.success(), "{stdout}");
@@ -339,10 +347,15 @@ fn jetbrains_plugins_without_the_ide_are_not_done() {
             folder: "svelte".into(),
         }],
     );
+    let config = home.join(".config");
     let out = run_script(
         &p,
         dir.path(),
-        &[("HOME", home.to_str().unwrap()), ("PATH", "/usr/bin:/bin")],
+        &[
+            ("HOME", home.to_str().unwrap()),
+            ("PATH", "/usr/bin:/bin"),
+            ("XDG_CONFIG_HOME", config.to_str().unwrap()),
+        ],
     );
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(out.status.success(), "{stdout}");
