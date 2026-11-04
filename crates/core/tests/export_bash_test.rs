@@ -221,3 +221,134 @@ fn missing_tool_is_skipped_and_failure_sets_exit_code() {
         Some(1)
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn jetbrains_files_go_to_the_newest_version_folder_and_plugins_install_once() {
+    let dir = tempfile::tempdir().unwrap();
+    let home = dir.path().join("home");
+    let target = current_target();
+    let base = if target == Os::MacOs {
+        home.join("Library/Application Support/JetBrains")
+    } else {
+        home.join(".config/JetBrains")
+    };
+    let plugins_of = |folder: &str| {
+        if target == Os::MacOs {
+            base.join(folder).join("plugins")
+        } else {
+            home.join(".local/share/JetBrains").join(folder)
+        }
+    };
+    std::fs::create_dir_all(base.join("IntelliJIdea2025.3")).unwrap();
+    std::fs::create_dir_all(base.join("IntelliJIdea2026.10")).unwrap();
+    std::fs::create_dir_all(base.join("IntelliJIdea2026.2")).unwrap();
+    std::fs::create_dir_all(plugins_of("IntelliJIdea2026.10").join("present-plugin")).unwrap();
+    std::fs::create_dir_all(dir.path().join("files/jetbrains/IntelliJIdea/codestyles")).unwrap();
+    std::fs::write(
+        dir.path()
+            .join("files/jetbrains/IntelliJIdea/codestyles/Default.xml"),
+        "<code_scheme/>\n",
+    )
+    .unwrap();
+    std::fs::create_dir_all(dir.path().join("files/jetbrains/WebStorm/keymaps")).unwrap();
+    std::fs::write(
+        dir.path().join("files/jetbrains/WebStorm/keymaps/K.xml"),
+        "<keymap/>\n",
+    )
+    .unwrap();
+    // A stand-in launcher on PATH that records what it was asked to do.
+    let bin = dir.path().join("bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    let log = dir.path().join("idea.log");
+    std::fs::write(
+        bin.join("idea"),
+        format!("#!/bin/sh\necho \"$@\" >> '{}'\n", log.display()),
+    )
+    .unwrap();
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(bin.join("idea"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    let p = plan(
+        target,
+        vec![
+            Step::InstallIdePlugin {
+                ide: JetBrainsIde::IntelliJIdea,
+                id: "present.plugin".into(),
+                folder: "present-plugin".into(),
+            },
+            Step::InstallIdePlugin {
+                ide: JetBrainsIde::IntelliJIdea,
+                id: "com.github.copilot".into(),
+                folder: "github-copilot-intellij".into(),
+            },
+            Step::CopyFile {
+                src: "jetbrains/IntelliJIdea/codestyles/Default.xml".into(),
+                dest: TargetPath::JetBrains {
+                    ide: JetBrainsIde::IntelliJIdea,
+                    version: "2024.1".into(),
+                    rel: "codestyles/Default.xml".into(),
+                },
+            },
+            // WebStorm never ran here: its folder gets the source machine's version.
+            Step::CopyFile {
+                src: "jetbrains/WebStorm/keymaps/K.xml".into(),
+                dest: TargetPath::JetBrains {
+                    ide: JetBrainsIde::WebStorm,
+                    version: "2026.1".into(),
+                    rel: "keymaps/K.xml".into(),
+                },
+            },
+        ],
+    );
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let out = run_script(
+        &p,
+        dir.path(),
+        &[("HOME", home.to_str().unwrap()), ("PATH", &path)],
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(out.status.success(), "{stdout}");
+    assert!(stdout.contains("  IntelliJ IDEA: found"), "{stdout}");
+    // 2026.10 is newer than 2026.2 (numeric, not text order).
+    assert_eq!(
+        std::fs::read_to_string(base.join("IntelliJIdea2026.10/codestyles/Default.xml")).unwrap(),
+        "<code_scheme/>\n"
+    );
+    assert!(base.join("WebStorm2026.1/keymaps/K.xml").exists());
+    assert!(
+        stdout.contains("already done: idea installPlugins present.plugin"),
+        "{stdout}"
+    );
+    assert_eq!(
+        std::fs::read_to_string(&log).unwrap(),
+        "installPlugins com.github.copilot\n"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn jetbrains_plugins_without_the_ide_are_not_done() {
+    let dir = tempfile::tempdir().unwrap();
+    let home = dir.path().join("home");
+    std::fs::create_dir_all(&home).unwrap();
+    let p = plan(
+        current_target(),
+        vec![Step::InstallIdePlugin {
+            ide: JetBrainsIde::WebStorm,
+            id: "dev.blachut.svelte.lang".into(),
+            folder: "svelte".into(),
+        }],
+    );
+    let out = run_script(
+        &p,
+        dir.path(),
+        &[("HOME", home.to_str().unwrap()), ("PATH", "/usr/bin:/bin")],
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(out.status.success(), "{stdout}");
+    assert!(
+        stdout.contains("  - webstorm installPlugins dev.blachut.svelte.lang (WebStorm not found)"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("  WebStorm: https://www.jetbrains.com/toolbox-app/"));
+}
