@@ -1,0 +1,25 @@
+# Basic text rules for every editor (https://editorconfig.org).
+# Formatting itself is done by rustfmt (rustfmt.toml) and Biome (biome.json); their
+# settings win where they overlap. This file covers what they do not format: Markdown,
+# YAML, TOML, HTML, shell, and editors without those extensions.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.rs]
+indent_size = 4
+
+# Two trailing spaces are a line break in Markdown.
+[*.md]
+trim_trailing_whitespace = false
+
+# Byte-exact or generated files: snapshots, fixtures and `tauri icon` output stay as written.
+[{*.snap,**/fixtures/**,**/__fixtures__/**,apps/desktop/src-tauri/icons/**}]
+insert_final_newline = unset
+trim_trailing_whitespace = unset
