@@ -22,6 +22,12 @@ function Write-Missing($Name, $Url) {
   Write-Host "  $Name not found. Install it first: $Url"
   if ($script:Tools -notcontains "${Name}: $Url") { $script:Tools += "${Name}: $Url" }
 }
+# Preflight: report whether a tool is here before anything runs.
+$script:PreflightMissing = $false
+function Test-Preflight($Name, $Command, $Url) {
+  if (Test-Tool $Command) { Write-Host "  ${Name}: found" }
+  else { Write-Host "  ${Name}: not found yet. Install it from $Url"; $script:PreflightMissing = $true }
+}
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
 # Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
 # load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
@@ -48,6 +54,10 @@ Write-Host 'This script will:'
 Write-Host '  - choco install ripgrep'
 Write-Host '  - choco install git'
 Write-Host '  - choco install firefox'
+Write-Host 'Tools this script uses:'
+Test-Preflight 'choco' 'choco' 'https://chocolatey.org/install'
+if ((Test-Tool 'choco') -and -not (Test-Admin)) { Write-Host '  choco needs an Administrator PowerShell; choco steps will be listed under "Not done".' }
+if ($script:PreflightMissing) { Write-Host 'Steps that need a missing tool will be listed under "Not done". An earlier step may install some of them; otherwise install them and run this script again.' }
 if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -and $answer -cne 'Y') { exit 0 } }
 
 Write-Host '== Packages =='

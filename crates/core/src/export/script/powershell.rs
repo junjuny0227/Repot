@@ -21,6 +21,12 @@ function Write-Missing($Name, $Url) {
   Write-Host "  $Name not found. Install it first: $Url"
   if ($script:Tools -notcontains "${Name}: $Url") { $script:Tools += "${Name}: $Url" }
 }
+# Preflight: report whether a tool is here before anything runs.
+$script:PreflightMissing = $false
+function Test-Preflight($Name, $Command, $Url) {
+  if (Test-Tool $Command) { Write-Host "  ${Name}: found" }
+  else { Write-Host "  ${Name}: not found yet. Install it from $Url"; $script:PreflightMissing = $true }
+}
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
 # Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
 # load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
@@ -168,6 +174,34 @@ fn commands(s: &Step) -> (String, bool, String) {
     }
 }
 
+/// Lists every tool the steps need, once, before the user is asked to continue.
+fn write_preflight(out: &mut String, plan: &ScriptPlan) {
+    let mut tools: Vec<(&str, &str)> = vec![];
+    for t in plan.steps.iter().filter_map(tool) {
+        if !tools.contains(&t) {
+            tools.push(t);
+        }
+    }
+    if tools.is_empty() {
+        return;
+    }
+    out.push_str("Write-Host 'Tools this script uses:'\n");
+    for t in tools {
+        writeln!(
+            out,
+            "Test-Preflight {} {} {}",
+            q(t.1),
+            q(t.0),
+            q(guide_url(t.1))
+        )
+        .unwrap();
+        if t.0 == "choco" {
+            out.push_str("if ((Test-Tool 'choco') -and -not (Test-Admin)) { Write-Host '  choco needs an Administrator PowerShell; choco steps will be listed under \"Not done\".' }\n");
+        }
+    }
+    out.push_str("if ($script:PreflightMissing) { Write-Host 'Steps that need a missing tool will be listed under \"Not done\". An earlier step may install some of them; otherwise install them and run this script again.' }\n");
+}
+
 pub fn render_powershell(plan: &ScriptPlan) -> String {
     let h = &plan.header;
     let mut out = format!(
@@ -185,6 +219,7 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         )
         .unwrap();
     }
+    write_preflight(&mut out, plan);
     out.push_str("if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -and $answer -cne 'Y') { exit 0 } }\n");
     let mut i = 0;
     let mut section = None;

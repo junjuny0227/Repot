@@ -10,7 +10,7 @@ expression: output
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
+PREFLIGHT_MISSING=0; OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
@@ -22,6 +22,11 @@ record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
 "; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
+# Preflight: report whether a tool is here before anything runs.
+check_tool() {
+  if eval "$2"; then echo "  $1: found"
+  else echo "  $1: not found yet. Install it from $3"; PREFLIGHT_MISSING=1; fi
+}
 missing() {
   echo "  $1 not found. Install it first: $2"
   case "$TOOLS_LIST" in *"  $1: $2
@@ -42,6 +47,11 @@ echo 'This script will:'
 printf '%s\n' '  - dnf install ripgrep'
 printf '%s\n' '  - dnf install git'
 printf '%s\n' '  - dnf install firefox'
+echo 'Tools this script uses:'
+check_tool 'dnf' 'have '\''dnf'\''' ''
+if [ "$PREFLIGHT_MISSING" = 1 ]; then
+  echo 'Steps that need a missing tool will be listed under "Not done". An earlier step may install some of them (for example Node.js from Homebrew); otherwise install them and run this script again.'
+fi
 if [ "${1:-}" != '--yes' ]; then
   printf 'Continue? [y/N] '
   read -r answer

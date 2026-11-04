@@ -7,7 +7,7 @@ use std::fmt::Write;
 
 const HELPERS: &str = r#"DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
+PREFLIGHT_MISSING=0; OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
@@ -19,6 +19,11 @@ record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
 "; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
+# Preflight: report whether a tool is here before anything runs.
+check_tool() {
+  if eval "$2"; then echo "  $1: found"
+  else echo "  $1: not found yet. Install it from $3"; PREFLIGHT_MISSING=1; fi
+}
 missing() {
   echo "  $1 not found. Install it first: $2"
   case "$TOOLS_LIST" in *"  $1: $2
@@ -174,6 +179,42 @@ fn commands(step: &Step, target: Os) -> (String, String) {
     }
 }
 
+/// How the preflight looks for a tool. nvm and SDKMAN! are shell functions that exist only
+/// after their init script is sourced (the runtime section does that), so look for the script.
+fn preflight_check(tool: (&str, &str)) -> String {
+    match tool.1 {
+        "nvm" => "[ -s \"${NVM_DIR:-$HOME/.nvm}/nvm.sh\" ]".into(),
+        "sdkman" => "[ -s \"${SDKMAN_DIR:-$HOME/.sdkman}/bin/sdkman-init.sh\" ]".into(),
+        "oh-my-zsh" => "have git && [ -d \"$HOME/.oh-my-zsh\" ]".into(),
+        _ => format!("have {}", q(tool.0)),
+    }
+}
+
+/// Lists every tool the steps need, once, before the user is asked to continue.
+fn write_preflight(out: &mut String, plan: &ScriptPlan) {
+    let mut tools: Vec<(&str, &str)> = vec![];
+    for t in plan.steps.iter().filter_map(tool) {
+        if !tools.contains(&t) {
+            tools.push(t);
+        }
+    }
+    if tools.is_empty() {
+        return;
+    }
+    out.push_str("echo 'Tools this script uses:'\n");
+    for t in tools {
+        writeln!(
+            out,
+            "check_tool {} {} {}",
+            q(t.1),
+            q(&preflight_check(t)),
+            q(guide_url(t.1))
+        )
+        .unwrap();
+    }
+    out.push_str("if [ \"$PREFLIGHT_MISSING\" = 1 ]; then\n  echo 'Steps that need a missing tool will be listed under \"Not done\". An earlier step may install some of them (for example Node.js from Homebrew); otherwise install them and run this script again.'\nfi\n");
+}
+
 pub fn render_bash(plan: &ScriptPlan) -> String {
     let h = &plan.header;
     let mut out = format!(
@@ -197,6 +238,7 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         )
         .unwrap();
     }
+    write_preflight(&mut out, plan);
     out.push_str("if [ \"${1:-}\" != '--yes' ]; then\n  printf 'Continue? [y/N] '\n  read -r answer\n  case \"$answer\" in y|Y) ;; *) exit 0 ;; esac\nfi\n");
     let mut i = 0;
     let mut section = None;
