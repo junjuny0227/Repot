@@ -24,8 +24,11 @@
 | `node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs` | verified (exit 0, 2026-11-03) | 계획 10 (fixture와 가짜 fetch만 쓴다) |
 | `pnpm package-map:gen candidates` / `run` | verified (2026-11-03, 보고할 문제가 있으면 exit 1) | 계획 10 (로컬 전용, 네트워크와 `JEB_AI_HUB_KEY` 필요, CI에서 돌리지 않는다) |
 | `pnpm package-map:gen apply-review` (에이전트 결정은 `--reviewer agent`, provenance `agent-review`) | verified (2026-11-03, `--reviewer agent`로 실제 반영) | 계획 10 |
+| `pnpm check` (검사만, CI는 `pnpm exec biome ci .`) / `pnpm fix` (포맷·린트 자동 수정) | verified (exit 0, 2026-11-04) | Biome 도입 |
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.
+- 포맷은 Rust가 `rustfmt.toml`(stable 옵션만), TS/JS/JSON/CSS가 `biome.json`(Prettier에 가까운 설정: 100열, 작은따옴표, 세미콜론, trailing comma)이다. Markdown·YAML·SVG와 fixture·생성 데이터는 Biome 대상이 아니다. 대량 포맷 커밋은 `.git-blame-ignore-revs`에 넣는다.
+- Biome 규칙을 끄거나 무시할 때는 `biome-ignore` 주석에 이유를 적는다. 규칙 전체를 끄는 것은 `biome.json`에서만 한다.
 - `repot-desktop`(Tauri)은 컴파일 시점에 `apps/desktop/dist`가 필요하다. 워크스페이스 전체를 `cargo`로 돌리기 전에 프론트엔드를 먼저 빌드한다.
 
 ## 생성 파일

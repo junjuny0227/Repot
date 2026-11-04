@@ -454,6 +454,7 @@ repot-export-2026-11-02/
 - **이 기기 비교**: 같은 OS와 다른 OS(Windows winget·Scoop)에서 패키지·런타임 버전·전역 패키지·확장·플러그인·설정 파일(같음·다름·비밀 줄만 다름) 판정을 표 기반으로 테스트한다.
 - **CI (GitHub Actions)**:
   - macOS, Windows, Ubuntu 러너에서 `cargo test`, `clippy`, `fmt`
+  - 프론트엔드·스크립트: `biome ci`(포맷, 린트, import 정렬)
   - 각 러너에서 실제 스캔을 실행하는 통합 테스트(러너에 brew, choco, apt 등이 설치되어 있음)
   - 생성된 스크립트를 `shellcheck`, `PSScriptAnalyzer`로 검사
   - `restore-e2e`: 새 macOS·Ubuntu·Windows 호스티드 러너에서 실제 `build_export`/`write_export`로 만든 스크립트를 실행한다. 사전 미설치 확인 후 brew/apt의 `sl`, choco의 `dos2unix`, 격리된 npm prefix의 `is-odd` 설치와 설정 파일 복사를 검증한다. 존재하지 않는 패키지 하나만 실패 목록에 남고 종료 코드가 1인지 확인하며, 두 번째 실행에서는 성공했던 세 항목이 모두 "이미 됨" 목록에 남고 "하지 않음" 목록은 비어 있어야 한다.
