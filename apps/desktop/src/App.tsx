@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
-import { availabilityFor, chooseRepotFile, detectOs, openSnapshot, runScan } from "./api";
+import { availabilityFor, chooseRepotFile, detectOs, openSnapshot, presenceFor, runScan, scanMachine } from "./api";
 import { initialState, reducer } from "./state";
-import { currentTarget } from "./logic";
+import { currentTarget, defaultTarget } from "./logic";
 import { errorMessage } from "./errors";
 import { S, openErrorText } from "./strings";
 import { useLocale } from "./i18n";
@@ -61,6 +61,24 @@ export default function App() {
     }
   }, []);
 
+  // Scan this machine and judge the opened file's items against it, for this machine's OS.
+  const compareWithMachine = useCallback(async () => {
+    if (updates.busy()) return;
+    const now = latest.current;
+    if (now.source === null) return;
+    const kept = currentTarget(now);
+    const target = kept !== null && JSON.stringify(kept.os) === JSON.stringify(now.source) ? kept : defaultTarget(now.source);
+    dispatch({ type: "compareStarted" });
+    try {
+      await scanMachine((report) => dispatch({ type: "progress", report }));
+      const [avail, presence] = await Promise.all([availabilityFor(target), presenceFor(target)]);
+      dispatch({ type: "compareFinished", target: target.os, packages: target.packages, avail, presence });
+    } catch (e) {
+      dispatch({ type: "compareFailed" });
+      dispatch({ type: "error", message: errorMessage(e) });
+    }
+  }, []);
+
   return (
     <main className={`app screen-${state.screen}`}>
       {state.error !== null && (
@@ -68,7 +86,7 @@ export default function App() {
       )}
       {state.screen === "start" && <StartScreen state={state} dispatch={dispatch} onScan={startScan} onOpen={openFile} />}
       {state.screen === "scanning" && <ScanScreen state={state} />}
-      {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} />}
+      {state.screen === "review" && <ReviewScreen state={state} dispatch={dispatch} onCompare={compareWithMachine} />}
       {state.screen === "export" && <ExportScreen state={state} dispatch={dispatch} />}
       {state.screen === "done" && <DoneScreen state={state} dispatch={dispatch} />}
       <UpdateNotice screen={state.screen} />

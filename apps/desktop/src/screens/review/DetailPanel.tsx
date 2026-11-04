@@ -1,7 +1,7 @@
 import type { Dispatch } from "react";
 import { mapping, revealKey } from "../../logic";
 import type { Action, State } from "../../state";
-import { S, availableOn, categoryLabel, findingText, itemDescription, originText, reasonText, revealSecretLine } from "../../strings";
+import { S, availableOn, categoryLabel, findingText, itemDescription, originText, presenceText, reasonText, revealSecretLine } from "../../strings";
 import type { Finding, Item } from "../../types";
 import { CategoryIcon, CheckCircle, Duplicate, ExclamationCircle, InfoCircle, NoSign, WarningTriangle } from "../icons";
 
@@ -55,6 +55,12 @@ export function DetailPanel({ item, state, dispatch }: { item: Item | null; stat
           </>
         )}
       </section>
+      {state.presence[item.id] !== undefined && (
+        <section>
+          <h3 className="inspector-heading">{S.thisMachine}</h3>
+          <p className={`presence ${state.presence[item.id]}`}>{presenceText(state.presence[item.id])}</p>
+        </section>
+      )}
       <section>
         <h3 className="inspector-heading">{S.findings}</h3>
         {item.findings.length === 0 ? (

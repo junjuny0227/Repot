@@ -90,6 +90,12 @@
     "invalid": "Repot 文件已损坏，无法打开。",
     "readFailed": "无法读取文件。"
   },
+  "presence": {
+    "present": "此电脑上已存在。恢复脚本会跳过它。",
+    "differs": "同一位置已有内容不同的文件。导出后，恢复脚本会先备份该文件再替换。",
+    "missing": "此电脑上还没有。"
+  },
+  "comparedSummary": "缺少 {missing} · 已存在 {present} · 内容不同 {differs}",
   "ui": {
     "currentOs": "这台电脑",
     "targetOs": "目标系统",
@@ -142,7 +148,14 @@
     "mappingNote": "此名称根据 Repot 内置的对照表匹配。运行恢复前请检查。",
     "language": "语言",
     "openFile": "打开 Repot 文件…",
-    "repotFileNote": "以后要重新选择，请用 Repot 打开此文件夹中的 repot.json。"
+    "repotFileNote": "以后要重新选择，请用 Repot 打开此文件夹中的 repot.json。",
+    "compareButton": "与此电脑比较",
+    "compareAgain": "重新比较",
+    "compareOtherOs": "要查看比较结果，请将目标系统选为此电脑的操作系统。",
+    "onlyMissing": "仅显示此电脑缺少的项目",
+    "badgePresent": "已存在",
+    "badgeDiffers": "内容不同",
+    "thisMachine": "此电脑"
   },
   "updates": {
     "settings": "设置",

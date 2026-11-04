@@ -43,3 +43,9 @@ test("secrets from an opened Repot file are described as already masked", async 
   expect(findingText(f, true)).toBe("Line 2: Masked in the Repot file (API_TOKEN). Fill in the value after restoring.");
   expect(findingText(f)).toContain("unless you allow the original value");
 });
+
+test("comparison summary counts each presence", async () => {
+  const { comparedSummary, presenceText } = await import("../strings");
+  expect(comparedSummary({ a: "missing", b: "present", c: "present", d: "differs" })).toBe("Missing: 1 · Already here: 2 · Different: 1");
+  expect(presenceText("present")).toContain("skip");
+});

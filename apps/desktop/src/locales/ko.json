@@ -90,6 +90,12 @@
     "invalid": "손상된 Repot 파일이라 열 수 없습니다.",
     "readFailed": "파일을 읽을 수 없습니다."
   },
+  "presence": {
+    "present": "이 기기에 이미 있습니다. 복원 스크립트가 건너뜁니다.",
+    "differs": "같은 위치에 내용이 다른 파일이 이미 있습니다. 내보내면 복원 스크립트가 그 파일을 백업한 뒤 바꿉니다.",
+    "missing": "아직 이 기기에 없습니다."
+  },
+  "comparedSummary": "없음 {missing} · 이미 있음 {present} · 내용 다름 {differs}",
   "ui": {
     "currentOs": "이 기기",
     "targetOs": "대상 OS",
@@ -142,7 +148,14 @@
     "mappingNote": "Repot 내장 대응표를 기준으로 맞춘 이름입니다. 복원을 실행하기 전에 확인하세요.",
     "language": "언어",
     "openFile": "Repot 파일 열기…",
-    "repotFileNote": "나중에 다시 고르려면 이 폴더의 repot.json을 Repot에서 여세요."
+    "repotFileNote": "나중에 다시 고르려면 이 폴더의 repot.json을 Repot에서 여세요.",
+    "compareButton": "이 기기와 비교",
+    "compareAgain": "다시 비교",
+    "compareOtherOs": "비교 결과를 보려면 목적지를 이 기기의 OS로 고르세요.",
+    "onlyMissing": "이 기기에 없는 것만",
+    "badgePresent": "이미 있음",
+    "badgeDiffers": "내용 다름",
+    "thisMachine": "이 기기"
   },
   "updates": {
     "settings": "설정",

@@ -90,6 +90,12 @@
     "invalid": "Repot ファイルが壊れているため開けません。",
     "readFailed": "ファイルを読み込めませんでした。"
   },
+  "presence": {
+    "present": "このコンピュータにすでにあります。復元スクリプトはスキップします。",
+    "differs": "同じ場所に内容の異なるファイルがすでにあります。書き出すと、復元スクリプトはそのファイルをバックアップしてから置き換えます。",
+    "missing": "まだこのコンピュータにありません。"
+  },
+  "comparedSummary": "なし {missing} · インストール済み {present} · 内容が異なる {differs}",
   "ui": {
     "currentOs": "このコンピュータ",
     "targetOs": "移行先の OS",
@@ -142,7 +148,14 @@
     "mappingNote": "Repot に内蔵された対応表に基づく名前です。復元を実行する前に確認してください。",
     "language": "言語",
     "openFile": "Repot ファイルを開く…",
-    "repotFileNote": "あとで選び直すには、このフォルダの repot.json を Repot で開いてください。"
+    "repotFileNote": "あとで選び直すには、このフォルダの repot.json を Repot で開いてください。",
+    "compareButton": "このコンピュータと比較",
+    "compareAgain": "もう一度比較",
+    "compareOtherOs": "比較結果を見るには、移行先にこのコンピュータの OS を選んでください。",
+    "onlyMissing": "このコンピュータにないものだけ",
+    "badgePresent": "インストール済み",
+    "badgeDiffers": "内容が異なる",
+    "thisMachine": "このコンピュータ"
   },
   "updates": {
     "settings": "設定",

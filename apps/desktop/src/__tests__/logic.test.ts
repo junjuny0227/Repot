@@ -28,7 +28,7 @@ test("selection_drops_reveals_of_unchecked_items", () => {   // Review Focus 2
 });
 
 test("filterItems by query and warnings", () => {
-  const all = { query: "", onlyAvailable: false, onlyWarnings: false };
+  const all = { query: "", onlyAvailable: false, onlyWarnings: false, onlyMissing: false };
   expect(filterItems(scan.items, availMac, { ...all, onlyWarnings: true }).map((i) => i.id)).toContain("shell:file:.zshrc");
   expect(filterItems(scan.items, availMac, { ...all, query: "ZSHRC" }).length).toBeGreaterThan(0);
 });
@@ -89,4 +89,13 @@ test("the package manager is chosen only for Windows from another OS", () => {
 test("currentTarget pairs the destination with the chosen manager", () => {
   expect(currentTarget({ target: null, packages: null })).toBeNull();
   expect(currentTarget({ target: "windows", packages: "scoop" })).toEqual({ os: "windows", packages: "scoop" });
+});
+
+test("missing-only selection and filter", async () => {
+  const { missingChecked } = await import("../logic");
+  const [a, b, c] = scan.items.map((i) => i.id).filter((id) => isAvailable(availMac[id]));
+  const presence = { [a]: "missing", [b]: "present", [c]: "differs" } as const;
+  expect([...missingChecked(scan.items, availMac, presence)]).toEqual([a]);
+  const all = { query: "", onlyAvailable: false, onlyWarnings: false, onlyMissing: true };
+  expect(filterItems(scan.items, availMac, all, presence).map((i) => i.id)).toEqual([a]);
 });

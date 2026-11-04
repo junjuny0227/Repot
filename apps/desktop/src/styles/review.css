@@ -83,6 +83,10 @@ button.source-item { height: 28px; padding: 0 8px; }
 .sidebar-language .popup { flex: 1; min-width: 0; }
 .sidebar-language .popup select { width: 100%; min-width: 0; }
 .provider-groups.opened-from { gap: 4px; padding: 10px 18px 12px; color: var(--label-2); }
+.provider-groups.opened-from .compare-button { align-self: flex-start; margin-top: 4px; }
+.item-presence { flex: none; padding: 0 6px; border-radius: 4px; background-color: var(--fill); color: var(--label-2); font-size: var(--caption); line-height: 16px; }
+.item-presence.differs { color: var(--orange); }
+.presence.differs { color: var(--orange); }
 .provider-groups pre { margin-top: 4px; padding: 6px; max-height: 160px; overflow: auto; border-radius: 6px; background-color: var(--fill); font-size: 10px; line-height: 13px; }
 
 /* Main column. */
@@ -91,7 +95,7 @@ button.source-item { height: 28px; padding: 0 8px; }
 .review-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
 
 .item-list { display: flex; flex-direction: column; min-height: 0; }
-.filters { flex: none; display: flex; align-items: center; gap: 14px; padding: 10px 16px; }
+.filters { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; }
 .filters .search-field { flex: 1; min-width: 140px; }
 .check-label { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .item-scroll { flex: 1; min-height: 0; overflow: auto; padding: 0 16px 16px; }

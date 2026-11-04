@@ -31,15 +31,19 @@ function renderAll(): string {
   let s: State = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "setTarget", target: "windows" });
   const out = [renderToStaticMarkup(<StartScreen state={s} dispatch={noop} onScan={noop} onOpen={noop} />)];
   s = reducer(s, { type: "scanFinished", scan, avail });
-  out.push(renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} />));
+  out.push(renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />));
   for (const item of scan.items) out.push(renderToStaticMarkup(<DetailPanel item={item} state={s} dispatch={noop} />));
   const bundle: ExportBundle = {
     files: [{ path: "restore.ps1", contents: "Write-Host restore", executable: true }],
     warnings: [{ readFailed: { itemId: "git:file:.gitconfig" } }, { unavailable: { itemId: "brew:formula:ripgrep", reason: { differentOs: { source: "macOs" } } } }],
   };
   const fromFile = reducer(s, { type: "fileOpened", file: { scan, source: "macOs", createdAt: "2026-11-04T10:00Z", repotVersion: "0.5.0", skippedItems: 2 }, avail });
-  out.push(renderToStaticMarkup(<ReviewScreen state={fromFile} dispatch={noop} />));
+  out.push(renderToStaticMarkup(<ReviewScreen state={fromFile} dispatch={noop} onCompare={noop} />));
   for (const item of scan.items) out.push(renderToStaticMarkup(<DetailPanel item={item} state={fromFile} dispatch={noop} />));
+  const ids = scan.items.map((i) => i.id);
+  const compared = reducer(fromFile, { type: "compareFinished", target: "windows", packages: "winget", avail, presence: Object.fromEntries(ids.map((id, n) => [id, (["present", "differs", "missing"] as const)[n % 3]])) });
+  out.push(renderToStaticMarkup(<ReviewScreen state={compared} dispatch={noop} onCompare={noop} />));
+  for (const item of scan.items) out.push(renderToStaticMarkup(<DetailPanel item={item} state={compared} dispatch={noop} />));
   s = reducer(s, { type: "goExport" });
   out.push(renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={bundle} selectedPath="restore.ps1" onSelect={noop} onSave={noop} saving={false} />));
   s = reducer(s, { type: "exported", path: "/tmp/repot-export-2026-11-03" });
@@ -61,8 +65,8 @@ test("language picker lists every locale in its own language", () => {
 
 test("start and review screens offer the language picker", () => {
   const html = renderAll();
-  // Start screen, review after a scan, review of an opened Repot file.
-  expect(html.match(/class="popup-field language-field/g)).toHaveLength(3);
+  // Start screen, review after a scan, review of an opened file, and after comparing it.
+  expect(html.match(/class="popup-field language-field/g)).toHaveLength(4);
 });
 
 test("screens render in every locale without English leftovers", () => {
