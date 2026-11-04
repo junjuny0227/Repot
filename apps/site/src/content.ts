@@ -87,6 +87,7 @@ export function content(locale: Locale) {
       steps: m.install.steps as Record<DesktopOs, string[]>,
       macCommand: 'xattr -dr com.apple.quarantine /Applications/Repot.app',
       linuxCommand: 'chmod +x Repot_*.AppImage',
+      cliGuideUrl: `${REPO}/blob/main/crates/cli/README.md`,
       cliCommand: {
         mac: 'brew install junjuny0227/tap/repot',
         linux: 'brew install junjuny0227/tap/repot',

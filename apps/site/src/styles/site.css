@@ -398,6 +398,9 @@ a:hover {
 .footnote pre {
   margin: 8px -4px 0;
 }
+.footnote pre + p {
+  margin-top: 8px;
+}
 
 .group {
   background-color: var(--group);

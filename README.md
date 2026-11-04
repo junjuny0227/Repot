@@ -173,6 +173,9 @@ the selection, and `--json` prints machine-readable output (its shape may change
 Repot is 0.x). Secrets are always masked; the command tells you where. Run
 `repot <command> --help` for every option.
 
+The [command-line guide](crates/cli/README.md) covers the whole move from old machine to
+new, every option, choosing items by id, and JSON output and exit codes for scripts.
+
 ## Using an export
 
 1. Copy the **whole** `repot-export-YYYY-MM-DD/` folder to the destination machine,

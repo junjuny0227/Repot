@@ -129,7 +129,8 @@
     },
     "macNote": "On current macOS, Control-click › Open no longer bypasses the check. Alternatively, remove the download quarantine flag in Terminal:",
     "cliTitle": "Command-line tool.",
-    "cliText": "The repot command does the same scan, comparison and export in a terminal. Install it with your package manager:"
+    "cliText": "The repot command does the same scan, comparison and export in a terminal. Install it with your package manager:",
+    "cliGuide": "How to use the command-line tool"
   },
   "footer": {
     "summary": "Repot is free and open source. Apache-2.0 license.",
