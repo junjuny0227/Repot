@@ -64,7 +64,9 @@ jobs:
           # marked as beta in the name. tauri-action replaces __VERSION__.
           releaseName: Repot __VERSION__ (beta)
           # Prepended to GitHub's generated notes (PRs since the previous tag,
-          # grouped by label per .github/release.yml). Edit the draft before publishing.
+          # grouped by label per .github/release.yml). Edit the draft before publishing:
+          # add a "## Highlights" section on top. updater-notes.yml turns it into the
+          # plain-text note in latest.json once the release is published.
           releaseBody: |
             > **Unsigned beta.** Not code-signed or notarized yet; see the README for first launch on macOS and Windows.
           generateReleaseNotes: true

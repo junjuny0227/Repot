@@ -448,6 +448,7 @@ repot-export-2026-11-02/
 - 코드 서명이 없으므로 README에 첫 실행 방법(macOS "확인 없이 열기", Windows "추가 정보 → 실행")을 안내한다.
 - 업데이트 자산은 별도의 updater 키로 서명한다. 공개 키만 앱에 포함하고 비밀 키/암호는 GitHub secrets로 전달한다. `bundle.createUpdaterArtifacts`와 tauri-action `uploadUpdaterJson`을 켠다. Windows 설치 모드는 passive다.
 - updater endpoint는 `https://github.com/junjuny0227/Repot/releases/latest/download/latest.json`이다. draft를 사람이 공개해야 접근 가능하다. 0.1.0 사용자는 updater가 포함된 버전을 한 번 수동 설치해야 한다.
+- 업데이트 시트의 "짧은 노트"는 `latest.json`의 `notes`이고, 공개된 릴리스 본문의 `## Highlights` 절을 평문으로 바꾼 것이다. 릴리스를 공개하면 `updater-notes.yml`이 `scripts/updater-notes.mjs`로 고쳐 다시 올린다. 서명 없음 안내와 PR 목록은 릴리스 페이지에만 둔다. Highlights 절이 없으면 노트는 비고, 시트는 노트 상자를 그리지 않는다.
 - 라이선스: Apache-2.0 (저장소의 `LICENSE`)
 - 제품 사이트: `apps/site`의 정적 페이지를 GitHub Pages(`https://junjuny0227.github.io/Repot/`)에 올린다. 다운로드 링크는 빌드 시점에 앱 버전으로 만든 릴리스 자산 URL이고, 사이트도 런타임 네트워크 호출을 하지 않는다. (계획 6)
 - 사이트는 로캘마다 정적 페이지가 있다: `/Repot/`(영어), `/Repot/ko/`, `/Repot/ja/`, `/Repot/zh-Hans/`. 각 페이지는 맞는 `lang`, 번역된 제목·설명, canonical, hreflang 대체 링크와 `x-default`를 가진다. 자동 리디렉션은 하지 않고, `/Repot/`에 처음 왔을 때 브라우저가 다른 지원 언어를 원하면 닫을 수 있는 제안만 보여준다. (계획 7)
