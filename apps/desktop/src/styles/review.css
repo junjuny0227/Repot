@@ -83,6 +83,7 @@ button.source-item { height: 28px; padding: 0 8px; }
 .sidebar-language .popup { flex: 1; min-width: 0; }
 .sidebar-language .popup select { width: 100%; min-width: 0; }
 .provider-groups.opened-from { gap: 4px; padding: 10px 18px 12px; color: var(--label-2); }
+.provider-groups.opened-from .nowrap { white-space: nowrap; }
 .provider-groups.opened-from .compare-button { align-self: flex-start; margin-top: 4px; }
 .item-presence { flex: none; padding: 0 6px; border-radius: 4px; background-color: var(--fill); color: var(--label-2); font-size: var(--caption); line-height: 16px; }
 .item-presence.differs { color: var(--orange); }

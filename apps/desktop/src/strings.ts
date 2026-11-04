@@ -104,15 +104,21 @@ export const mappedTo = (manager: PackageManager, name: string): string => forma
 export const availableOn = (target: Os): string => format(messages().availableOn, { os: osLabel(target) });
 export const withCount = (label: string, n: number): string => format(messages().withCount, { label, count: n });
 /** "From a Repot file made on macOS, Nov 4, 2026" for an opened file. */
-export function openedFromText(opened: { source: Os; createdAt: string }): string {
+/**
+ * "From a Repot file made on macOS, {date}" split around the date, so the screen can keep
+ * the date on one line with `white-space: nowrap`. Non-breaking spaces are not enough:
+ * WebKit's `text-wrap: pretty` (the macOS app's engine) still breaks at them.
+ */
+export function openedFromParts(opened: { source: Os; createdAt: string }): { before: string; date: string; after: string } {
   const date = new Date(opened.createdAt);
-  const formatted = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
-  // Keep the date on one line ("2026. 11. 4." must not break after "11.").
-  const shown = formatted.replace(/ /g, "\u00a0");
-  return format(messages().openedFrom, { os: osLabel(opened.source), date: shown });
+  const shown = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
+  const [before, after = ""] = format(messages().openedFrom, { os: osLabel(opened.source) }).split("{date}");
+  return { before, date: shown, after };
 }
 export const presenceText = (p: Presence): string => messages().presence[p];
-/** "Already here: 180 · Different: 2" after comparing with this machine. */
+/** The summary's "label count" pairs, so each can stay on one line in the narrow sidebar. */
+export const comparedSummaryParts = (presence: PresenceMap): string[] => comparedSummary(presence).split(" · ");
+/** "Missing: 1 · Already here: 180 · Different: 2" after comparing with this machine. */
 export function comparedSummary(presence: PresenceMap): string {
   const values = Object.values(presence);
   return format(messages().comparedSummary, {
