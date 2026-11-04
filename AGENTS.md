@@ -28,6 +28,7 @@
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.
 - 포맷은 Rust가 `rustfmt.toml`(stable 옵션만), TS/JS/JSON/CSS가 `biome.json`(Prettier에 가까운 설정: 100열, 작은따옴표, 세미콜론, trailing comma)이다. Markdown·YAML·SVG와 fixture·생성 데이터는 Biome 대상이 아니다. 대량 포맷 커밋은 `.git-blame-ignore-revs`에 넣는다.
+- `.editorconfig`는 모든 파일의 기본 규칙(UTF-8, LF, 파일 끝 줄바꿈, 줄끝 공백 제거, 공백 2칸, Rust 4칸)이다. 스냅샷·fixture·`tauri icon` 출력은 바이트 그대로 둔다.
 - Biome 규칙을 끄거나 무시할 때는 `biome-ignore` 주석에 이유를 적는다. 규칙 전체를 끄는 것은 `biome.json`에서만 한다.
 - `repot-desktop`(Tauri)은 컴파일 시점에 `apps/desktop/dist`가 필요하다. 워크스페이스 전체를 `cargo`로 돌리기 전에 프론트엔드를 먼저 빌드한다.
 
