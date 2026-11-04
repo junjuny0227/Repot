@@ -1,13 +1,13 @@
-import type { State } from "../state";
-import { S, categoryLabel, statusText } from "../strings";
-import type { ProviderStatus } from "../types";
-import { CheckCircle, ClockCircle, ExclamationCircle, MinusCircle, Spinner } from "./icons";
+import type { State } from '../state';
+import { categoryLabel, S, statusText } from '../strings';
+import type { ProviderStatus } from '../types';
+import { CheckCircle, ClockCircle, ExclamationCircle, MinusCircle, Spinner } from './icons';
 
 function StatusIcon({ status }: { status: ProviderStatus }) {
-  if (status === "running") return <Spinner />;
-  if (status === "notDetected") return <MinusCircle className="symbol status-icon" />;
-  if (status === "timedOut") return <ClockCircle className="symbol status-icon" />;
-  if ("ok" in status) return <CheckCircle className="symbol status-icon" />;
+  if (status === 'running') return <Spinner />;
+  if (status === 'notDetected') return <MinusCircle className="symbol status-icon" />;
+  if (status === 'timedOut') return <ClockCircle className="symbol status-icon" />;
+  if ('ok' in status) return <CheckCircle className="symbol status-icon" />;
   return <ExclamationCircle className="symbol status-icon" />;
 }
 
@@ -26,7 +26,7 @@ export function ScanScreen({ state }: { state: State }) {
         </header>
         <ul className="group providers" aria-live="polite">
           {state.providers.map((p) => {
-            const kind = typeof p.status === "string" ? p.status : Object.keys(p.status)[0];
+            const kind = typeof p.status === 'string' ? p.status : Object.keys(p.status)[0];
             return (
               <li key={p.id} className={`row provider status-${kind}`}>
                 <StatusIcon status={p.status} />

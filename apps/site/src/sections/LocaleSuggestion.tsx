@@ -1,4 +1,4 @@
-import { localeInfo, messagesFor, rememberLocale, type Locale } from "../i18n";
+import { type Locale, localeInfo, messagesFor, rememberLocale } from '../i18n';
 
 /**
  * Offer on the English page, written in the suggested language so the visitor can read it.
@@ -11,12 +11,19 @@ export function LocaleSuggestion({ locale, onClose }: { locale: Locale; onClose:
       <div className="bar">
         <p>{m.text}</p>
         <div className="suggestion-actions">
-          <a className="button primary" href={localeInfo(locale).path} hrefLang={locale} onClick={() => rememberLocale(locale)}>{m.switch}</a>
+          <a
+            className="button primary"
+            href={localeInfo(locale).path}
+            hrefLang={locale}
+            onClick={() => rememberLocale(locale)}
+          >
+            {m.switch}
+          </a>
           <button
             type="button"
             className="button"
             onClick={() => {
-              rememberLocale("en");
+              rememberLocale('en');
               onClose();
             }}
           >

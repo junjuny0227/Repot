@@ -1,26 +1,39 @@
-import { format, getLocale, messages, plural, type Messages } from "./i18n";
-import { errorMessage } from "./errors";
-import type { Category, ExportWarning, Finding, Format, Item, Origin, Os, PackageManager, Presence, PresenceMap, ProviderStatus, UnavailableReason } from "./types";
+import { errorMessage } from './errors';
+import { format, getLocale, type Messages, messages, plural } from './i18n';
+import type {
+  Category,
+  ExportWarning,
+  Finding,
+  Format,
+  Item,
+  Origin,
+  Os,
+  PackageManager,
+  Presence,
+  PresenceMap,
+  ProviderStatus,
+  UnavailableReason,
+} from './types';
 
 // Screens get every user-facing sentence from here. The words live in ./locales/<locale>.json;
 // these functions pick the message for the active locale and fill in the values.
 
 export const TARGET_OPTIONS: Os[] = [
-  "macOs",
-  "windows",
-  { linux: "debian" },
-  { linux: "fedora" },
-  { linux: "arch" },
+  'macOs',
+  'windows',
+  { linux: 'debian' },
+  { linux: 'fedora' },
+  { linux: 'arch' },
 ];
 
 // Product and distribution names are not translated.
-const LINUX_NAMES = { debian: "Debian/Ubuntu", fedora: "Fedora", arch: "Arch" } as const;
+const LINUX_NAMES = { debian: 'Debian/Ubuntu', fedora: 'Fedora', arch: 'Arch' } as const;
 
 export function osLabel(os: Os): string {
-  if (os === "macOs") return "macOS";
-  if (os === "windows") return "Windows";
+  if (os === 'macOs') return 'macOS';
+  if (os === 'windows') return 'Windows';
   const m = messages().os;
-  return format(m.linux, { family: os.linux === "other" ? m.linuxOther : LINUX_NAMES[os.linux] });
+  return format(m.linux, { family: os.linux === 'other' ? m.linuxOther : LINUX_NAMES[os.linux] });
 }
 
 export const categoryLabel = (c: Category): string => messages().category[c];
@@ -28,27 +41,30 @@ export const categoryLabel = (c: Category): string => messages().category[c];
 /** Built-in descriptions are translated by catalog id; tool-provided ones are shown as they are. */
 export function itemDescription(item: Item): string | null {
   const catalog: Record<string, string> = messages().catalog;
-  if (item.catalogId !== null && Object.hasOwn(catalog, item.catalogId)) return catalog[item.catalogId];
+  if (item.catalogId !== null && Object.hasOwn(catalog, item.catalogId))
+    return catalog[item.catalogId];
   return item.description;
 }
 
 export function statusText(s: ProviderStatus): string {
   const m = messages().status;
-  if (s === "running") return m.running;
-  if (s === "notDetected") return m.notDetected;
-  if (s === "timedOut") return m.timedOut;
-  if ("ok" in s) return format(m.found, { count: s.ok.count });
+  if (s === 'running') return m.running;
+  if (s === 'notDetected') return m.notDetected;
+  if (s === 'timedOut') return m.timedOut;
+  if ('ok' in s) return format(m.found, { count: s.ok.count });
   return s.failed.message;
 }
 
 function findingBody(f: Finding, fromFile: boolean): string {
   const m = messages().finding;
   const k = f.kind;
-  if (k === "unreadable") return m.unreadable;
+  if (k === 'unreadable') return m.unreadable;
   // An opened Repot file already stores secrets masked; there is no original to allow.
-  if ("secret" in k && fromFile) return k.secret.name ? format(m.secretStoredNamed, { name: k.secret.name }) : m.secretStored;
-  if ("secret" in k) return k.secret.name ? format(m.secretNamed, { name: k.secret.name }) : m.secret;
-  if ("osSpecificLine" in k) return format(m.osSpecificLine, { key: k.osSpecificLine.key });
+  if ('secret' in k && fromFile)
+    return k.secret.name ? format(m.secretStoredNamed, { name: k.secret.name }) : m.secretStored;
+  if ('secret' in k)
+    return k.secret.name ? format(m.secretNamed, { name: k.secret.name }) : m.secret;
+  if ('osSpecificLine' in k) return format(m.osSpecificLine, { key: k.osSpecificLine.key });
   return format(m.duplicate, { provider: k.duplicate.otherProvider });
 }
 
@@ -59,7 +75,13 @@ export function findingText(f: Finding, fromFile = false): string {
 }
 
 const MANAGER_LABELS: Record<PackageManager, string> = {
-  brew: "Homebrew", winget: "winget", scoop: "Scoop", choco: "Chocolatey", apt: "apt", dnf: "dnf", pacman: "pacman",
+  brew: 'Homebrew',
+  winget: 'winget',
+  scoop: 'Scoop',
+  choco: 'Chocolatey',
+  apt: 'apt',
+  dnf: 'dnf',
+  pacman: 'pacman',
 };
 
 /** Tool names stay untranslated (spec §11). */
@@ -69,62 +91,80 @@ export function managerLabel(m: PackageManager): string {
 
 export function reasonText(r: UnavailableReason): string {
   const m = messages().reason;
-  if (r === "unreadable") return m.unreadable;
-  if (r === "noPackageManager") return m.noPackageManager;
-  if ("notInPackageMap" in r) return format(m.notInPackageMap, { manager: managerLabel(r.notInPackageMap.manager) });
-  if ("noPackageInManager" in r) return format(m.noPackageInManager, { manager: managerLabel(r.noPackageInManager.manager) });
-  if ("differentOs" in r) return format(m.differentOs, { os: osLabel(r.differentOs.source) });
-  if ("shellUnsupported" in r) return format(m.shellUnsupported, { shell: r.shellUnsupported });
+  if (r === 'unreadable') return m.unreadable;
+  if (r === 'noPackageManager') return m.noPackageManager;
+  if ('notInPackageMap' in r)
+    return format(m.notInPackageMap, { manager: managerLabel(r.notInPackageMap.manager) });
+  if ('noPackageInManager' in r)
+    return format(m.noPackageInManager, { manager: managerLabel(r.noPackageInManager.manager) });
+  if ('differentOs' in r) return format(m.differentOs, { os: osLabel(r.differentOs.source) });
+  if ('shellUnsupported' in r) return format(m.shellUnsupported, { shell: r.shellUnsupported });
   return format(m.noCounterpart, { tool: r.noCounterpart });
 }
 
 export function warningText(w: ExportWarning, itemName: string): string {
   const m = messages().warning;
-  if ("unavailable" in w) return format(m.unavailable, { item: itemName, reason: reasonText(w.unavailable.reason) });
-  if ("invalidValue" in w) return format(m.invalidValue, { item: itemName });
-  if ("duplicateTarget" in w) return format(m.duplicateTarget, { item: itemName });
+  if ('unavailable' in w)
+    return format(m.unavailable, { item: itemName, reason: reasonText(w.unavailable.reason) });
+  if ('invalidValue' in w) return format(m.invalidValue, { item: itemName });
+  if ('duplicateTarget' in w) return format(m.duplicateTarget, { item: itemName });
   return format(m.readFailed, { item: itemName });
 }
 
 // The commands stay as they are: people type them into a terminal.
 export function nextSteps(target: Os, exportFormat: Format): string[] {
   const m = messages().nextSteps;
-  if (exportFormat === "manifest") return [m.readme];
-  const command = target === "windows" ? "powershell -ExecutionPolicy Bypass -File restore.ps1" : "./restore.sh";
+  if (exportFormat === 'manifest') return [m.readme];
+  const command =
+    target === 'windows' ? 'powershell -ExecutionPolicy Bypass -File restore.ps1' : './restore.sh';
   return [m.copy, format(m.run, { command })];
 }
 
 export function originText(o: Origin): string {
   const m = messages().origin;
-  return "command" in o ? format(m.command, { command: o.command }) : format(m.path, { path: o.path });
+  return 'command' in o
+    ? format(m.command, { command: o.command })
+    : format(m.path, { path: o.path });
 }
 
 /** Tooltip for the mapped name in the item list. */
-export const mappedTo = (manager: PackageManager, name: string): string => format(messages().mappedTo, { manager: managerLabel(manager), name });
-export const availableOn = (target: Os): string => format(messages().availableOn, { os: osLabel(target) });
-export const withCount = (label: string, n: number): string => format(messages().withCount, { label, count: n });
+export const mappedTo = (manager: PackageManager, name: string): string =>
+  format(messages().mappedTo, { manager: managerLabel(manager), name });
+export const availableOn = (target: Os): string =>
+  format(messages().availableOn, { os: osLabel(target) });
+export const withCount = (label: string, n: number): string =>
+  format(messages().withCount, { label, count: n });
 /** "From a Repot file made on macOS, Nov 4, 2026" for an opened file. */
 /**
  * "From a Repot file made on macOS, {date}" split around the date, so the screen can keep
  * the date on one line with `white-space: nowrap`. Non-breaking spaces are not enough:
  * WebKit's `text-wrap: pretty` (the macOS app's engine) still breaks at them.
  */
-export function openedFromParts(opened: { source: Os; createdAt: string }): { before: string; date: string; after: string } {
+export function openedFromParts(opened: { source: Os; createdAt: string }): {
+  before: string;
+  date: string;
+  after: string;
+} {
   const date = new Date(opened.createdAt);
-  const shown = Number.isNaN(date.getTime()) ? opened.createdAt : new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(date);
-  const [before, after = ""] = format(messages().openedFrom, { os: osLabel(opened.source) }).split("{date}");
+  const shown = Number.isNaN(date.getTime())
+    ? opened.createdAt
+    : new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium' }).format(date);
+  const [before, after = ''] = format(messages().openedFrom, { os: osLabel(opened.source) }).split(
+    '{date}',
+  );
   return { before, date: shown, after };
 }
 export const presenceText = (p: Presence): string => messages().presence[p];
 /** The summary's "label count" pairs, so each can stay on one line in the narrow sidebar. */
-export const comparedSummaryParts = (presence: PresenceMap): string[] => comparedSummary(presence).split(" · ");
+export const comparedSummaryParts = (presence: PresenceMap): string[] =>
+  comparedSummary(presence).split(' · ');
 /** "Missing: 1 · Already here: 180 · Different: 2" after comparing with this machine. */
 export function comparedSummary(presence: PresenceMap): string {
   const values = Object.values(presence);
   return format(messages().comparedSummary, {
-    present: values.filter((p) => p === "present").length,
-    differs: values.filter((p) => p === "differs").length,
-    missing: values.filter((p) => p === "missing").length,
+    present: values.filter((p) => p === 'present').length,
+    differs: values.filter((p) => p === 'differs').length,
+    missing: values.filter((p) => p === 'missing').length,
   });
 }
 export const skippedItemsText = (count: number): string => plural(messages().skippedItems, count);
@@ -132,19 +172,25 @@ export const skippedItemsText = (count: number): string => plural(messages().ski
 export function openErrorText(e: unknown): string {
   const raw = errorMessage(e);
   const m: Record<string, string> = messages().openError;
-  const kind = raw.startsWith("newerVersion:") ? "newerVersion" : raw;
+  const kind = raw.startsWith('newerVersion:') ? 'newerVersion' : raw;
   return Object.hasOwn(m, kind) ? m[kind] : raw;
 }
-export const selectedCount = (checked: number, total: number): string => plural(messages().selectedCount, total, { checked, total });
-export const selectCategory = (label: string): string => format(messages().selectCategory, { category: label });
-export const revealSecretLine = (line: number): string => format(messages().revealSecretLine, { line: String(line) });
+export const selectedCount = (checked: number, total: number): string =>
+  plural(messages().selectedCount, total, { checked, total });
+export const selectCategory = (label: string): string =>
+  format(messages().selectCategory, { category: label });
+export const revealSecretLine = (line: number): string =>
+  format(messages().revealSecretLine, { line: String(line) });
 
-type UiText = Readonly<Messages["ui"]> & { readonly appTitle: string };
+type UiText = Readonly<Messages['ui']> & { readonly appTitle: string };
 
 /** Simple labels for the active locale. Each property is a getter, so it follows locale changes. */
 export const S: UiText = Object.defineProperties(
-  { appTitle: "Repot" },
+  { appTitle: 'Repot' },
   Object.fromEntries(
-    Object.keys(messages().ui).map((key) => [key, { enumerable: true, get: () => messages().ui[key as keyof Messages["ui"]] }]),
+    Object.keys(messages().ui).map((key) => [
+      key,
+      { enumerable: true, get: () => messages().ui[key as keyof Messages['ui']] },
+    ]),
   ),
 ) as UiText;

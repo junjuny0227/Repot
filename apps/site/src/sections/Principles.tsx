@@ -1,5 +1,5 @@
-import { useContent } from "../content";
-import { SymbolTile, type PrincipleKey } from "../icons";
+import { useContent } from '../content';
+import { type PrincipleKey, SymbolTile } from '../icons';
 
 export function Principles() {
   const C = useContent();

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 export function updaterNotes(body) {
   const lines = (body ?? '').replace(/\r\n/g, '\n').split('\n');
-  const start = lines.findIndex(line => /^##\s+Highlights\s*$/i.test(line));
+  const start = lines.findIndex((line) => /^##\s+Highlights\s*$/i.test(line));
   if (start === -1) return '';
   const section = [];
   for (const line of lines.slice(start + 1)) {
@@ -20,13 +20,15 @@ export function updaterNotes(body) {
     .join('\n')
     .replace(/<!--[\s\S]*?-->/g, '')
     .split('\n')
-    .map(line => line
-      .replace(/^#{4,6}\s+/, '')
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      .replace(/(\*\*|__)(.+?)\1/g, '$2')
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/^(\s*)[-*]\s+/, '$1• ')
-      .trimEnd())
+    .map((line) =>
+      line
+        .replace(/^#{4,6}\s+/, '')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/(\*\*|__)(.+?)\1/g, '$2')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/^(\s*)[-*]\s+/, '$1• ')
+        .trimEnd(),
+    )
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();

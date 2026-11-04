@@ -1,8 +1,16 @@
 /* Element defaults and native-looking controls. */
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body, #root { height: 100%; margin: 0; overflow: hidden; }
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
 
 body {
   font-family: var(--font);
@@ -20,28 +28,93 @@ body {
 
 /* The WebView is transparent on macOS so the sidebar material shows through;
    every other surface paints its own opaque background. */
-:root[data-platform="mac"] body { background: transparent; }
+:root[data-platform="mac"] body {
+  background: transparent;
+}
 
-h1, h2, h3, p { margin: 0; }
-h1 { font-size: var(--title3); line-height: 20px; font-weight: 600; letter-spacing: var(--title3-track); }
-h2 { font-size: var(--body); line-height: var(--body-lh); font-weight: 600; }
-h3 { font-size: var(--caption); line-height: var(--caption-lh); font-weight: 600; letter-spacing: var(--caption-track); color: var(--label-2); }
-ul, ol { list-style: none; margin: 0; padding: 0; }
-code, pre, .mono { font-family: var(--mono); }
-pre { font-size: var(--callout); line-height: 18px; margin: 0; white-space: pre-wrap; word-break: break-word; }
-pre, code, .mono, .selectable { -webkit-user-select: text; user-select: text; cursor: auto; }
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: var(--title3);
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: var(--title3-track);
+}
+h2 {
+  font-size: var(--body);
+  line-height: var(--body-lh);
+  font-weight: 600;
+}
+h3 {
+  font-size: var(--caption);
+  line-height: var(--caption-lh);
+  font-weight: 600;
+  letter-spacing: var(--caption-track);
+  color: var(--label-2);
+}
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+code,
+pre,
+.mono {
+  font-family: var(--mono);
+}
+pre {
+  font-size: var(--callout);
+  line-height: 18px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+pre,
+code,
+.mono,
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: auto;
+}
 
-.muted { color: var(--label-2); }
-.note { font-size: var(--caption); line-height: var(--caption-lh); letter-spacing: var(--caption-track); }
-.count { color: var(--label-2); font-variant-numeric: tabular-nums; }
+.muted {
+  color: var(--label-2);
+}
+.note {
+  font-size: var(--caption);
+  line-height: var(--caption-lh);
+  letter-spacing: var(--caption-track);
+}
+.count {
+  color: var(--label-2);
+  font-variant-numeric: tabular-nums;
+}
 .visually-hidden {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Focus ring: macOS draws a soft accent ring hugging the control. */
-:focus { outline: none; }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 0;
+}
 
 /* Push button (regular size). */
 button {
@@ -53,15 +126,28 @@ button {
   border: 0;
   border-radius: var(--radius-control);
   background-color: var(--control);
-  box-shadow: 0 0 0 0.5px var(--control-edge), 0 0.5px 1.5px var(--control-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--control-edge),
+    0 0.5px 1.5px var(--control-shadow);
   white-space: nowrap;
   cursor: default;
 }
-button:active:not(:disabled) { filter: brightness(0.92); }
-button:disabled { color: var(--label-3); }
+button:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+button:disabled {
+  color: var(--label-3);
+}
 @media (prefers-color-scheme: dark) {
-  button { box-shadow: inset 0 0.5px 0 rgb(255 255 255 / 0.12), 0 0 0 0.5px var(--control-edge), 0 0.5px 1.5px var(--control-shadow); }
-  button:active:not(:disabled) { filter: brightness(1.2); }
+  button {
+    box-shadow:
+      inset 0 0.5px 0 rgb(255 255 255 / 0.12),
+      0 0 0 0.5px var(--control-edge),
+      0 0.5px 1.5px var(--control-shadow);
+  }
+  button:active:not(:disabled) {
+    filter: brightness(1.2);
+  }
 }
 
 /* Default button: the one Return would press. */
@@ -69,15 +155,23 @@ button.primary {
   color: var(--on-accent);
   background-color: var(--accent);
   background-image: linear-gradient(rgb(255 255 255 / 0.16), rgb(255 255 255 / 0));
-  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12), 0 0.5px 1.5px rgb(0 0 0 / 0.18);
+  box-shadow:
+    0 0 0 0.5px rgb(0 0 0 / 0.12),
+    0 0.5px 1.5px rgb(0 0 0 / 0.18);
 }
 button.primary:disabled {
   color: var(--label-3);
   background-color: var(--control);
   background-image: none;
-  box-shadow: 0 0 0 0.5px var(--control-edge), 0 0.5px 1.5px var(--control-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--control-edge),
+    0 0.5px 1.5px var(--control-shadow);
 }
-button.large { height: 28px; padding: 0 16px; border-radius: 7px; }
+button.large {
+  height: 28px;
+  padding: 0 16px;
+  border-radius: 7px;
+}
 
 /* Borderless text button. */
 button.link {
@@ -100,10 +194,15 @@ input[type="checkbox"] {
   margin: 0;
   border-radius: 3.5px;
   background-color: var(--control);
-  box-shadow: 0 0 0 0.5px var(--control-edge), 0 0.5px 1px var(--control-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--control-edge),
+    0 0.5px 1px var(--control-shadow);
   transition: background-color var(--motion);
 }
-input[type="checkbox"]:checked { background-color: var(--accent); box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12); }
+input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.12);
+}
 input[type="checkbox"]:checked::after {
   content: "";
   position: absolute;
@@ -115,8 +214,13 @@ input[type="checkbox"]:checked::after {
   border-width: 0 1.8px 1.8px 0;
   transform: rotate(45deg);
 }
-input[type="checkbox"]:disabled { opacity: 0.45; }
-input[type="checkbox"]:focus-visible { outline-offset: 0; border-radius: 3.5px; }
+input[type="checkbox"]:disabled {
+  opacity: 0.45;
+}
+input[type="checkbox"]:focus-visible {
+  outline-offset: 0;
+  border-radius: 3.5px;
+}
 
 /* Switch (small control size). The input keeps role="switch" for assistive tech. */
 input.switch {
@@ -137,16 +241,27 @@ input.switch:checked::after {
   border: 0;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 0.5px 2px rgb(0 0 0 / 0.3), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+  box-shadow:
+    0 0.5px 2px rgb(0 0 0 / 0.3),
+    0 0 0 0.5px rgb(0 0 0 / 0.06);
   transform: none;
   transition: transform var(--motion);
 }
-input.switch:checked { background-color: var(--accent); }
-input.switch:checked::after { transform: translateX(14px); }
-input.switch:focus-visible { border-radius: 9px; }
+input.switch:checked {
+  background-color: var(--accent);
+}
+input.switch:checked::after {
+  transform: translateX(14px);
+}
+input.switch:focus-visible {
+  border-radius: 9px;
+}
 
 /* Pop-up button: a select with an accent chevron cap (see TargetSelect). */
-.popup { position: relative; display: inline-flex; }
+.popup {
+  position: relative;
+  display: inline-flex;
+}
 .popup select {
   -webkit-appearance: none;
   appearance: none;
@@ -159,10 +274,14 @@ input.switch:focus-visible { border-radius: 9px; }
   border: 0;
   border-radius: var(--radius-control);
   background-color: var(--control);
-  box-shadow: 0 0 0 0.5px var(--control-edge), 0 0.5px 1.5px var(--control-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--control-edge),
+    0 0.5px 1.5px var(--control-shadow);
   cursor: default;
 }
-.popup select:disabled { color: var(--label-3); }
+.popup select:disabled {
+  color: var(--label-3);
+}
 .popup .chevrons {
   position: absolute;
   top: 3px;
@@ -175,11 +294,25 @@ input.switch:focus-visible { border-radius: 9px; }
   pointer-events: none;
 }
 /* A class, not :disabled + sibling: WebKit does not restyle the sibling when the select is re-enabled. */
-.popup.disabled .chevrons { background-color: var(--fill-2); color: var(--label-3); }
+.popup.disabled .chevrons {
+  background-color: var(--fill-2);
+  color: var(--label-3);
+}
 
 /* Search field. */
-.search-field { position: relative; display: flex; align-items: center; }
-.search-field svg { position: absolute; left: 7px; width: 13px; height: 13px; color: var(--label-2); pointer-events: none; }
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-field svg {
+  position: absolute;
+  left: 7px;
+  width: 13px;
+  height: 13px;
+  color: var(--label-2);
+  pointer-events: none;
+}
 .search-field input {
   font: inherit;
   letter-spacing: inherit;
@@ -192,8 +325,12 @@ input.switch:focus-visible { border-radius: 9px; }
   background-color: var(--fill);
   box-shadow: inset 0 0 0 0.5px var(--separator);
 }
-.search-field input::placeholder { color: var(--label-3); }
-.search-field input:focus-visible { outline: 3px solid var(--focus); }
+.search-field input::placeholder {
+  color: var(--label-3);
+}
+.search-field input:focus-visible {
+  outline: 3px solid var(--focus);
+}
 
 /* Segmented control built from radios so arrow keys still work. */
 .segmented {
@@ -205,8 +342,16 @@ input.switch:focus-visible { border-radius: 9px; }
   background-color: var(--fill-2);
   min-inline-size: auto;
 }
-.segmented label { position: relative; display: flex; }
-.segmented input { position: absolute; inset: 0; opacity: 0; margin: 0; }
+.segmented label {
+  position: relative;
+  display: flex;
+}
+.segmented input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+}
 .segmented span {
   display: block;
   height: 20px;
@@ -217,14 +362,28 @@ input.switch:focus-visible { border-radius: 9px; }
 }
 .segmented input:checked + span {
   background-color: var(--segment-selected);
-  box-shadow: 0 0 0 0.5px var(--control-edge), 0 1px 2px var(--control-shadow);
+  box-shadow:
+    0 0 0 0.5px var(--control-edge),
+    0 1px 2px var(--control-shadow);
 }
-.segmented input:focus-visible + span { outline: 3px solid var(--focus); }
-.segmented:disabled span { color: var(--label-3); }
+.segmented input:focus-visible + span {
+  outline: 3px solid var(--focus);
+}
+.segmented:disabled span {
+  color: var(--label-3);
+}
 
 /* Disclosure triangle for <details>, drawn in CSS so summaries stay plain text. */
-summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: default; }
-summary::-webkit-details-marker { display: none; }
+summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
 summary::before {
   content: "";
   flex: none;
@@ -236,20 +395,53 @@ summary::before {
   transform: rotate(-45deg);
   transition: transform var(--motion);
 }
-details[open] > summary::before { transform: rotate(45deg); }
+details[open] > summary::before {
+  transform: rotate(45deg);
+}
 
 /* SF Symbol-like inline icons. */
-.symbol { flex: none; width: 14px; height: 14px; }
-.symbol.secret { color: var(--orange); }
-.symbol.duplicate { color: var(--label-2); }
-.symbol.unavailable { color: var(--label-2); }
-.badges { display: inline-flex; gap: 4px; align-items: center; }
+.symbol {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+.symbol.secret {
+  color: var(--orange);
+}
+.symbol.duplicate {
+  color: var(--label-2);
+}
+.symbol.unavailable {
+  color: var(--label-2);
+}
+.badges {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
 
 /* Spinning progress indicator. */
-.spinner { flex: none; width: 16px; height: 16px; color: var(--label-2); animation: spin 0.9s steps(8) infinite; }
-.spinner.large { width: 20px; height: 20px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.spinner {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--label-2);
+  animation: spin 0.9s steps(8) infinite;
+}
+.spinner.large {
+  width: 20px;
+  height: 20px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
 
 /* Inset grouped section (System Settings form). */
 .group {
@@ -274,7 +466,20 @@ details[open] > summary::before { transform: rotate(45deg); }
   height: 1px;
   background-color: var(--separator);
 }
-.row-label { flex: 1; min-width: 0; }
-.row-value { color: var(--label-2); text-align: right; }
-.section-title { padding: 0 12px 6px; font-size: var(--body); font-weight: 600; }
-.section-footer { padding: 6px 12px 0; color: var(--label-2); }
+.row-label {
+  flex: 1;
+  min-width: 0;
+}
+.row-value {
+  color: var(--label-2);
+  text-align: right;
+}
+.section-title {
+  padding: 0 12px 6px;
+  font-size: var(--body);
+  font-weight: 600;
+}
+.section-footer {
+  padding: 6px 12px 0;
+  color: var(--label-2);
+}

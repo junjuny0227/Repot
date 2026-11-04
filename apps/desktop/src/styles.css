@@ -5,15 +5,74 @@
 @import "./styles/review.css";
 @import "./styles/export.css";
 
-.app-preferences { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.settings-button { font-size: 12px; }
-.update-sheet { color: var(--label); background: var(--group); border: 1px solid var(--separator); border-radius: 14px; padding: 24px; width: min(460px, 80vw); box-shadow: 0 18px 80px #0005; }
-.update-sheet::backdrop { background: #0003; }
-.update-sheet h2 { margin: 0 0 12px; font-size: 18px; }
-.update-sheet p { line-height: 1.5; }
-.update-notes { margin-top: 16px; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; max-height: 180px; overflow: auto; padding: 12px; background: var(--window); border-radius: 8px; }
-.update-sheet .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-.update-toggle { display: flex; align-items: center; gap: 8px; }
-.update-progress { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
-.update-sheet progress { width: 100%; accent-color: var(--accent); }
-.update-status { position: absolute; bottom: 58px; left: 24px; right: 24px; text-align: center; font-size: 12px; overflow-wrap: anywhere; pointer-events: none; }
+.app-preferences {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.settings-button {
+  font-size: 12px;
+}
+.update-sheet {
+  color: var(--label);
+  background: var(--group);
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+  padding: 24px;
+  width: min(460px, 80vw);
+  box-shadow: 0 18px 80px #0005;
+}
+.update-sheet::backdrop {
+  background: #0003;
+}
+.update-sheet h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.update-sheet p {
+  line-height: 1.5;
+}
+.update-notes {
+  margin-top: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  max-height: 180px;
+  overflow: auto;
+  padding: 12px;
+  background: var(--window);
+  border-radius: 8px;
+}
+.update-sheet .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+.update-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.update-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+.update-sheet progress {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.update-status {
+  position: absolute;
+  bottom: 58px;
+  left: 24px;
+  right: 24px;
+  text-align: center;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}

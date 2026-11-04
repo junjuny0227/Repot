@@ -1,8 +1,20 @@
 /* Window shell: toolbar, title bar area, error banner. */
 
-.app { position: relative; display: flex; flex-direction: column; height: 100%; }
+.app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-.screen { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; background-color: var(--window); }
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background-color: var(--window);
+}
 
 /* Unified toolbar. On macOS the traffic lights sit in its leading edge. */
 .toolbar {
@@ -15,16 +27,41 @@
   border-bottom: 1px solid var(--separator);
   background-color: var(--window);
 }
-.toolbar-title { display: flex; flex-direction: column; min-width: 0; }
-.toolbar-title h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.toolbar-title .subtitle { font-size: var(--caption); line-height: var(--caption-lh); color: var(--label-2); }
-.toolbar .spacer { flex: 1; }
-.toolbar .popup-field { display: flex; align-items: center; gap: 8px; }
-.toolbar .popup-label { color: var(--label-2); }
-.toolbar .package-field .popup select { min-width: 112px; }
+.toolbar-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.toolbar-title h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toolbar-title .subtitle {
+  font-size: var(--caption);
+  line-height: var(--caption-lh);
+  color: var(--label-2);
+}
+.toolbar .spacer {
+  flex: 1;
+}
+.toolbar .popup-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toolbar .popup-label {
+  color: var(--label-2);
+}
+.toolbar .package-field .popup select {
+  min-width: 112px;
+}
 
 /* Title bar strip for screens without a toolbar: draggable, no chrome. */
-.titlebar { flex: none; height: var(--toolbar-height); }
+.titlebar {
+  flex: none;
+  height: var(--toolbar-height);
+}
 
 /* Errors float above content like a HUD, so the layout under them does not jump. */
 .error {
@@ -46,6 +83,19 @@
   user-select: text;
   animation: rise var(--motion) ease-out;
 }
-.error .symbol { width: 16px; height: 16px; color: var(--red); margin-top: 0; }
-.error strong { font-weight: 600; white-space: nowrap; }
-@keyframes rise { from { opacity: 0; transform: translate(-50%, 6px); } }
+.error .symbol {
+  width: 16px;
+  height: 16px;
+  color: var(--red);
+  margin-top: 0;
+}
+.error strong {
+  font-weight: 600;
+  white-space: nowrap;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+}

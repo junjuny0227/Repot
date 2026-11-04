@@ -1,20 +1,26 @@
-import { useEffect, useMemo, useState, type Dispatch } from "react";
-import { chooseFolder, exportTo, previewExport } from "../api";
-import { errorMessage } from "../errors";
-import { buildSelection, currentTarget, fileTree, warningItemId } from "../logic";
-import type { Action, State } from "../state";
-import { S, warningText, withCount } from "../strings";
-import type { ExportBundle, Format, OutputFile } from "../types";
-import { DocIcon, TerminalIcon, WarningTriangle } from "./icons";
+import { type Dispatch, useEffect, useMemo, useState } from 'react';
+import { chooseFolder, exportTo, previewExport } from '../api';
+import { errorMessage } from '../errors';
+import { buildSelection, currentTarget, fileTree, warningItemId } from '../logic';
+import type { Action, State } from '../state';
+import { S, warningText, withCount } from '../strings';
+import type { ExportBundle, Format, OutputFile } from '../types';
+import { DocIcon, TerminalIcon, WarningTriangle } from './icons';
 
 export function ExportScreen({ state, dispatch }: { state: State; dispatch: Dispatch<Action> }) {
   const [bundle, setBundle] = useState<ExportBundle | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
-  const selection = useMemo(() => buildSelection(state.checked, state.revealed), [state.checked, state.revealed]);
+  const selection = useMemo(
+    () => buildSelection(state.checked, state.revealed),
+    [state.checked, state.revealed],
+  );
   // The same Target the review screen judged with, so the preview and the saved files match it.
-  const target = useMemo(() => currentTarget({ target: state.target, packages: state.packages }), [state.target, state.packages]);
+  const target = useMemo(
+    () => currentTarget({ target: state.target, packages: state.packages }),
+    [state.target, state.packages],
+  );
   const { format } = state;
 
   useEffect(() => {
@@ -26,14 +32,18 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
       .then((next) => {
         if (!current) return;
         setBundle(next);
-        setSelectedPath((path) => (next.files.some((f) => f.path === path) ? path : next.files[0]?.path ?? null));
+        setSelectedPath((path) =>
+          next.files.some((f) => f.path === path) ? path : (next.files[0]?.path ?? null),
+        );
       })
       .catch((e: unknown) => {
         if (!current) return;
         setPreviewFailed(true);
-        dispatch({ type: "error", message: errorMessage(e) });
+        dispatch({ type: 'error', message: errorMessage(e) });
       });
-    return () => { current = false; };
+    return () => {
+      current = false;
+    };
   }, [selection, target, format, dispatch]);
 
   const onSave = async () => {
@@ -43,16 +53,27 @@ export function ExportScreen({ state, dispatch }: { state: State; dispatch: Disp
       if (parent === null) return;
       setSaving(true);
       const path = await exportTo(selection, target, format, parent);
-      dispatch({ type: "exported", path });
+      dispatch({ type: 'exported', path });
     } catch (e) {
       // Stay on this screen so the user can pick another folder.
-      dispatch({ type: "error", message: errorMessage(e) });
+      dispatch({ type: 'error', message: errorMessage(e) });
     } finally {
       setSaving(false);
     }
   };
 
-  return <ExportView state={state} dispatch={dispatch} bundle={bundle} previewFailed={previewFailed} selectedPath={selectedPath} onSelect={setSelectedPath} onSave={onSave} saving={saving} />;
+  return (
+    <ExportView
+      state={state}
+      dispatch={dispatch}
+      bundle={bundle}
+      previewFailed={previewFailed}
+      selectedPath={selectedPath}
+      onSelect={setSelectedPath}
+      onSave={onSave}
+      saving={saving}
+    />
+  );
 }
 
 interface ViewProps {
@@ -66,37 +87,65 @@ interface ViewProps {
   saving: boolean;
 }
 
-export function ExportView({ state, dispatch, bundle, previewFailed = false, selectedPath, onSelect, onSave, saving }: ViewProps) {
+export function ExportView({
+  state,
+  dispatch,
+  bundle,
+  previewFailed = false,
+  selectedPath,
+  onSelect,
+  onSave,
+  saving,
+}: ViewProps) {
   const names = new Map((state.scan?.items ?? []).map((i) => [i.id, i.name]));
   const tree = bundle === null ? null : fileTree(bundle.files);
   const selected = bundle?.files.find((f) => f.path === selectedPath) ?? null;
   const fileButton = (f: OutputFile, label: string) => (
     <li key={f.path}>
-      <button className={`file ${f.path === selectedPath ? "active" : ""}`} aria-current={f.path === selectedPath ? "true" : undefined} onClick={() => onSelect(f.path)}>
+      <button
+        className={`file ${f.path === selectedPath ? 'active' : ''}`}
+        aria-current={f.path === selectedPath ? 'true' : undefined}
+        onClick={() => onSelect(f.path)}
+      >
         {f.executable ? <TerminalIcon /> : <DocIcon />}
         <span className="file-name">{label}</span>
       </button>
     </li>
   );
-  const formats: [Format, string][] = [["script", S.formatScript], ["manifest", S.formatManifest]];
+  const formats: [Format, string][] = [
+    ['script', S.formatScript],
+    ['manifest', S.formatManifest],
+  ];
 
   return (
     <section className="screen export">
       <header className="toolbar" data-tauri-drag-region="deep">
-        <div className="toolbar-title"><h1>{S.exportTitle}</h1></div>
+        <div className="toolbar-title">
+          <h1>{S.exportTitle}</h1>
+        </div>
         <div className="spacer" />
         <fieldset className="segmented" disabled={saving}>
           <legend className="visually-hidden">{S.format}</legend>
           {formats.map(([value, label]) => (
             <label key={value}>
-              <input type="radio" name="format" value={value} checked={state.format === value} onChange={() => dispatch({ type: "setFormat", format: value })} />
+              <input
+                type="radio"
+                name="format"
+                value={value}
+                checked={state.format === value}
+                onChange={() => dispatch({ type: 'setFormat', format: value })}
+              />
               <span>{label}</span>
             </label>
           ))}
         </fieldset>
         <div className="spacer" />
-        <button disabled={saving} onClick={() => dispatch({ type: "backToReview" })}>{S.back}</button>
-        <button className="primary" disabled={saving || bundle === null} onClick={onSave}>{saving ? S.saving : S.save}</button>
+        <button disabled={saving} onClick={() => dispatch({ type: 'backToReview' })}>
+          {S.back}
+        </button>
+        <button className="primary" disabled={saving || bundle === null} onClick={onSave}>
+          {saving ? S.saving : S.save}
+        </button>
       </header>
       {bundle !== null && bundle.warnings.length > 0 && (
         <div className="warnings" role="status">
@@ -122,8 +171,11 @@ export function ExportView({ state, dispatch, bundle, previewFailed = false, sel
               {tree.files.map((f) => fileButton(f, f.path))}
               {tree.folders.map((folder) => (
                 <li key={folder.name}>
-                  <details><summary>{withCount(`${folder.name}/`, folder.files.length)}</summary>
-                    <ul>{folder.files.map((f) => fileButton(f, f.path.slice(folder.name.length + 1)))}</ul>
+                  <details>
+                    <summary>{withCount(`${folder.name}/`, folder.files.length)}</summary>
+                    <ul>
+                      {folder.files.map((f) => fileButton(f, f.path.slice(folder.name.length + 1)))}
+                    </ul>
                   </details>
                 </li>
               ))}
@@ -132,9 +184,15 @@ export function ExportView({ state, dispatch, bundle, previewFailed = false, sel
           <div className="contents">
             {selected !== null && (
               <>
-                <div className="contents-header"><span className="mono">{selected.path}</span></div>
+                <div className="contents-header">
+                  <span className="mono">{selected.path}</span>
+                </div>
                 <pre className="code">
-                  {selected.contents.split("\n").map((line, n) => <span key={n} className="line">{line}</span>)}
+                  {selected.contents.split('\n').map((line, n) => (
+                    <span key={n} className="line">
+                      {line}
+                    </span>
+                  ))}
                 </pre>
               </>
             )}

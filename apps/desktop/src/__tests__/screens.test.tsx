@@ -1,207 +1,367 @@
-import { expect, test } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { initialState, reducer, type State } from "../state";
-import { S, categoryLabel, findingText, mappedTo, originText, osLabel, nextSteps, reasonText, statusText, warningText, withCount } from "../strings";
-import type { AvailabilityMap, ExportBundle, ScanResult } from "../types";
-import { StartScreen } from "../screens/StartScreen";
-import { ScanScreen } from "../screens/ScanScreen";
-import { ReviewScreen } from "../screens/ReviewScreen";
-import { Sidebar } from "../screens/review/Sidebar";
-import { DetailPanel } from "../screens/review/DetailPanel";
-import { ExportView } from "../screens/ExportScreen";
-import { DoneScreen } from "../screens/DoneScreen";
+import { renderToStaticMarkup } from 'react-dom/server';
+import { expect, test } from 'vitest';
+import { DoneScreen } from '../screens/DoneScreen';
+import { ExportView } from '../screens/ExportScreen';
+import { ReviewScreen } from '../screens/ReviewScreen';
+import { DetailPanel } from '../screens/review/DetailPanel';
+import { Sidebar } from '../screens/review/Sidebar';
+import { ScanScreen } from '../screens/ScanScreen';
+import { StartScreen } from '../screens/StartScreen';
+import { initialState, reducer, type State } from '../state';
+import {
+  categoryLabel,
+  findingText,
+  mappedTo,
+  nextSteps,
+  originText,
+  osLabel,
+  reasonText,
+  S,
+  statusText,
+  warningText,
+  withCount,
+} from '../strings';
+import type { AvailabilityMap, ExportBundle, ScanResult } from '../types';
 
 const noop = () => {};
 
-test("start screen shows the detected OS and defaults the destination to it", () => {
-  const s = reducer(initialState, { type: "init", source: { linux: "fedora" } });
-  const html = renderToStaticMarkup(<StartScreen state={s} dispatch={noop} onScan={noop} onOpen={noop} />);
-  expect(html).toContain(osLabel({ linux: "fedora" }));
+test('start screen shows the detected OS and defaults the destination to it', () => {
+  const s = reducer(initialState, { type: 'init', source: { linux: 'fedora' } });
+  const html = renderToStaticMarkup(
+    <StartScreen state={s} dispatch={noop} onScan={noop} onOpen={noop} />,
+  );
+  expect(html).toContain(osLabel({ linux: 'fedora' }));
   expect(html).toMatch(/<option[^>]*selected=""[^>]*>Linux \(Fedora\)<\/option>/);
   expect(html).toMatch(new RegExp(`<button[^>]*>${S.scanButton}</button>`));
   expect(html).toMatch(new RegExp(`<button[^>]*>${S.openFile}</button>`));
   expect(html).not.toMatch(/<button[^>]*disabled/);
 });
 
-test("start screen disables scanning until the OS is detected", () => {
-  const html = renderToStaticMarkup(<StartScreen state={initialState} dispatch={noop} onScan={noop} onOpen={noop} />);
+test('start screen disables scanning until the OS is detected', () => {
+  const html = renderToStaticMarkup(
+    <StartScreen state={initialState} dispatch={noop} onScan={noop} onOpen={noop} />,
+  );
   expect(html).toContain(S.detectingOs);
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>/);
 });
 
-test("scan screen lists provider statuses and offers no way to leave", () => {
-  let s: State = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "scanStarted" });
-  s = reducer(s, { type: "progress", report: { id: "brew", category: "packageManager", status: "running" } });
-  s = reducer(s, { type: "progress", report: { id: "npm", category: "globalPackage", status: { ok: { count: 4 } } } });
+test('scan screen lists provider statuses and offers no way to leave', () => {
+  let s: State = reducer(reducer(initialState, { type: 'init', source: 'macOs' }), {
+    type: 'scanStarted',
+  });
+  s = reducer(s, {
+    type: 'progress',
+    report: { id: 'brew', category: 'packageManager', status: 'running' },
+  });
+  s = reducer(s, {
+    type: 'progress',
+    report: { id: 'npm', category: 'globalPackage', status: { ok: { count: 4 } } },
+  });
   const html = renderToStaticMarkup(<ScanScreen state={s} />);
-  expect(html).toContain("brew");
-  expect(html).toContain(statusText("running"));
+  expect(html).toContain('brew');
+  expect(html).toContain(statusText('running'));
   expect(html).toContain(statusText({ ok: { count: 4 } }));
-  expect(html).not.toContain("<button");
-  expect(html).not.toContain("<select");
+  expect(html).not.toContain('<button');
+  expect(html).not.toContain('<select');
 });
 
-const fixture = (await import("../__fixtures__/scan.json")).default;
+const fixture = (await import('../__fixtures__/scan.json')).default;
 const scan = fixture.scan as unknown as ScanResult;
 const availMac = fixture.availability.macOs as unknown as AvailabilityMap;
 const availWin = fixture.availability.windows as unknown as AvailabilityMap;
 
-function reviewState(target: "macOs" | "windows", source: "macOs" | "windows" = "macOs"): State {
-  const s = reducer(reducer(initialState, { type: "init", source }), { type: "setTarget", target });
-  return reducer(s, { type: "scanFinished", scan, avail: target === "macOs" ? availMac : availWin });
+function reviewState(target: 'macOs' | 'windows', source: 'macOs' | 'windows' = 'macOs'): State {
+  const s = reducer(reducer(initialState, { type: 'init', source }), { type: 'setTarget', target });
+  return reducer(s, {
+    type: 'scanFinished',
+    scan,
+    avail: target === 'macOs' ? availMac : availWin,
+  });
 }
-const row = (html: string, id: string): string => html.match(new RegExp(`<li[^>]*data-id="${id}"[^>]*>(.*?)</li>`))?.[1] ?? "";
-const nextButton = (html: string): string => html.match(new RegExp(`<button[^>]*>${S.nextExport}</button>`))?.[0] ?? "";
+const row = (html: string, id: string): string =>
+  html.match(new RegExp(`<li[^>]*data-id="${id}"[^>]*>(.*?)</li>`))?.[1] ?? '';
+const nextButton = (html: string): string =>
+  html.match(new RegExp(`<button[^>]*>${S.nextExport}</button>`))?.[0] ?? '';
 
-test("review marks unavailable and secret items and keeps them unchecked on another OS", () => {
-  const html = renderToStaticMarkup(<ReviewScreen state={reviewState("windows")} dispatch={noop} onCompare={noop} />);
-  expect(row(html, "brew:formula:ripgrep")).toMatch(/checked=""/);
-  const brew = row(html, "brew:cask:rectangle");
+test('review marks unavailable and secret items and keeps them unchecked on another OS', () => {
+  const html = renderToStaticMarkup(
+    <ReviewScreen state={reviewState('windows')} dispatch={noop} onCompare={noop} />,
+  );
+  expect(row(html, 'brew:formula:ripgrep')).toMatch(/checked=""/);
+  const brew = row(html, 'brew:cask:rectangle');
   expect(brew).toContain(`aria-label="${S.badgeUnavailable}"`);
   expect(brew).toMatch(/<input[^>]*type="checkbox"[^>]*disabled=""/);
   expect(brew).not.toMatch(/checked=""/);
-  expect(row(html, "shell:file:.zshrc")).toContain(`aria-label="${S.badgeSecret}"`);
-  expect(row(html, "npm:typescript")).toMatch(/checked=""/);
-  expect(row(html, "npm:typescript")).toContain("Typed JavaScript tooling");
-  expect(nextButton(html)).not.toContain("disabled");
+  expect(row(html, 'shell:file:.zshrc')).toContain(`aria-label="${S.badgeSecret}"`);
+  expect(row(html, 'npm:typescript')).toMatch(/checked=""/);
+  expect(row(html, 'npm:typescript')).toContain('Typed JavaScript tooling');
+  expect(nextButton(html)).not.toContain('disabled');
 });
 
-const packagePicker = (html: string): string => html.match(/<label class="popup-field package-field[^"]*">.*?<\/label>/)?.[0] ?? "";
+const packagePicker = (html: string): string =>
+  html.match(/<label class="popup-field package-field[^"]*">.*?<\/label>/)?.[0] ?? '';
 
-test("review offers the Windows package manager only when moving to Windows from another OS", () => {
-  const html = packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows")} dispatch={noop} onCompare={noop} />));
+test('review offers the Windows package manager only when moving to Windows from another OS', () => {
+  const html = packagePicker(
+    renderToStaticMarkup(
+      <ReviewScreen state={reviewState('windows')} dispatch={noop} onCompare={noop} />,
+    ),
+  );
   expect(html).toContain(S.packageManager);
-  expect(html).toMatch(/<option value="winget" selected="">winget<\/option><option value="scoop">Scoop<\/option><option value="choco">Chocolatey<\/option>/);
-  const scoop = reducer(reviewState("windows"), { type: "setPackages", packages: "scoop", avail: availWin });
-  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={scoop} dispatch={noop} onCompare={noop} />))).toMatch(/<option value="scoop" selected="">/);
-  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("macOs")} dispatch={noop} onCompare={noop} />))).toBe("");
-  expect(packagePicker(renderToStaticMarkup(<ReviewScreen state={reviewState("windows", "windows")} dispatch={noop} onCompare={noop} />))).toBe("");
+  expect(html).toMatch(
+    /<option value="winget" selected="">winget<\/option><option value="scoop">Scoop<\/option><option value="choco">Chocolatey<\/option>/,
+  );
+  const scoop = reducer(reviewState('windows'), {
+    type: 'setPackages',
+    packages: 'scoop',
+    avail: availWin,
+  });
+  expect(
+    packagePicker(
+      renderToStaticMarkup(<ReviewScreen state={scoop} dispatch={noop} onCompare={noop} />),
+    ),
+  ).toMatch(/<option value="scoop" selected="">/);
+  expect(
+    packagePicker(
+      renderToStaticMarkup(
+        <ReviewScreen state={reviewState('macOs')} dispatch={noop} onCompare={noop} />,
+      ),
+    ),
+  ).toBe('');
+  expect(
+    packagePicker(
+      renderToStaticMarkup(
+        <ReviewScreen state={reviewState('windows', 'windows')} dispatch={noop} onCompare={noop} />,
+      ),
+    ),
+  ).toBe('');
 });
 
-test("mapped packages show the destination name in the list and the mapping in the detail panel", () => {
-  const s = reviewState("windows");
+test('mapped packages show the destination name in the list and the mapping in the detail panel', () => {
+  const s = reviewState('windows');
   const html = renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />);
-  const ripgrep = row(html, "brew:formula:ripgrep");
+  const ripgrep = row(html, 'brew:formula:ripgrep');
   expect(ripgrep).toMatch(/<span class="item-mapped"[^>]*>→ BurntSushi\.ripgrep\.MSVC<\/span>/);
-  expect(ripgrep).toContain(`title="${mappedTo("winget", "BurntSushi.ripgrep.MSVC")}"`);
-  expect(row(html, "brew:cask:rectangle")).not.toContain("item-mapped");
-  expect(row(renderToStaticMarkup(<ReviewScreen state={reviewState("macOs")} dispatch={noop} onCompare={noop} />), "brew:formula:ripgrep")).not.toContain("item-mapped");
+  expect(ripgrep).toContain(`title="${mappedTo('winget', 'BurntSushi.ripgrep.MSVC')}"`);
+  expect(row(html, 'brew:cask:rectangle')).not.toContain('item-mapped');
+  expect(
+    row(
+      renderToStaticMarkup(
+        <ReviewScreen state={reviewState('macOs')} dispatch={noop} onCompare={noop} />,
+      ),
+      'brew:formula:ripgrep',
+    ),
+  ).not.toContain('item-mapped');
 
-  const item = scan.items.find((i) => i.id === "brew:formula:ripgrep")!;
+  const item = scan.items.find((i) => i.id === 'brew:formula:ripgrep')!;
   const detail = renderToStaticMarkup(<DetailPanel item={item} state={s} dispatch={noop} />);
-  expect(detail.replace(/<[^>]+>/g, "")).toContain("brew ripgrep → winget BurntSushi.ripgrep.MSVC");
+  expect(detail.replace(/<[^>]+>/g, '')).toContain('brew ripgrep → winget BurntSushi.ripgrep.MSVC');
   expect(detail).toContain(S.mappingNote);
   expect(detail).toMatch(/class="availability ok"/);
-  const same = renderToStaticMarkup(<DetailPanel item={item} state={reviewState("macOs")} dispatch={noop} />);
+  const same = renderToStaticMarkup(
+    <DetailPanel item={item} state={reviewState('macOs')} dispatch={noop} />,
+  );
   expect(same).not.toContain(S.mappingNote);
-  expect(same).not.toContain("→");
+  expect(same).not.toContain('→');
 });
 
-test("unavailable packages say whether the map lacks them or the manager has none", () => {
-  const rectangle = scan.items.find((i) => i.id === "brew:cask:rectangle")!;
-  const s = reviewState("windows");
-  const confirmed = renderToStaticMarkup(<DetailPanel item={rectangle} state={s} dispatch={noop} />);
-  expect(confirmed).toContain(reasonText({ noPackageInManager: { manager: "winget" } }));
+test('unavailable packages say whether the map lacks them or the manager has none', () => {
+  const rectangle = scan.items.find((i) => i.id === 'brew:cask:rectangle')!;
+  const s = reviewState('windows');
+  const confirmed = renderToStaticMarkup(
+    <DetailPanel item={rectangle} state={s} dispatch={noop} />,
+  );
+  expect(confirmed).toContain(reasonText({ noPackageInManager: { manager: 'winget' } }));
   expect(confirmed).not.toContain(S.mappingNote);
-  const unknown = reducer(s, { type: "setPackages", packages: "scoop", avail: { ...s.avail, [rectangle.id]: { unavailable: { notInPackageMap: { manager: "scoop" } } } } });
+  const unknown = reducer(s, {
+    type: 'setPackages',
+    packages: 'scoop',
+    avail: {
+      ...s.avail,
+      [rectangle.id]: { unavailable: { notInPackageMap: { manager: 'scoop' } } },
+    },
+  });
   // React escapes the apostrophe in "Repot's".
-  expect(renderToStaticMarkup(<DetailPanel item={rectangle} state={unknown} dispatch={noop} />)).toContain(reasonText({ notInPackageMap: { manager: "scoop" } }).replace(/'/g, "&#x27;"));
-  expect(reasonText({ notInPackageMap: { manager: "scoop" } })).not.toBe(reasonText({ noPackageInManager: { manager: "scoop" } }));
-  expect(reasonText("noPackageManager")).toBe("Unavailable: the destination OS has no supported package manager.");
+  expect(
+    renderToStaticMarkup(<DetailPanel item={rectangle} state={unknown} dispatch={noop} />),
+  ).toContain(reasonText({ notInPackageMap: { manager: 'scoop' } }).replace(/'/g, '&#x27;'));
+  expect(reasonText({ notInPackageMap: { manager: 'scoop' } })).not.toBe(
+    reasonText({ noPackageInManager: { manager: 'scoop' } }),
+  );
+  expect(reasonText('noPackageManager')).toBe(
+    'Unavailable: the destination OS has no supported package manager.',
+  );
 });
 
-test("items without a description say so", () => {
+test('items without a description say so', () => {
   const bare = { ...scan, items: scan.items.map((i) => ({ ...i, description: null })) };
-  const s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "scanFinished", scan: bare, avail: availMac });
-  expect(row(renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />), "npm:typescript")).toContain(S.noDescription);
+  const s = reducer(reducer(initialState, { type: 'init', source: 'macOs' }), {
+    type: 'scanFinished',
+    scan: bare,
+    avail: availMac,
+  });
+  expect(
+    row(
+      renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />),
+      'npm:typescript',
+    ),
+  ).toContain(S.noDescription);
 });
 
-test("review disables Next when nothing is selected", () => {
-  let s = reviewState("macOs");
-  for (const id of [...s.checked]) s = reducer(s, { type: "toggleItem", id });
-  expect(nextButton(renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />))).toContain("disabled");
+test('review disables Next when nothing is selected', () => {
+  let s = reviewState('macOs');
+  for (const id of [...s.checked]) s = reducer(s, { type: 'toggleItem', id });
+  expect(
+    nextButton(renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />)),
+  ).toContain('disabled');
 });
 
-test("sidebar shows checked/total per category", () => {
-  const html = renderToStaticMarkup(<Sidebar state={reviewState("windows")} dispatch={noop} category={null} onCategory={noop} />);
-  expect(html).toContain(categoryLabel("packageManager"));
+test('sidebar shows checked/total per category', () => {
+  const html = renderToStaticMarkup(
+    <Sidebar state={reviewState('windows')} dispatch={noop} category={null} onCategory={noop} />,
+  );
+  expect(html).toContain(categoryLabel('packageManager'));
   expect(html).toMatch(/0\/1/);
   expect(html).toMatch(/1\/1/);
 });
 
-test("detail panel enables the reveal toggle only for checked items", () => {
-  const zshrc = scan.items.find((i) => i.id === "shell:file:.zshrc")!;
-  let s = reviewState("macOs");
+test('detail panel enables the reveal toggle only for checked items', () => {
+  const zshrc = scan.items.find((i) => i.id === 'shell:file:.zshrc')!;
+  let s = reviewState('macOs');
   let html = renderToStaticMarkup(<DetailPanel item={zshrc} state={s} dispatch={noop} />);
   expect(html).toContain(findingText(zshrc.findings[0]));
   expect(html).toContain(originText(zshrc.origin));
   expect(html).toContain(S.revealSecret);
   expect(html).not.toMatch(/<input[^>]*disabled=""/);
-  s = reducer(s, { type: "toggleItem", id: zshrc.id });
+  s = reducer(s, { type: 'toggleItem', id: zshrc.id });
   html = renderToStaticMarkup(<DetailPanel item={zshrc} state={s} dispatch={noop} />);
   expect(html).toMatch(/<input[^>]*disabled=""/);
-  html = renderToStaticMarkup(<DetailPanel item={zshrc} state={reviewState("windows")} dispatch={noop} />);
-  expect(html).toContain(reasonText({ shellUnsupported: "zsh" }));
+  html = renderToStaticMarkup(
+    <DetailPanel item={zshrc} state={reviewState('windows')} dispatch={noop} />,
+  );
+  expect(html).toContain(reasonText({ shellUnsupported: 'zsh' }));
 });
 
-test("not detected and failed providers are collapsed, with raw failure detail", () => {
-  const failed = { ...scan, providers: [...scan.providers, { id: "vscode2", category: "editor" as const, status: { failed: { message: "code failed", detail: "raw stderr" } } }] };
-  const s = reducer(reducer(initialState, { type: "init", source: "macOs" }), { type: "scanFinished", scan: failed, avail: availMac });
+test('not detected and failed providers are collapsed, with raw failure detail', () => {
+  const failed = {
+    ...scan,
+    providers: [
+      ...scan.providers,
+      {
+        id: 'vscode2',
+        category: 'editor' as const,
+        status: { failed: { message: 'code failed', detail: 'raw stderr' } },
+      },
+    ],
+  };
+  const s = reducer(reducer(initialState, { type: 'init', source: 'macOs' }), {
+    type: 'scanFinished',
+    scan: failed,
+    avail: availMac,
+  });
   const html = renderToStaticMarkup(<ReviewScreen state={s} dispatch={noop} onCompare={noop} />);
   expect(html).not.toMatch(/<details[^>]*open/);
-  expect(html).toContain(withCount(S.notDetected, scan.providers.filter((p) => p.status === "notDetected").length));
+  expect(html).toContain(
+    withCount(S.notDetected, scan.providers.filter((p) => p.status === 'notDetected').length),
+  );
   expect(html).toContain(withCount(S.failed, 1));
-  expect(html).toContain("<pre>raw stderr</pre>");
+  expect(html).toContain('<pre>raw stderr</pre>');
 });
 
 const bundle: ExportBundle = {
   files: [
-    { path: "restore.sh", contents: "#!/usr/bin/env bash\necho restore", executable: true },
-    { path: "files/.zshrc", contents: "export A=1", executable: false },
+    { path: 'restore.sh', contents: '#!/usr/bin/env bash\necho restore', executable: true },
+    { path: 'files/.zshrc', contents: 'export A=1', executable: false },
   ],
-  warnings: [{ readFailed: { itemId: "git:file:.gitconfig" } }],
+  warnings: [{ readFailed: { itemId: 'git:file:.gitconfig' } }],
 };
 
-test("export view shows formats, a folded file tree, warnings and the selected file", () => {
-  const s = reducer(reviewState("macOs"), { type: "goExport" });
+test('export view shows formats, a folded file tree, warnings and the selected file', () => {
+  const s = reducer(reviewState('macOs'), { type: 'goExport' });
   const html = renderToStaticMarkup(
-    <ExportView state={s} dispatch={noop} bundle={bundle} selectedPath="restore.sh" onSelect={noop} onSave={noop} saving={false} />,
+    <ExportView
+      state={s}
+      dispatch={noop}
+      bundle={bundle}
+      selectedPath="restore.sh"
+      onSelect={noop}
+      onSave={noop}
+      saving={false}
+    />,
   );
   expect(html).toContain(S.formatScript);
   expect(html).toContain(S.formatManifest);
-  expect(html).toMatch(/<input[^>]*type="radio"[^>]*checked=""[^>]*value="script"|<input[^>]*value="script"[^>]*checked=""/);
+  expect(html).toMatch(
+    /<input[^>]*type="radio"[^>]*checked=""[^>]*value="script"|<input[^>]*value="script"[^>]*checked=""/,
+  );
   expect(html).toMatch(/<details><summary>files\/[^<]*<\/summary>/);
-  expect(html).toContain(".zshrc");
-  expect(html).toContain(warningText(bundle.warnings[0], ".gitconfig"));
-  expect(html).toContain("echo restore");
+  expect(html).toContain('.zshrc');
+  expect(html).toContain(warningText(bundle.warnings[0], '.gitconfig'));
+  expect(html).toContain('echo restore');
   expect(html).toMatch(new RegExp(`<button[^>]*>${S.back}</button>`));
   expect(html).toMatch(new RegExp(`<button[^>]*>${S.save}</button>`));
   expect(html).not.toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${S.save}`));
 });
 
-test("export view disables saving while the preview loads or a save runs", () => {
-  const s = reducer(reviewState("macOs"), { type: "goExport" });
-  const loading = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={null} selectedPath={null} onSelect={noop} onSave={noop} saving={false} />);
+test('export view disables saving while the preview loads or a save runs', () => {
+  const s = reducer(reviewState('macOs'), { type: 'goExport' });
+  const loading = renderToStaticMarkup(
+    <ExportView
+      state={s}
+      dispatch={noop}
+      bundle={null}
+      selectedPath={null}
+      onSelect={noop}
+      onSave={noop}
+      saving={false}
+    />,
+  );
   expect(loading).toContain(S.previewLoading);
   expect(loading).toMatch(new RegExp(`<button[^>]*disabled=""[^>]*>${S.save}`));
-  const saving = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={bundle} selectedPath={null} onSelect={noop} onSave={noop} saving />);
+  const saving = renderToStaticMarkup(
+    <ExportView
+      state={s}
+      dispatch={noop}
+      bundle={bundle}
+      selectedPath={null}
+      onSelect={noop}
+      onSave={noop}
+      saving
+    />,
+  );
   expect(saving).toMatch(/<button[^>]*disabled=""[^>]*>/);
 });
 
-test("done screen shows the path, next steps and actions", () => {
-  let s = reducer(reducer(reviewState("windows"), { type: "goExport" }), { type: "exported", path: "/tmp/repot-export-2026-11-02" });
+test('done screen shows the path, next steps and actions', () => {
+  let s = reducer(reducer(reviewState('windows'), { type: 'goExport' }), {
+    type: 'exported',
+    path: '/tmp/repot-export-2026-11-02',
+  });
   const html = renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />);
-  expect(html).toContain("/tmp/repot-export-2026-11-02");
-  for (const step of nextSteps("windows", "script")) expect(html).toContain(step);
+  expect(html).toContain('/tmp/repot-export-2026-11-02');
+  for (const step of nextSteps('windows', 'script')) expect(html).toContain(step);
   expect(html).toContain(S.openFolder);
   expect(html).toContain(S.startOver);
-  s = reducer(s, { type: "setFormat", format: "manifest" });
-  expect(renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />)).toContain(nextSteps("windows", "manifest")[0]);
+  s = reducer(s, { type: 'setFormat', format: 'manifest' });
+  expect(renderToStaticMarkup(<DoneScreen state={s} dispatch={noop} />)).toContain(
+    nextSteps('windows', 'manifest')[0],
+  );
 });
 
-test("export view stops showing the loading text when the preview failed", () => {
-  const s = reducer(reviewState("macOs"), { type: "goExport" });
-  const html = renderToStaticMarkup(<ExportView state={s} dispatch={noop} bundle={null} previewFailed selectedPath={null} onSelect={noop} onSave={noop} saving={false} />);
+test('export view stops showing the loading text when the preview failed', () => {
+  const s = reducer(reviewState('macOs'), { type: 'goExport' });
+  const html = renderToStaticMarkup(
+    <ExportView
+      state={s}
+      dispatch={noop}
+      bundle={null}
+      previewFailed
+      selectedPath={null}
+      onSelect={noop}
+      onSave={noop}
+      saving={false}
+    />,
+  );
   expect(html).toContain(S.previewFailed);
   expect(html).not.toContain(S.previewLoading);
 });

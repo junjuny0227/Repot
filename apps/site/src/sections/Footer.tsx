@@ -1,7 +1,7 @@
-import appIcon from "../../../desktop/app-icon-macos.svg";
-import { useContent } from "../content";
-import { Globe } from "../icons";
-import { LanguageLinks } from "./LanguageMenu";
+import appIcon from '../../../desktop/app-icon-macos.svg';
+import { useContent } from '../content';
+import { Globe } from '../icons';
+import { LanguageLinks } from './LanguageMenu';
 
 export function Footer() {
   const C = useContent();
@@ -17,7 +17,11 @@ export function Footer() {
         </div>
         <nav aria-label={C.projectNav}>
           <ul>
-            {C.footer.links.map((l) => <li key={l.href}><a href={l.href}>{l.label}</a></li>)}
+            {C.footer.links.map((l) => (
+              <li key={l.href}>
+                <a href={l.href}>{l.label}</a>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>

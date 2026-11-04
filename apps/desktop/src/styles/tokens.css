@@ -4,7 +4,9 @@
 :root {
   color-scheme: light dark;
 
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui,
+    sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Type scale (size / line height / tracking) close to macOS text styles. */
@@ -128,7 +130,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --motion: 0ms; }
+  :root {
+    --motion: 0ms;
+  }
 }
 
 /* Per-language system fonts (no web fonts). On macOS, -apple-system already follows <html lang>
@@ -136,22 +140,33 @@
    keep Han characters in each language's regional style. SF's negative tracking is for Latin text,
    so CJK text keeps the font's own spacing. */
 :root:lang(ko) {
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Segoe UI", "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", system-ui, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Apple SD Gothic Neo", "Segoe UI",
+    "Malgun Gothic", "Noto Sans CJK KR", "Noto Sans KR", system-ui, sans-serif;
 }
 :root:lang(ja) {
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Segoe UI", "Yu Gothic UI", "Meiryo UI", "Noto Sans CJK JP", "Noto Sans JP", system-ui, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Segoe UI", "Yu Gothic UI", "Meiryo UI", "Noto Sans CJK JP", "Noto Sans JP", system-ui,
+    sans-serif;
 }
 :root:lang(zh-Hans) {
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", "Microsoft YaHei UI", "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
+  --font:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI",
+    "Microsoft YaHei UI", "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
 }
-:root:lang(ko), :root:lang(ja), :root:lang(zh-Hans) {
+:root:lang(ko),
+:root:lang(ja),
+:root:lang(zh-Hans) {
   --body-track: 0;
   --caption-track: 0;
   --title3-track: 0;
   --title1-track: 0;
 }
 /* CJK paragraphs avoid a lone character or punctuation mark on the last line. */
-:root:lang(ko) p, :root:lang(ja) p, :root:lang(zh-Hans) p {
+:root:lang(ko) p,
+:root:lang(ja) p,
+:root:lang(zh-Hans) p {
   text-wrap: pretty;
 }
 /* Korean wraps between words, not inside them; very long words may still break to avoid overflow. */
