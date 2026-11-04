@@ -30,14 +30,15 @@ pub fn run() {
     tauri::Builder::default()
         .manage(commands::AppState {
             env: std::sync::Arc::new(repot_core::RealEnv::new()),
-            source: repot_core::os::current_os(),
-            scan: std::sync::Mutex::new(None),
+            machine: repot_core::os::current_os(),
+            session: std::sync::Mutex::new(None),
             last_export: std::sync::Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             update_platform,
             commands::detect_os,
             commands::scan,
+            commands::open_snapshot,
             commands::availability_for,
             commands::preview_export,
             commands::export,
