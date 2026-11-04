@@ -252,6 +252,11 @@
         "status": "notDetected"
       },
       {
+        "category": "editor",
+        "id": "jetbrains",
+        "status": "notDetected"
+      },
+      {
         "category": "git",
         "id": "git",
         "status": {

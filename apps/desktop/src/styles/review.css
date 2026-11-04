@@ -331,6 +331,12 @@ button.source-item {
   font-weight: 400;
   color: var(--label-2);
 }
+.item-ide {
+  flex: none;
+  font-size: var(--caption);
+  font-weight: 400;
+  color: var(--label-2);
+}
 .item-mapped {
   min-width: 0;
   overflow: hidden;
@@ -361,6 +367,7 @@ button.source-item {
   color: var(--on-accent);
 }
 .item.selected .item-version,
+.item.selected .item-ide,
 .item.selected .item-mapped,
 .item.selected .item-description,
 .item.selected.unavailable .item-name {
