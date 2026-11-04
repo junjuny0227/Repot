@@ -14,5 +14,6 @@
 .update-notes { margin-top: 16px; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; max-height: 180px; overflow: auto; padding: 12px; background: var(--window); border-radius: 8px; }
 .update-sheet .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .update-toggle { display: flex; align-items: center; gap: 8px; }
+.update-progress { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
 .update-sheet progress { width: 100%; accent-color: var(--accent); }
 .update-status { position: absolute; bottom: 58px; left: 24px; right: 24px; text-align: center; font-size: 12px; overflow-wrap: anywhere; pointer-events: none; }
