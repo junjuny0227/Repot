@@ -89,7 +89,7 @@
       "shell": "Shell"
     },
     "pyenv": "pyenv（含 pyenv-win）",
-    "editor": "VS Code 和 Cursor 的扩展、设置、键绑定和代码片段",
+    "editor": "VS Code 和 Cursor 的扩展与设置，JetBrains IDE 的插件与设置",
     "git": "用户配置，以及已配置的全局忽略文件",
     "shell": "zsh、Bash、fish 和 PowerShell 配置文件，oh-my-zsh 自定义插件和主题，Starship 配置",
     "note": "迁移到相同的操作系统（Linux 需为同一发行版系列）时，软件包沿用原来的管理器。跨操作系统迁移时，Repot 只使用内置的软件包对照表；在 Windows 上可选择 winget、Scoop 或 Chocolatey。运行时管理器会按目标系统对应转换；无法迁移的项目会被禁用，而不是靠猜测处理。"
