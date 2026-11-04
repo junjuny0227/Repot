@@ -31,7 +31,7 @@ export function UpdateNotice({ screen }: { screen: Screen }) {
     <h2 id="update-title">{format(t.available, { version: state.version })}</h2>
     <p>{t.intro}</p>
     {state.notes && <pre className="update-notes">{state.notes}</pre>}
-    {updates.busy() ? <div role="status">
+    {updates.busy() ? <div className="update-progress" role="status">
       <p>{state.phase === "restarting" ? t.restarting : t.downloading}</p>
       <progress aria-label={t.downloading} value={state.total ? Math.min(state.downloaded, state.total) : undefined} max={state.total || 1} />
       <p>{format(t.progress, { downloaded: state.downloaded, total: state.total ?? "—" })}</p>
