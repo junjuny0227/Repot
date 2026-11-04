@@ -118,6 +118,29 @@ Repot 默认在启动时向 GitHub 检查一次更新。打开语言选择器旁
   或下载最新安装包。
 - **0.1.0 没有更新功能**：请先手动安装一次 0.2.0 或更高版本。
 
+### 命令行工具
+
+`repot` 在终端中完成同样的扫描、比较和导出，适用于没有图形界面的电脑或脚本。它与应用使用
+相同的规则，只读取本机，只写入一个导出文件夹，并且不使用网络。
+
+从 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) 下载
+`repot-cli-<版本>-<target>.tar.gz`（macOS、Linux）或 `.zip`（Windows），用 `.sha256`
+文件校验后，把 `repot` 放到 `PATH` 中。在 macOS 上用浏览器下载的文件会被隔离，请运行一次
+`xattr -d com.apple.quarantine repot`。如果已安装 Rust，也可以运行
+`cargo install --git https://github.com/junjuny0227/Repot repot-cli`。
+
+```sh
+repot scan                                    # 找到的项目及其 id
+repot export --out ~/Desktop                  # 本系统的恢复脚本 + repot.json
+repot export --to windows --packages scoop    # 用于其他系统
+repot compare repot.json                      # 在新电脑上：已存在 / 缺少
+repot export repot.json --only-missing        # 只导出本机缺少的内容
+```
+
+`--dry-run` 只列出文件而不写入，`--include` / `--exclude <id>` 用于调整选择，`--json`
+输出机器可读的结果（0.x 期间格式可能变化）。输出文字为英文。密钥始终会被遮盖，命令会告诉你
+遮盖的位置。运行 `repot <命令> --help` 查看全部选项。
+
 ## 使用导出内容
 
 1. 将**整个** `repot-export-YYYY-MM-DD/` 文件夹复制到目标电脑，包括 `files/`。

@@ -11,6 +11,7 @@ const files = [
   'apps/desktop/package.json',
   'apps/desktop/src-tauri/Cargo.toml',
   'crates/core/Cargo.toml',
+  'crates/cli/Cargo.toml',
 ];
 let failed = false;
 for (const file of files) {

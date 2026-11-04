@@ -129,6 +129,31 @@ Repot은 기본으로 실행할 때 한 번 GitHub에서 업데이트를 확인�
   업데이트하거나 최신 설치 파일을 다시 받으세요.
 - **0.1.0에는 업데이트 기능이 없습니다.** 0.2.0 이상을 한 번 직접 설치해 주세요.
 
+### 명령줄 도구
+
+`repot`은 같은 스캔·비교·내보내기를 터미널에서 합니다. 화면이 없는 기기나 스크립트에서
+쓸 수 있습니다. 앱과 같은 규칙을 쓰고, 이 기기를 읽기만 하며, 내보내기 폴더 하나만 쓰고,
+네트워크를 쓰지 않습니다.
+
+[GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest)에서
+`repot-cli-<버전>-<target>.tar.gz`(macOS, Linux)나 `.zip`(Windows)을 받아 `.sha256`
+파일로 확인한 뒤 `repot`을 `PATH`에 둡니다. macOS에서 브라우저로 받은 파일은 격리되므로
+`xattr -d com.apple.quarantine repot`을 한 번 실행합니다. Rust가 있으면
+`cargo install --git https://github.com/junjuny0227/Repot repot-cli`로도 설치할 수 있습니다.
+
+```sh
+repot scan                                    # 찾은 항목과 항목 id
+repot export --out ~/Desktop                  # 이 OS용 복원 스크립트 + repot.json
+repot export --to windows --packages scoop    # 다른 OS용
+repot compare repot.json                      # 새 기기에서: 이미 있음 / 없음
+repot export repot.json --only-missing        # 이 기기에 없는 것만 내보내기
+```
+
+`--dry-run`은 파일을 쓰지 않고 목록만 보여주고, `--include` / `--exclude <id>`로 선택을
+바꾸며, `--json`은 기계가 읽는 출력을 냅니다(0.x 동안 모양이 바뀔 수 있음). 출력 문장은
+영어입니다. 비밀정보는 항상 가리고, 어디를 가렸는지 알려줍니다. 모든 옵션은
+`repot <명령> --help`로 봅니다.
+
 ## 내보낸 파일 사용하기
 
 1. `repot-export-YYYY-MM-DD/` 폴더를 `files/`까지 **통째로** 대상 기기에 복사합니다.

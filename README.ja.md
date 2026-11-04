@@ -128,6 +128,32 @@ Repot は既定で起動時に一度、GitHub でアップデートを確認し�
   更新するか、最新のインストーラーをダウンロードしてください。
 - **0.1.0 にはアップデート機能がありません。** 一度だけ、0.2.0 以降を手動でインストールしてください。
 
+### コマンドラインツール
+
+`repot` は同じスキャン、比較、書き出しをターミナルで行います。画面のないマシンやスクリプトで
+使えます。アプリと同じルールを使い、このマシンを読み取るだけで、書き出しフォルダーを 1 つだけ
+作り、ネットワークは使いません。
+
+[GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) から
+`repot-cli-<バージョン>-<target>.tar.gz`（macOS、Linux）または `.zip`（Windows）を
+ダウンロードし、`.sha256` ファイルで確認してから `repot` を `PATH` に置きます。macOS で
+ブラウザからダウンロードしたファイルは隔離されるため、`xattr -d com.apple.quarantine repot` を
+一度実行します。Rust がある場合は
+`cargo install --git https://github.com/junjuny0227/Repot repot-cli` でもインストールできます。
+
+```sh
+repot scan                                    # 見つかった項目と項目 id
+repot export --out ~/Desktop                  # この OS 用の復元スクリプト + repot.json
+repot export --to windows --packages scoop    # 別の OS 用
+repot compare repot.json                      # 新しいマシンで：すでにある / ない
+repot export repot.json --only-missing        # このマシンにないものだけ書き出す
+```
+
+`--dry-run` はファイルを書かずに一覧だけを表示し、`--include` / `--exclude <id>` で選択を
+変え、`--json` は機械が読む出力を出します（0.x の間は形が変わることがあります）。出力の文章は
+英語です。秘密情報は常に伏せ、どこを伏せたかを表示します。すべてのオプションは
+`repot <コマンド> --help` で確認できます。
+
 ## 書き出したファイルの使い方
 
 1. `files/` を含む `repot-export-YYYY-MM-DD/` フォルダ**全体**を移行先のコンピュータにコピーします。

@@ -134,6 +134,32 @@ is installed.
   your package manager or download the latest installer.
 - **0.1.0 has no updater**: install 0.2.0 or later manually once.
 
+### Command-line tool
+
+`repot` does the same scan, comparison and export from a terminal, for machines without
+a desktop or for scripts. It uses the same rules as the app, only reads this machine,
+writes one export folder and never uses the network.
+
+Download `repot-cli-<version>-<target>.tar.gz` (macOS, Linux) or `.zip` (Windows) from
+[GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest), check it
+against its `.sha256` file, and put `repot` on your `PATH`. Archives downloaded with a
+browser are quarantined on macOS: run `xattr -d com.apple.quarantine repot` once. With
+Rust installed you can also run
+`cargo install --git https://github.com/junjuny0227/Repot repot-cli`.
+
+```sh
+repot scan                                    # what Repot finds, with item ids
+repot export --out ~/Desktop                  # restore script + repot.json for this OS
+repot export --to windows --packages scoop    # for another OS
+repot compare repot.json                      # on the new machine: already here / missing
+repot export repot.json --only-missing        # export only what this machine lacks
+```
+
+`--dry-run` shows the files without writing them, `--include` / `--exclude <id>` change
+the selection, and `--json` prints machine-readable output (its shape may change while
+Repot is 0.x). Secrets are always masked; the command tells you where. Run
+`repot <command> --help` for every option.
+
 ## Using an export
 
 1. Copy the **whole** `repot-export-YYYY-MM-DD/` folder to the destination machine,

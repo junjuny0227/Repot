@@ -12,6 +12,7 @@ const files = [
   'apps/desktop/package.json',
   'apps/desktop/src-tauri/Cargo.toml',
   'crates/core/Cargo.toml',
+  'crates/cli/Cargo.toml',
 ];
 
 function fixture(fn) {
@@ -38,7 +39,7 @@ const run = (root, tag) =>
     encoding: 'utf8',
   });
 
-test('accepts matching tag and all four versions', () =>
+test('accepts matching tag and every version field', () =>
   fixture((root) => {
     assert.equal(run(root, 'v0.1.0').status, 0);
   }));
