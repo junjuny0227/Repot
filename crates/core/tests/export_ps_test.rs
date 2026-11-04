@@ -76,7 +76,7 @@ fn native_output_is_assigned_before_conditionals() {
     assert!(!s.contains("Test-Have"));
     assert!(!s.contains("if (& "));
     assert!(s.contains("$installed = & scoop bucket list 2>$null | Select-String"));
-    assert!(s.contains("if ($installed) { Add-Skip"));
+    assert!(s.contains("if ($installed) { Add-Done"));
 }
 
 #[test]
@@ -170,11 +170,21 @@ fn ps_copy_backs_up_once_on_windows() {
     assert!(second.status.success());
     let out = String::from_utf8_lossy(&second.stdout);
     assert!(
-        out.contains("skipped: copy"),
+        out.contains("already done: copy"),
         "stdout:\n{out}\nstderr:\n{}",
         String::from_utf8_lossy(&second.stderr)
     );
     assert_eq!(backups(), 1);
+}
+#[test]
+fn steps_that_are_not_attempted_carry_a_reason() {
+    let s = render_powershell(&windows_plan());
+    assert!(
+        s.contains("Add-NotDone 'winget install Git.Git' 'winget not found'"),
+        "{s}"
+    );
+    assert!(s.contains("To finish these, install the missing tools and run this script again:"));
+    assert!(!s.contains("Add-Skip"));
 }
 #[test]
 fn runtime_default_only_runs_after_successful_install() {

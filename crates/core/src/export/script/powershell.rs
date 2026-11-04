@@ -9,12 +9,18 @@ const HELPERS: &str = r#"param([switch]$Yes)
 $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
-$script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
+$script:Ok = @(); $script:Done = @(); $script:NotDone = @(); $script:Failed = @(); $script:Tools = @()
 function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
-function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
+# Already installed or identical: nothing to do.
+function Add-Done($Label) { $script:Done += $Label; Write-Host "  already done: $Label" }
+# Not attempted; $Reason says why and what the user can do about it.
+function Add-NotDone($Label, $Reason) { $script:NotDone += "$Label ($Reason)"; Write-Host "  not done: $Label ($Reason)" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
-function Write-Missing($Name, $Url) { Write-Host "  $Name not found. Install it first: $Url" }
+function Write-Missing($Name, $Url) {
+  Write-Host "  $Name not found. Install it first: $Url"
+  if ($script:Tools -notcontains "${Name}: $Url") { $script:Tools += "${Name}: $Url" }
+}
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
 # Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
 # load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
@@ -195,12 +201,12 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         }
         let label = q(&s.label(h.target));
         if let Step::CopyFile { src, dest } = s {
-            writeln!(out, "$rc = Copy-RepotFile {} {}\nif ($rc -eq 0) {{ Add-Ok {label} }} elseif ($rc -eq 2) {{ Add-Skip {label} }} else {{ Add-Fail {label} }}", q(src), ps_path(dest)).unwrap();
+            writeln!(out, "$rc = Copy-RepotFile {} {}\nif ($rc -eq 0) {{ Add-Ok {label} }} elseif ($rc -eq 2) {{ Add-Done {label} }} else {{ Add-Fail {label} }}", q(src), ps_path(dest)).unwrap();
             i += 1;
             continue;
         }
         let Some(t) = tool(s) else {
-            writeln!(out, "Add-Skip {label}").unwrap();
+            writeln!(out, "Add-NotDone {label} 'not supported on Windows'").unwrap();
             i += 1;
             continue;
         };
@@ -215,7 +221,12 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         if t.0 == "choco" {
             out.push_str("if (-not (Test-Admin)) {\n  Write-Host '  choco requires an Administrator PowerShell. Skipping choco packages.'\n");
             for step in group {
-                writeln!(out, "  Add-Skip {}", q(&step.label(h.target))).unwrap();
+                writeln!(
+                    out,
+                    "  Add-NotDone {} 'run PowerShell as Administrator'",
+                    q(&step.label(h.target))
+                )
+                .unwrap();
             }
             out.push_str("} else {\n");
         }
@@ -236,13 +247,13 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             if output_check {
                 writeln!(
                     out,
-                    "  $installed = {check}\n  if ($installed) {{ Add-Skip {label} }}"
+                    "  $installed = {check}\n  if ($installed) {{ Add-Done {label} }}"
                 )
                 .unwrap();
             } else {
                 writeln!(
                     out,
-                    "  & {check} *> $null\n  if ($LASTEXITCODE -eq 0) {{ Add-Skip {label} }}"
+                    "  & {check} *> $null\n  if ($LASTEXITCODE -eq 0) {{ Add-Done {label} }}"
                 )
                 .unwrap();
             }
@@ -259,15 +270,16 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             q(guide_url(t.1))
         )
         .unwrap();
+        let reason = q(&format!("{} not found", t.1));
         for step in group {
-            writeln!(out, "  Add-Skip {}", q(&step.label(h.target))).unwrap();
+            writeln!(out, "  Add-NotDone {} {reason}", q(&step.label(h.target))).unwrap();
         }
         out.push_str("}\n");
         if t.0 == "choco" {
             out.push_str("}\n");
         }
     }
-    out.push_str("\nWrite-Host 'Summary'\nWrite-Host 'OK:'; $script:Ok | ForEach-Object { Write-Host \"  - $_\" }\nWrite-Host 'Skipped:'; $script:Skipped | ForEach-Object { Write-Host \"  - $_\" }\nWrite-Host 'Failed:'; $script:Failed | ForEach-Object { Write-Host \"  - $_\" }\n");
+    out.push_str("\nWrite-Host 'Summary'\nWrite-Host 'OK:'; $script:Ok | ForEach-Object { Write-Host \"  - $_\" }\nWrite-Host 'Already done:'; $script:Done | ForEach-Object { Write-Host \"  - $_\" }\nWrite-Host 'Not done:'; $script:NotDone | ForEach-Object { Write-Host \"  - $_\" }\nif ($script:Tools.Count -gt 0) { Write-Host 'To finish these, install the missing tools and run this script again:'; $script:Tools | ForEach-Object { Write-Host \"  $_\" } }\nWrite-Host 'Failed:'; $script:Failed | ForEach-Object { Write-Host \"  - $_\" }\n");
     if !plan.masked.is_empty() {
         out.push_str("Write-Host 'Fill in these masked secrets:'\n");
         for m in &plan.masked {

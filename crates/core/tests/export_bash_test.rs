@@ -171,7 +171,7 @@ fn copy_step_backs_up_once() {
     assert_eq!(backups(), 1);
     let second = run_script(&p, dir.path(), &envs);
     assert!(second.status.success());
-    assert!(String::from_utf8_lossy(&second.stdout).contains("skipped: copy ~/.zshrc"));
+    assert!(String::from_utf8_lossy(&second.stdout).contains("already done: copy ~/.zshrc"));
     assert_eq!(backups(), 1);
 }
 #[cfg(unix)]
@@ -188,10 +188,17 @@ fn missing_tool_is_skipped_and_failure_sets_exit_code() {
         }],
     );
     let out = run_script(&p, dir.path(), &[("PATH", "/usr/bin:/bin")]);
+    // A missing tool is not a failure, but the summary says what was not done and why.
     assert!(out.status.success());
-    assert!(
-        String::from_utf8_lossy(&out.stdout)
-            .contains("brew not found. Install it first: https://brew.sh")
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("brew not found. Install it first: https://brew.sh"));
+    let summary = stdout.split("Summary\n").nth(1).unwrap();
+    assert_eq!(
+        summary,
+        "OK:\nAlready done:\nNot done:\n  - brew install jq (brew not found)\n\
+         To finish these, install the missing tools and run this script again:\n  brew: https://brew.sh\n\
+         Failed:\n",
+        "{stdout}"
     );
     let home = dir.path().join("home");
     std::fs::create_dir_all(&home).unwrap();

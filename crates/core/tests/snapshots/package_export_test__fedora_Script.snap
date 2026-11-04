@@ -1,6 +1,5 @@
 ---
 source: crates/core/tests/package_export_test.rs
-assertion_line: 213
 expression: output
 ---
 === restore.sh ===
@@ -11,15 +10,24 @@ expression: output
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; SKIP_LIST=""; FAIL_LIST=""; FAILED=0
+OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
-record_skip() { SKIP_LIST="$SKIP_LIST  - $1
-"; echo "  skipped: $1"; }
+# Already installed or identical: nothing to do.
+record_done() { DONE_LIST="$DONE_LIST  - $1
+"; echo "  already done: $1"; }
+# Not attempted; $2 says why and what the user can do about it.
+record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
+"; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
-missing() { echo "  $1 not found. Install it first: $2"; }
+missing() {
+  echo "  $1 not found. Install it first: $2"
+  case "$TOOLS_LIST" in *"  $1: $2
+"*) ;; *) TOOLS_LIST="$TOOLS_LIST  $1: $2
+" ;; esac
+}
 copy_file() {
   src="$DIR/files/$1"; dest="$2"
   if [ -f "$dest" ] && cmp -s "$src" "$dest"; then return 2; fi
@@ -43,25 +51,27 @@ fi
 echo '== Packages =='
 if have 'dnf'; then
   # from brew: ripgrep
-  if rpm -q 'ripgrep' >/dev/null 2>&1; then record_skip 'dnf install ripgrep'
+  if rpm -q 'ripgrep' >/dev/null 2>&1; then record_done 'dnf install ripgrep'
   elif sudo dnf install -y 'ripgrep'; then record_ok 'dnf install ripgrep'
   else record_fail 'dnf install ripgrep'; fi
   # from brew: git
-  if rpm -q 'git' >/dev/null 2>&1; then record_skip 'dnf install git'
+  if rpm -q 'git' >/dev/null 2>&1; then record_done 'dnf install git'
   elif sudo dnf install -y 'git'; then record_ok 'dnf install git'
   else record_fail 'dnf install git'; fi
   # from brew: firefox
-  if rpm -q 'firefox' >/dev/null 2>&1; then record_skip 'dnf install firefox'
+  if rpm -q 'firefox' >/dev/null 2>&1; then record_done 'dnf install firefox'
   elif sudo dnf install -y 'firefox'; then record_ok 'dnf install firefox'
   else record_fail 'dnf install firefox'; fi
 else
   missing 'dnf' ''
-  record_skip 'dnf install ripgrep'
-  record_skip 'dnf install git'
-  record_skip 'dnf install firefox'
+  record_not_done 'dnf install ripgrep' 'dnf not found'
+  record_not_done 'dnf install git' 'dnf not found'
+  record_not_done 'dnf install firefox' 'dnf not found'
 fi
 
-printf '\nSummary\nOK:\n%sSkipped:\n%sFailed:\n%s' "$OK_LIST" "$SKIP_LIST" "$FAIL_LIST"
+printf '\nSummary\nOK:\n%sAlready done:\n%sNot done:\n%s' "$OK_LIST" "$DONE_LIST" "$NOT_DONE_LIST"
+if [ -n "$TOOLS_LIST" ]; then printf 'To finish these, install the missing tools and run this script again:\n%s' "$TOOLS_LIST"; fi
+printf 'Failed:\n%s' "$FAIL_LIST"
 exit $FAILED
 
 === README.md ===

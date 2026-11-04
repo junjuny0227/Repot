@@ -7,15 +7,24 @@ use std::fmt::Write;
 
 const HELPERS: &str = r#"DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; SKIP_LIST=""; FAIL_LIST=""; FAILED=0
+OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
-record_skip() { SKIP_LIST="$SKIP_LIST  - $1
-"; echo "  skipped: $1"; }
+# Already installed or identical: nothing to do.
+record_done() { DONE_LIST="$DONE_LIST  - $1
+"; echo "  already done: $1"; }
+# Not attempted; $2 says why and what the user can do about it.
+record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
+"; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
-missing() { echo "  $1 not found. Install it first: $2"; }
+missing() {
+  echo "  $1 not found. Install it first: $2"
+  case "$TOOLS_LIST" in *"  $1: $2
+"*) ;; *) TOOLS_LIST="$TOOLS_LIST  $1: $2
+" ;; esac
+}
 copy_file() {
   src="$DIR/files/$1"; dest="$2"
   if [ -f "$dest" ] && cmp -s "$src" "$dest"; then return 2; fi
@@ -228,7 +237,7 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         }
         if let Step::CopyFile { src, dest } = s {
             let label = q(&s.label(h.target));
-            writeln!(out, "copy_file {} {}; rc=$?\nif [ $rc -eq 0 ]; then record_ok {label}\nelif [ $rc -eq 2 ]; then record_skip {label}\nelse record_fail {label}; fi", q(src), bash_path(dest, h.target)).unwrap();
+            writeln!(out, "copy_file {} {}; rc=$?\nif [ $rc -eq 0 ]; then record_ok {label}\nelif [ $rc -eq 2 ]; then record_done {label}\nelse record_fail {label}; fi", q(src), bash_path(dest, h.target)).unwrap();
             i += 1;
             continue;
         }
@@ -257,15 +266,21 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
             }
             let (check, install) = commands(step, h.target);
             let label = q(&step.label(h.target));
-            writeln!(out, "  if {check} >/dev/null 2>&1; then record_skip {label}\n  elif {install}; then record_ok {label}\n  else record_fail {label}; fi").unwrap();
+            writeln!(out, "  if {check} >/dev/null 2>&1; then record_done {label}\n  elif {install}; then record_ok {label}\n  else record_fail {label}; fi").unwrap();
         }
         writeln!(out, "else\n  missing {} {}", q(t.1), q(guide_url(t.1))).unwrap();
+        let reason = q(&format!("{} not found", t.1));
         for step in &plan.steps[start..i] {
-            writeln!(out, "  record_skip {}", q(&step.label(h.target))).unwrap();
+            writeln!(
+                out,
+                "  record_not_done {} {reason}",
+                q(&step.label(h.target))
+            )
+            .unwrap();
         }
         out.push_str("fi\n");
     }
-    out.push_str("\nprintf '\\nSummary\\nOK:\\n%sSkipped:\\n%sFailed:\\n%s' \"$OK_LIST\" \"$SKIP_LIST\" \"$FAIL_LIST\"\n");
+    out.push_str("\nprintf '\\nSummary\\nOK:\\n%sAlready done:\\n%sNot done:\\n%s' \"$OK_LIST\" \"$DONE_LIST\" \"$NOT_DONE_LIST\"\nif [ -n \"$TOOLS_LIST\" ]; then printf 'To finish these, install the missing tools and run this script again:\\n%s' \"$TOOLS_LIST\"; fi\nprintf 'Failed:\\n%s' \"$FAIL_LIST\"\n");
     if !plan.masked.is_empty() {
         out.push_str("echo 'Fill in these masked secrets:'\n");
         for m in &plan.masked {
