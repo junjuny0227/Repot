@@ -34,6 +34,7 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - 내보내기 폴더에 Repot이 다시 읽는 파일 `repot.json`을 함께 쓰고, 시작 화면에서 열어 다시 검토·내보내기 (계획 11, §10)
 - 열린 `repot.json`을 이 기기 스캔과 비교해 "이미 있음 / 내용 다름 / 없음"을 보여주고 "없음"만 처음 선택 (계획 12)
 - `repot.json`에 목적지에서 쓸 수 없어 빠진 항목도 "이번 내보내기에 없음" 표시와 함께 저장해, 다른 목적지로 다시 내보낼 수 있게 함 (계획 13)
+- 명령줄 도구 `repot`(`scan`, `compare`, `export`). 앱과 같은 core·세션·처음 선택을 쓰고, 출력은 영어와 `--json` (계획 15)
 - JetBrains IDE의 설정(코드 스타일, 키맵, 색 구성표, 라이브 템플릿, 글꼴·테마 선택)과 사용자가 설치한 플러그인 (계획 14)
 
 ### 제외 (MVP 이후 검토)
@@ -74,6 +75,7 @@ Repot/
 ├── Cargo.toml                    # Cargo workspace
 ├── package.json, pnpm-workspace.yaml
 ├── crates/
+│   ├── cli/                      # 명령줄 도구 repot: core를 부르는 얇은 층 (계획 15)
 │   └── core/                     # Tauri와 무관한 순수 Rust 라이브러리
 │       └── src/
 │           ├── model.rs          # Item, Category, Portability, Finding 등
@@ -81,6 +83,7 @@ Repot/
 │           ├── env.rs            # 명령 실행·파일 읽기 추상화
 │           ├── scan.rs           # Provider 병렬 실행, 타임아웃, 결과 취합
 │           ├── availability.rs   # 목적지 OS 기준 항목 사용 가능 여부 판정
+│           ├── session.rs        # 스캔 결과나 열린 파일, 미리보기, 처음 선택 (앱·CLI 공용, 계획 15)
 │           ├── catalog.rs        # 내장 설명 데이터 (안정된 id + 영어 한 문장)
 │           ├── providers/        # 도구별 스캐너, 도구 하나당 파일 하나
 │           ├── secrets.rs        # 비밀정보 감지·마스킹
@@ -99,6 +102,7 @@ Repot/
 
 - `core`는 Tauri, UI를 모르며 네트워크 통신을 하지 않는다. 단위 테스트와 향후 CLI 재사용이 가능하다.
 - `core`는 사람이 읽는 문장을 만들지 않는다. Finding과 판정 이유는 구조화된 데이터로 돌려주고 UI가 문장으로 바꾼다. 예외는 `catalog`의 내장 설명(영어 한 문장)뿐이다. 내장 설명에는 안정된 id(`runtime:node`, `file:zshrc` …)가 있어 `Item.catalog_id`로 함께 넘기고, UI는 이 id로 번역을 찾는다. 번역이 없으면 core의 영어 문장(`Item.description`)을 그대로 보여준다.
+- `crates/cli`는 인자 해석과 영어 출력만 맡는다. 판정·선택·내보내기는 core `session`을 쓰고, 앱과 같이 기기를 바꾸지 않으며 네트워크를 쓰지 않는다.
 - `src-tauri`는 `core` 호출, 직렬화, 진행 이벤트 전달과 공식 updater/process 플러그인을 통한 앱 자체 업데이트를 담당한다.
 - 프론트엔드에는 **shell 권한을 주지 않는다.** 모든 명령 실행은 Rust 쪽에서만 일어난다. 프론트엔드 권한은 저장 위치 선택 대화상자(`core:default`, `dialog:allow-open`)와 앱 자체 업데이트(`updater:default`, `process:allow-restart`)로 제한한다.
 
@@ -467,11 +471,13 @@ repot-export-2026-11-02/
   - 각 러너에서 실제 스캔을 실행하는 통합 테스트(러너에 brew, choco, apt 등이 설치되어 있음)
   - 생성된 스크립트를 `shellcheck`, `PSScriptAnalyzer`로 검사
   - `restore-e2e`: 새 macOS·Ubuntu·Windows 호스티드 러너에서 실제 `build_export`/`write_export`로 만든 스크립트를 실행한다. 사전 미설치 확인 후 brew/apt의 `sl`, choco의 `dos2unix`, 격리된 npm prefix의 `is-odd` 설치와 설정 파일 복사를 검증한다. 존재하지 않는 패키지 하나만 실패 목록에 남고 종료 코드가 1인지 확인하며, 두 번째 실행에서는 성공했던 세 항목이 모두 "이미 됨" 목록에 남고 "하지 않음" 목록은 비어 있어야 한다.
+- **CLI**: 실행 함수를 `FakeEnv`로 불러 `scan`·`compare`·`export`의 출력과 종료 코드, `--dry-run`이 아무것도 쓰지 않는지를 테스트하고, 실행 파일로 `--help`·`--version`·잘못된 인자를 확인한다. 처음 선택 규칙은 core `session` 테스트와 Vitest에 같은 경우를 둔다.
 - **프론트엔드**: 선택 상태, 목적지 OS 변경 시 비활성화 로직을 Vitest로 테스트한다.
 
 ## 14. 배포
 
 - `tauri-action`으로 macOS(`.dmg`, Apple silicon·Intel), Windows(`.msi`/설치 파일), Linux(`.AppImage`, `.deb`)를 빌드해 GitHub Releases에 올린다.
+- CLI는 같은 릴리스에 `repot-cli-<버전>-<target>.tar.gz`(macOS arm64·x64, Linux x64)와 `.zip`(Windows x64)으로 올린다. 자체 Homebrew tap(`brew install junjuny0227/tap/repot`)과 Scoop bucket(`junjuny0227/scoop-bucket`)은 릴리스를 공개하면 워크플로가 갱신한다. `cargo install --git`도 안내한다. crates.io 게시는 하지 않는다. (계획 15)
 - 코드 서명이 없으므로 README에 첫 실행 방법(macOS "확인 없이 열기", Windows "추가 정보 → 실행")을 안내한다.
 - 업데이트 자산은 별도의 updater 키로 서명한다. 공개 키만 앱에 포함하고 비밀 키/암호는 GitHub secrets로 전달한다. `bundle.createUpdaterArtifacts`와 tauri-action `uploadUpdaterJson`을 켠다. Windows 설치 모드는 passive다.
 - updater endpoint는 `https://github.com/junjuny0227/Repot/releases/latest/download/latest.json`이다. draft를 사람이 공개해야 접근 가능하다. 0.1.0 사용자는 updater가 포함된 버전을 한 번 수동 설치해야 한다.
@@ -502,4 +508,4 @@ repot-export-2026-11-02/
 - "새 기기에서 앱으로 복원" 기능 (`repot.json`과 `Step` 모델을 그대로 재사용)
 - SSH(암호화 내보내기 포함), Flatpak, Snap Provider
 - 사용자 동의 하의 온라인 설명 보강
-- `core`를 재사용하는 CLI (`cargo install repot`, 입력과 출력에 `repot.json` 사용)
+- CLI의 crates.io 게시와 homebrew-core·공식 Scoop bucket 등록 (core 공개 API가 안정된 뒤)
