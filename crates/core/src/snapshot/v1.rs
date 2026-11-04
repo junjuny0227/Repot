@@ -10,7 +10,7 @@
 //! or renaming anything means version 2 plus a v1 → v2 conversion; never drop this reader.
 
 use crate::model::{
-    Category, Editor, Finding, GlobalManager, Item, ItemDetails, Origin, PackageKind,
+    Category, Editor, Finding, GlobalManager, Item, ItemDetails, JetBrainsIde, Origin, PackageKind,
     PackageManager, Portability, RuntimeTool, TargetPath,
 };
 use serde::{Deserialize, Serialize};
@@ -60,6 +60,11 @@ pub enum DetailsV1 {
     Extension {
         editor: Editor,
     },
+    /// Added in 0.7 (plan 14).
+    IdePlugin {
+        ide: JetBrainsIde,
+        folder: String,
+    },
     ConfigFile {
         source: String,
         target: TargetPathV1,
@@ -80,8 +85,17 @@ pub enum DetailsV1 {
 #[serde(rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum TargetPathV1 {
     Home(String),
-    EditorUser { editor: Editor, rel: String },
+    EditorUser {
+        editor: Editor,
+        rel: String,
+    },
     PowerShellProfile,
+    /// Added in 0.7 (plan 14).
+    JetBrains {
+        ide: JetBrainsIde,
+        version: String,
+        rel: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -113,6 +127,11 @@ impl TargetPathV1 {
                 rel: path_string(rel),
             },
             TargetPath::PowerShellProfile => Self::PowerShellProfile,
+            TargetPath::JetBrains { ide, version, rel } => Self::JetBrains {
+                ide: *ide,
+                version: version.clone(),
+                rel: path_string(rel),
+            },
         }
     }
     fn into_model(self) -> TargetPath {
@@ -123,12 +142,19 @@ impl TargetPathV1 {
                 rel: PathBuf::from(rel),
             },
             Self::PowerShellProfile => TargetPath::PowerShellProfile,
+            Self::JetBrains { ide, version, rel } => TargetPath::JetBrains {
+                ide,
+                version,
+                rel: PathBuf::from(rel),
+            },
         }
     }
     /// Relative path inside home or the editor's user folder, if any.
     pub fn relative(&self) -> Option<&str> {
         match self {
-            Self::Home(rel) | Self::EditorUser { rel, .. } => Some(rel),
+            Self::Home(rel) | Self::EditorUser { rel, .. } | Self::JetBrains { rel, .. } => {
+                Some(rel)
+            }
             Self::PowerShellProfile => None,
         }
     }
@@ -158,6 +184,10 @@ impl ItemV1 {
                 DetailsV1::GlobalPackage { manager: *manager }
             }
             (ItemDetails::Extension { editor }, _) => DetailsV1::Extension { editor: *editor },
+            (ItemDetails::IdePlugin { ide, folder }, _) => DetailsV1::IdePlugin {
+                ide: *ide,
+                folder: folder.clone(),
+            },
             (ItemDetails::ConfigFile { source, target }, config) => {
                 let config = config.cloned().unwrap_or_default();
                 DetailsV1::ConfigFile {
@@ -223,6 +253,7 @@ impl ItemV1 {
             ),
             DetailsV1::GlobalPackage { manager } => (ItemDetails::GlobalPackage { manager }, None),
             DetailsV1::Extension { editor } => (ItemDetails::Extension { editor }, None),
+            DetailsV1::IdePlugin { ide, folder } => (ItemDetails::IdePlugin { ide, folder }, None),
             DetailsV1::ConfigFile {
                 source,
                 target,

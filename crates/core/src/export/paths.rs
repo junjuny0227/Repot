@@ -29,6 +29,12 @@ fn editor_base(editor: Editor, os: Os) -> String {
 }
 pub fn bash_path(target: &TargetPath, os: Os) -> String {
     match target {
+        TargetPath::JetBrains { ide, version, rel } => format!(
+            "\"$(jb_config {} {})/\"{}",
+            bash_quote(ide.prefix()),
+            bash_quote(version),
+            bash_quote(&relative(rel))
+        ),
         TargetPath::Home(rel) => format!("\"$HOME/\"{}", bash_quote(&relative(rel))),
         TargetPath::EditorUser { editor, rel } => format!(
             "\"$HOME/{}\"{}",
@@ -42,6 +48,14 @@ pub fn bash_path(target: &TargetPath, os: Os) -> String {
 }
 pub fn ps_path(target: &TargetPath) -> String {
     let (base, rel) = match target {
+        TargetPath::JetBrains { ide, version, rel } => {
+            return format!(
+                "(Join-Path (Get-JetBrainsConfig {} {}) {})",
+                ps_quote(ide.prefix()),
+                ps_quote(version),
+                ps_quote(&relative(rel).replace('/', "\\"))
+            );
+        }
         TargetPath::Home(rel) => ("$HOME", relative(rel)),
         TargetPath::EditorUser { editor, rel } => (
             "$env:APPDATA",
@@ -66,6 +80,11 @@ pub fn display_path(target: &TargetPath, os: Os) -> String {
             TargetPath::PowerShellProfile => {
                 "Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1".into()
             }
+            TargetPath::JetBrains { ide, rel, .. } => format!(
+                "%APPDATA%\\JetBrains\\{}*\\{}",
+                ide.prefix(),
+                relative(rel).replace('/', "\\")
+            ),
         };
     }
     match target {
@@ -76,6 +95,21 @@ pub fn display_path(target: &TargetPath, os: Os) -> String {
         TargetPath::PowerShellProfile => {
             "~/.config/powershell/Microsoft.PowerShell_profile.ps1".into()
         }
+        // The version folder is chosen on the destination; `*` says so.
+        TargetPath::JetBrains { ide, rel, .. } => format!(
+            "~/{}{}*/{}",
+            jetbrains_base(os),
+            ide.prefix(),
+            relative(rel)
+        ),
+    }
+}
+/// JetBrains settings base relative to home on macOS and Linux.
+fn jetbrains_base(os: Os) -> &'static str {
+    if os == Os::MacOs {
+        "Library/Application Support/JetBrains/"
+    } else {
+        ".config/JetBrains/"
     }
 }
 pub fn payload_path(target: &TargetPath) -> String {
@@ -90,6 +124,10 @@ pub fn payload_path(target: &TargetPath) -> String {
             relative(rel)
         ),
         TargetPath::PowerShellProfile => "powershell/Microsoft.PowerShell_profile.ps1".into(),
+        // Version-independent, so files from different versions of one IDE collide.
+        TargetPath::JetBrains { ide, rel, .. } => {
+            format!("jetbrains/{}/{}", ide.prefix(), relative(rel))
+        }
     }
 }
 pub fn os_label(os: Os) -> &'static str {

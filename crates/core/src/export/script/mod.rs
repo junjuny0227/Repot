@@ -150,6 +150,9 @@ impl Step {
             Self::InstallExtension { editor, id } => {
                 format!("{} --install-extension {id}", editor_cmd(*editor))
             }
+            Self::InstallIdePlugin { ide, id, .. } => {
+                format!("{} installPlugins {id}", ide.command())
+            }
             Self::CopyFile { dest, .. } => format!("copy {}", display_path(dest, target)),
             Self::GitClone { url, .. } => format!("git clone {url}"),
         }

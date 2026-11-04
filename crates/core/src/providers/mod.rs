@@ -5,6 +5,7 @@ pub mod choco;
 pub(crate) mod common;
 pub mod dnf;
 pub mod git;
+pub mod jetbrains;
 pub mod node_managers;
 pub mod npm;
 pub mod nvm;
@@ -41,6 +42,7 @@ pub fn default_providers() -> Vec<Arc<dyn Provider>> {
         Arc::new(pipx::Pipx),
         Arc::new(cargo::Cargo),
         Arc::new(vscode::VsCode),
+        Arc::new(jetbrains::JetBrains),
         Arc::new(git::Git),
         Arc::new(shell::ShellProvider),
     ]

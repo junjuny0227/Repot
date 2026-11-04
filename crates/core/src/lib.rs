@@ -3,6 +3,7 @@ pub mod catalog;
 pub mod compare;
 pub mod env;
 pub mod export;
+pub mod jetbrains;
 pub mod model;
 pub mod os;
 pub mod package_map;

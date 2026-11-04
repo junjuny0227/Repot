@@ -522,3 +522,60 @@ fn unreadable_or_unsafe_unusable_items_are_not_stored() {
     );
     assert!(not_exported_ids(repot_json(&bundle)).is_empty());
 }
+
+#[test]
+fn jetbrains_items_round_trip_and_unsafe_ones_are_skipped() {
+    let base: serde_json::Value = serde_json::from_str(V1_BASIC).unwrap();
+    let zshrc = base["items"][6].clone();
+    let mut good_file = zshrc.clone();
+    good_file["id"] = "jetbrains:IntelliJIdea:file:codestyles/Default.xml".into();
+    good_file["details"]["configFile"]["target"] = serde_json::json!({
+        "jetBrains": { "ide": "intelliJIdea", "version": "2026.1", "rel": "codestyles/Default.xml" }
+    });
+    let plugin = serde_json::json!({
+        "id": "jetbrains:IntelliJIdea:plugin:com.github.copilot",
+        "provider": "jetbrains",
+        "category": "editor",
+        "name": "com.github.copilot",
+        "origin": { "path": "/x" },
+        "portability": "any",
+        "details": { "idePlugin": { "ide": "intelliJIdea", "folder": "github-copilot-intellij" } }
+    });
+    let mut cases = vec![good_file.clone(), plugin.clone()];
+    for (n, version) in ["2026", "../2026.1", "2026.1/../x"].iter().enumerate() {
+        let mut bad = good_file.clone();
+        bad["id"] = format!("bad:version:{n}").into();
+        bad["details"]["configFile"]["target"]["jetBrains"]["version"] = (*version).into();
+        cases.push(bad);
+    }
+    for folder in ["..", "a/b", "a\\b", "x';rm -rf ~;'"] {
+        let mut bad = plugin.clone();
+        bad["id"] = format!("bad:folder:{folder}").into();
+        bad["details"]["idePlugin"]["folder"] = folder.into();
+        cases.push(bad);
+    }
+    let opened = parse_snapshot(&with_items(serde_json::Value::Array(cases))).unwrap();
+    assert_eq!(opened.skipped_items, 7);
+    let snap = opened.snapshot;
+    assert_eq!(snap.items.len(), 2);
+    assert_eq!(
+        snap.items[1].details,
+        ItemDetails::IdePlugin {
+            ide: JetBrainsIde::IntelliJIdea,
+            folder: "github-copilot-intellij".into()
+        }
+    );
+    // Written back the same way.
+    let items: Vec<_> = snap
+        .items
+        .iter()
+        .map(|i| snapshot::StoredItem {
+            item: i.clone(),
+            config: snap.configs.get(&i.id).cloned(),
+            not_exported: false,
+        })
+        .collect();
+    let text =
+        snapshot::render_snapshot(&snap.created_at, &snap.repot_version, snap.source, &items);
+    assert_eq!(parse_snapshot(&text).unwrap().snapshot, snap);
+}

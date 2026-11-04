@@ -102,6 +102,11 @@ pub enum ItemDetails {
     Extension {
         editor: Editor,
     },
+    /// A JetBrains IDE plugin; `folder` is its directory or jar name under `plugins`.
+    IdePlugin {
+        ide: JetBrainsIde,
+        folder: String,
+    },
     ConfigFile {
         source: PathBuf,
         target: TargetPath,
@@ -156,12 +161,39 @@ pub enum Editor {
     VsCode,
     Cursor,
 }
+/// JetBrains IDEs by their settings-folder prefix (plan 14).
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[serde(rename_all = "camelCase")]
+pub enum JetBrainsIde {
+    IntelliJIdea,
+    IdeaIc,
+    WebStorm,
+    PyCharm,
+    PyCharmCe,
+    GoLand,
+    RustRover,
+    CLion,
+    PhpStorm,
+    RubyMine,
+    DataGrip,
+    Rider,
+}
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum TargetPath {
     Home(PathBuf),
-    EditorUser { editor: Editor, rel: PathBuf },
+    EditorUser {
+        editor: Editor,
+        rel: PathBuf,
+    },
     PowerShellProfile,
+    /// Inside a JetBrains IDE's settings folder. The restore script picks the newest
+    /// folder of that IDE on the destination, or `<prefix><version>` if there is none.
+    JetBrains {
+        ide: JetBrainsIde,
+        version: String,
+        rel: PathBuf,
+    },
 }
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

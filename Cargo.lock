@@ -2914,6 +2914,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "wait-timeout",
+ "zip",
 ]
 
 [[package]]
@@ -5390,6 +5391,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00fb4744e923442ecadfd3f85f51a5d24e03bf43d53813b81ebb4c91d02baa62"
 dependencies = [
  "crc32fast",
+ "flate2",
  "getrandom 0.4.3",
  "indexmap 2.14.2",
  "libc",
