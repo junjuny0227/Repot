@@ -1,4 +1,5 @@
 use repot_core::availability::{Availability, availability_map};
+use repot_core::compare::{Presence, compare};
 use repot_core::export::{
     ExportBundle, ExportMeta, ExportRequest, Format, build_export, write_export,
 };
@@ -20,6 +21,8 @@ pub struct Session {
     pub source: Os,
     pub scan: ScanResult,
     pub configs: Configs,
+    /// This machine's scan, taken to compare an opened Repot file with it.
+    pub machine: Option<ScanResult>,
 }
 #[derive(Clone)]
 pub enum Configs {
@@ -46,6 +49,11 @@ impl AppState {
     }
     fn set_session(&self, session: Session) -> Result<(), String> {
         *self.session.lock().map_err(|e| e.to_string())? = Some(session);
+        Ok(())
+    }
+    fn update_session(&self, change: impl FnOnce(&mut Session)) -> Result<(), String> {
+        let mut session = self.session.lock().map_err(|e| e.to_string())?;
+        change(session.as_mut().ok_or("no scan result")?);
         Ok(())
     }
     fn preview(
@@ -90,8 +98,64 @@ pub async fn scan(app: AppHandle, state: State<'_, AppState>) -> Result<ScanResu
         source: state.machine,
         scan: result.clone(),
         configs: Configs::Live,
+        machine: None,
     })?;
     Ok(result)
+}
+
+/// Scan this machine to compare the current session (an opened Repot file) with it.
+/// The session's own items stay as they are.
+#[tauri::command]
+pub async fn scan_machine(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    state.session()?;
+    let env = Arc::clone(&state.env);
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        repot_core::scan(env, default_providers(), PROVIDER_TIMEOUT, &|report| {
+            let _ = app.emit("scan://progress", report);
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?;
+    state.update_session(|session| session.machine = Some(result))
+}
+
+/// Presence of each item on this machine for `target`. Empty unless this machine was
+/// scanned for comparison and `target` is this machine's OS.
+#[tauri::command]
+pub fn presence_for(
+    state: State<AppState>,
+    target: Target,
+) -> Result<HashMap<String, Presence>, String> {
+    target.validate().map_err(str::to_owned)?;
+    let session = state.session()?;
+    let Some(machine) = session
+        .machine
+        .as_ref()
+        .filter(|_| target.os == state.machine)
+    else {
+        return Ok(HashMap::new());
+    };
+    let items = &session.scan.items;
+    Ok(match &session.configs {
+        Configs::Live => compare(
+            items,
+            session.source,
+            target,
+            state.env.as_ref(),
+            &machine.items,
+            state.machine,
+            state.env.as_ref(),
+        ),
+        Configs::Snapshot(snapshot) => compare(
+            items,
+            session.source,
+            target,
+            snapshot.as_ref(),
+            &machine.items,
+            state.machine,
+            state.env.as_ref(),
+        ),
+    })
 }
 
 #[derive(serde::Serialize)]
@@ -136,6 +200,7 @@ pub fn open_snapshot(state: State<AppState>, path: String) -> Result<OpenedFile,
         source: snapshot.source,
         scan: scan.clone(),
         configs: Configs::Snapshot(Arc::clone(&snapshot)),
+        machine: None,
     })?;
     Ok(OpenedFile {
         scan,

@@ -39,6 +39,8 @@ pub fn run() {
             commands::detect_os,
             commands::scan,
             commands::open_snapshot,
+            commands::scan_machine,
+            commands::presence_for,
             commands::availability_for,
             commands::preview_export,
             commands::export,
