@@ -1,5 +1,6 @@
 pub mod availability;
 pub mod catalog;
+pub mod compare;
 pub mod env;
 pub mod export;
 pub mod model;
