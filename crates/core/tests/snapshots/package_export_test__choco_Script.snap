@@ -10,12 +10,18 @@ param([switch]$Yes)
 $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
-$script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
+$script:Ok = @(); $script:Done = @(); $script:NotDone = @(); $script:Failed = @(); $script:Tools = @()
 function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
-function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
+# Already installed or identical: nothing to do.
+function Add-Done($Label) { $script:Done += $Label; Write-Host "  already done: $Label" }
+# Not attempted; $Reason says why and what the user can do about it.
+function Add-NotDone($Label, $Reason) { $script:NotDone += "$Label ($Reason)"; Write-Host "  not done: $Label ($Reason)" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
-function Write-Missing($Name, $Url) { Write-Host "  $Name not found. Install it first: $Url" }
+function Write-Missing($Name, $Url) {
+  Write-Host "  $Name not found. Install it first: $Url"
+  if ($script:Tools -notcontains "${Name}: $Url") { $script:Tools += "${Name}: $Url" }
+}
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
 # Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
 # load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
@@ -47,34 +53,36 @@ if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -an
 Write-Host '== Packages =='
 if (-not (Test-Admin)) {
   Write-Host '  choco requires an Administrator PowerShell. Skipping choco packages.'
-  Add-Skip 'choco install ripgrep'
-  Add-Skip 'choco install git'
-  Add-Skip 'choco install firefox'
+  Add-NotDone 'choco install ripgrep' 'run PowerShell as Administrator'
+  Add-NotDone 'choco install git' 'run PowerShell as Administrator'
+  Add-NotDone 'choco install firefox' 'run PowerShell as Administrator'
 } else {
 if (Test-Tool 'choco') {
   # from brew: ripgrep
   $installed = & choco list --exact 'ripgrep' --limit-output 2>$null | Select-String -SimpleMatch 'ripgrep' -Quiet
-  if ($installed) { Add-Skip 'choco install ripgrep' }
+  if ($installed) { Add-Done 'choco install ripgrep' }
   else { & choco install 'ripgrep' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'ripgrep' --limit-output 2>$null | Select-String -SimpleMatch 'ripgrep' -Quiet; if ($installed) { Add-Ok 'choco install ripgrep' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install ripgrep' } } else { Add-Fail 'choco install ripgrep' } }
   # from brew: git
   $installed = & choco list --exact 'git' --limit-output 2>$null | Select-String -SimpleMatch 'git' -Quiet
-  if ($installed) { Add-Skip 'choco install git' }
+  if ($installed) { Add-Done 'choco install git' }
   else { & choco install 'git' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'git' --limit-output 2>$null | Select-String -SimpleMatch 'git' -Quiet; if ($installed) { Add-Ok 'choco install git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install git' } } else { Add-Fail 'choco install git' } }
   # from brew: firefox
   $installed = & choco list --exact 'firefox' --limit-output 2>$null | Select-String -SimpleMatch 'firefox' -Quiet
-  if ($installed) { Add-Skip 'choco install firefox' }
+  if ($installed) { Add-Done 'choco install firefox' }
   else { & choco install 'firefox' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact 'firefox' --limit-output 2>$null | Select-String -SimpleMatch 'firefox' -Quiet; if ($installed) { Add-Ok 'choco install firefox' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install firefox' } } else { Add-Fail 'choco install firefox' } }
 } else {
   Write-Missing 'choco' 'https://chocolatey.org/install'
-  Add-Skip 'choco install ripgrep'
-  Add-Skip 'choco install git'
-  Add-Skip 'choco install firefox'
+  Add-NotDone 'choco install ripgrep' 'choco not found'
+  Add-NotDone 'choco install git' 'choco not found'
+  Add-NotDone 'choco install firefox' 'choco not found'
 }
 }
 
 Write-Host 'Summary'
 Write-Host 'OK:'; $script:Ok | ForEach-Object { Write-Host "  - $_" }
-Write-Host 'Skipped:'; $script:Skipped | ForEach-Object { Write-Host "  - $_" }
+Write-Host 'Already done:'; $script:Done | ForEach-Object { Write-Host "  - $_" }
+Write-Host 'Not done:'; $script:NotDone | ForEach-Object { Write-Host "  - $_" }
+if ($script:Tools.Count -gt 0) { Write-Host 'To finish these, install the missing tools and run this script again:'; $script:Tools | ForEach-Object { Write-Host "  $_" } }
 Write-Host 'Failed:'; $script:Failed | ForEach-Object { Write-Host "  - $_" }
 if ($script:Failed.Count -gt 0) { exit 1 } else { exit 0 }
 

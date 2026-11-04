@@ -9,12 +9,18 @@ param([switch]$Yes)
 $ErrorActionPreference = 'Continue'
 $Dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Stamp = Get-Date -Format 'yyyyMMddHHmmss'
-$script:Ok = @(); $script:Skipped = @(); $script:Failed = @()
+$script:Ok = @(); $script:Done = @(); $script:NotDone = @(); $script:Failed = @(); $script:Tools = @()
 function Test-Tool($Name) { [bool](Get-Command $Name -ErrorAction SilentlyContinue) }
 function Add-Ok($Label) { $script:Ok += $Label; Write-Host "  ok: $Label" }
-function Add-Skip($Label) { $script:Skipped += $Label; Write-Host "  skipped: $Label" }
+# Already installed or identical: nothing to do.
+function Add-Done($Label) { $script:Done += $Label; Write-Host "  already done: $Label" }
+# Not attempted; $Reason says why and what the user can do about it.
+function Add-NotDone($Label, $Reason) { $script:NotDone += "$Label ($Reason)"; Write-Host "  not done: $Label ($Reason)" }
 function Add-Fail($Label) { $script:Failed += $Label; Write-Host "  FAILED: $Label" }
-function Write-Missing($Name, $Url) { Write-Host "  $Name not found. Install it first: $Url" }
+function Write-Missing($Name, $Url) {
+  Write-Host "  $Name not found. Install it first: $Url"
+  if ($script:Tools -notcontains "${Name}: $Url") { $script:Tools += "${Name}: $Url" }
+}
 function Test-Admin { ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) }
 # Byte comparison instead of Get-FileHash: Get-FileHash lives in a script module that fails to
 # load in Windows PowerShell 5.1 when it is started from PowerShell 7 (inherited PSModulePath).
@@ -52,81 +58,83 @@ if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -an
 Write-Host '== Packages =='
 if (Test-Tool 'scoop') {
   $installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'extras' -Quiet
-  if ($installed) { Add-Skip 'scoop bucket add extras' }
+  if ($installed) { Add-Done 'scoop bucket add extras' }
   else { & scoop bucket add 'extras'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop bucket add extras' } else { Add-Fail 'scoop bucket add extras' } }
 } else {
   Write-Missing 'scoop' 'https://scoop.sh'
-  Add-Skip 'scoop bucket add extras'
+  Add-NotDone 'scoop bucket add extras' 'scoop not found'
 }
 if (Test-Tool 'winget') {
   & winget list --id 'Git.Git' --exact *> $null
-  if ($LASTEXITCODE -eq 0) { Add-Skip 'winget install Git.Git' }
+  if ($LASTEXITCODE -eq 0) { Add-Done 'winget install Git.Git' }
   else { & winget install --id 'Git.Git' --exact --accept-package-agreements --accept-source-agreements; if ($LASTEXITCODE -eq 0) { & winget list --id 'Git.Git' --exact *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'winget install Git.Git' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'winget install Git.Git' } } else { Add-Fail 'winget install Git.Git' } }
 } else {
   Write-Missing 'winget' 'https://learn.microsoft.com/windows/package-manager/winget/'
-  Add-Skip 'winget install Git.Git'
+  Add-NotDone 'winget install Git.Git' 'winget not found'
 }
 if (Test-Tool 'scoop') {
   & scoop prefix 'extras/vlc' *> $null
-  if ($LASTEXITCODE -eq 0) { Add-Skip 'scoop install extras/vlc' }
+  if ($LASTEXITCODE -eq 0) { Add-Done 'scoop install extras/vlc' }
   else { & scoop install 'extras/vlc'; if ($LASTEXITCODE -eq 0) { & scoop prefix 'extras/vlc' *> $null; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop install extras/vlc' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'scoop install extras/vlc' } } else { Add-Fail 'scoop install extras/vlc' } }
 } else {
   Write-Missing 'scoop' 'https://scoop.sh'
-  Add-Skip 'scoop install extras/vlc'
+  Add-NotDone 'scoop install extras/vlc' 'scoop not found'
 }
 if (-not (Test-Admin)) {
   Write-Host '  choco requires an Administrator PowerShell. Skipping choco packages.'
-  Add-Skip 'choco install 7zip'
+  Add-NotDone 'choco install 7zip' 'run PowerShell as Administrator'
 } else {
 if (Test-Tool 'choco') {
   $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet
-  if ($installed) { Add-Skip 'choco install 7zip' }
+  if ($installed) { Add-Done 'choco install 7zip' }
   else { & choco install '7zip' -y; if ($LASTEXITCODE -eq 0) { $installed = & choco list --exact '7zip' --limit-output 2>$null | Select-String -SimpleMatch '7zip' -Quiet; if ($installed) { Add-Ok 'choco install 7zip' } else { Write-Host '  installer reported success, but the package is not installed'; Add-Fail 'choco install 7zip' } } else { Add-Fail 'choco install 7zip' } }
 } else {
   Write-Missing 'choco' 'https://chocolatey.org/install'
-  Add-Skip 'choco install 7zip'
+  Add-NotDone 'choco install 7zip' 'choco not found'
 }
 }
 
 Write-Host '== Runtimes =='
 if (Test-Tool 'nvm') {
   $installed = & nvm list 2>$null | Select-String -SimpleMatch '20.11.0' -Quiet
-  if ($installed) { Add-Skip 'nvm-windows install node 20.11.0' }
+  if ($installed) { Add-Done 'nvm-windows install node 20.11.0' }
   else { & nvm install '20.11.0'; if ($LASTEXITCODE -eq 0) { & nvm use '20.11.0' }; if ($LASTEXITCODE -eq 0) { Add-Ok 'nvm-windows install node 20.11.0' } else { Add-Fail 'nvm-windows install node 20.11.0' } }
 } else {
   Write-Missing 'nvm-windows' 'https://github.com/coreybutler/nvm-windows'
-  Add-Skip 'nvm-windows install node 20.11.0'
+  Add-NotDone 'nvm-windows install node 20.11.0' 'nvm-windows not found'
 }
 
 Write-Host '== Global packages =='
 if (Test-Tool 'npm') {
   $installed = & npm ls -g --depth=0 2>$null | Select-String -SimpleMatch 'typescript' -Quiet
-  if ($installed) { Add-Skip 'npm install -g typescript' }
+  if ($installed) { Add-Done 'npm install -g typescript' }
   else { & npm install -g 'typescript'; if ($LASTEXITCODE -eq 0) { Add-Ok 'npm install -g typescript' } else { Add-Fail 'npm install -g typescript' } }
 } else {
   Write-Missing 'npm' 'https://nodejs.org'
-  Add-Skip 'npm install -g typescript'
+  Add-NotDone 'npm install -g typescript' 'npm not found'
 }
 
 Write-Host '== Extensions =='
 if (Test-Tool 'code') {
   $installed = & code --list-extensions 2>$null | Select-String -SimpleMatch 'esbenp.prettier-vscode' -Quiet
-  if ($installed) { Add-Skip 'code --install-extension esbenp.prettier-vscode' }
+  if ($installed) { Add-Done 'code --install-extension esbenp.prettier-vscode' }
   else { & code --install-extension 'esbenp.prettier-vscode'; if ($LASTEXITCODE -eq 0) { Add-Ok 'code --install-extension esbenp.prettier-vscode' } else { Add-Fail 'code --install-extension esbenp.prettier-vscode' } }
 } else {
   Write-Missing 'code' 'https://code.visualstudio.com/docs/setup/setup-overview'
-  Add-Skip 'code --install-extension esbenp.prettier-vscode'
+  Add-NotDone 'code --install-extension esbenp.prettier-vscode' 'code not found'
 }
 
 Write-Host '== Files =='
 $rc = Copy-RepotFile 'home/.gitconfig' (Join-Path $HOME '.gitconfig')
-if ($rc -eq 0) { Add-Ok 'copy %USERPROFILE%\.gitconfig' } elseif ($rc -eq 2) { Add-Skip 'copy %USERPROFILE%\.gitconfig' } else { Add-Fail 'copy %USERPROFILE%\.gitconfig' }
+if ($rc -eq 0) { Add-Ok 'copy %USERPROFILE%\.gitconfig' } elseif ($rc -eq 2) { Add-Done 'copy %USERPROFILE%\.gitconfig' } else { Add-Fail 'copy %USERPROFILE%\.gitconfig' }
 $rc = Copy-RepotFile 'powershell/Microsoft.PowerShell_profile.ps1' (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Microsoft.PowerShell_profile.ps1')
-if ($rc -eq 0) { Add-Ok 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } elseif ($rc -eq 2) { Add-Skip 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } else { Add-Fail 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' }
+if ($rc -eq 0) { Add-Ok 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } elseif ($rc -eq 2) { Add-Done 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } else { Add-Fail 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' }
 
 Write-Host 'Summary'
 Write-Host 'OK:'; $script:Ok | ForEach-Object { Write-Host "  - $_" }
-Write-Host 'Skipped:'; $script:Skipped | ForEach-Object { Write-Host "  - $_" }
+Write-Host 'Already done:'; $script:Done | ForEach-Object { Write-Host "  - $_" }
+Write-Host 'Not done:'; $script:NotDone | ForEach-Object { Write-Host "  - $_" }
+if ($script:Tools.Count -gt 0) { Write-Host 'To finish these, install the missing tools and run this script again:'; $script:Tools | ForEach-Object { Write-Host "  $_" } }
 Write-Host 'Failed:'; $script:Failed | ForEach-Object { Write-Host "  - $_" }
 Write-Host 'Fill in these masked secrets:'
 Write-Host '  - files/home/.gitconfig line 9 (value)'

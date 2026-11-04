@@ -9,15 +9,24 @@ expression: "render_bash(&sample_plan(Os::MacOs))"
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; SKIP_LIST=""; FAIL_LIST=""; FAILED=0
+OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
-record_skip() { SKIP_LIST="$SKIP_LIST  - $1
-"; echo "  skipped: $1"; }
+# Already installed or identical: nothing to do.
+record_done() { DONE_LIST="$DONE_LIST  - $1
+"; echo "  already done: $1"; }
+# Not attempted; $2 says why and what the user can do about it.
+record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
+"; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
-missing() { echo "  $1 not found. Install it first: $2"; }
+missing() {
+  echo "  $1 not found. Install it first: $2"
+  case "$TOOLS_LIST" in *"  $1: $2
+"*) ;; *) TOOLS_LIST="$TOOLS_LIST  $1: $2
+" ;; esac
+}
 copy_file() {
   src="$DIR/files/$1"; dest="$2"
   if [ -f "$dest" ] && cmp -s "$src" "$dest"; then return 2; fi
@@ -46,72 +55,74 @@ fi
 
 echo '== Packages =='
 if have 'brew'; then
-  if brew tap | grep -qx 'oven-sh/bun' >/dev/null 2>&1; then record_skip 'brew tap oven-sh/bun'
+  if brew tap | grep -qx 'oven-sh/bun' >/dev/null 2>&1; then record_done 'brew tap oven-sh/bun'
   elif brew tap 'oven-sh/bun'; then record_ok 'brew tap oven-sh/bun'
   else record_fail 'brew tap oven-sh/bun'; fi
-  if brew list --formula 'jq' >/dev/null 2>&1; then record_skip 'brew install jq'
+  if brew list --formula 'jq' >/dev/null 2>&1; then record_done 'brew install jq'
   elif brew install 'jq'; then record_ok 'brew install jq'
   else record_fail 'brew install jq'; fi
-  if brew list --cask 'visual-studio-code' >/dev/null 2>&1; then record_skip 'brew install --cask visual-studio-code'
+  if brew list --cask 'visual-studio-code' >/dev/null 2>&1; then record_done 'brew install --cask visual-studio-code'
   elif brew install --cask 'visual-studio-code'; then record_ok 'brew install --cask visual-studio-code'
   else record_fail 'brew install --cask visual-studio-code'; fi
 else
   missing 'brew' 'https://brew.sh'
-  record_skip 'brew tap oven-sh/bun'
-  record_skip 'brew install jq'
-  record_skip 'brew install --cask visual-studio-code'
+  record_not_done 'brew tap oven-sh/bun' 'brew not found'
+  record_not_done 'brew install jq' 'brew not found'
+  record_not_done 'brew install --cask visual-studio-code' 'brew not found'
 fi
 
 echo '== Runtimes =='
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"; [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 if have 'nvm'; then
-  if nvm ls '20.11.0' >/dev/null 2>&1; then record_skip 'nvm install node 20.11.0'
+  if nvm ls '20.11.0' >/dev/null 2>&1; then record_done 'nvm install node 20.11.0'
   elif nvm install '20.11.0' && nvm alias default '20.11.0'; then record_ok 'nvm install node 20.11.0'
   else record_fail 'nvm install node 20.11.0'; fi
 else
   missing 'nvm' 'https://github.com/nvm-sh/nvm'
-  record_skip 'nvm install node 20.11.0'
+  record_not_done 'nvm install node 20.11.0' 'nvm not found'
 fi
 
 echo '== Global packages =='
 if have 'npm'; then
-  if npm ls -g --depth=0 'typescript' >/dev/null 2>&1; then record_skip 'npm install -g typescript'
+  if npm ls -g --depth=0 'typescript' >/dev/null 2>&1; then record_done 'npm install -g typescript'
   elif npm install -g 'typescript'; then record_ok 'npm install -g typescript'
   else record_fail 'npm install -g typescript'; fi
 else
   missing 'npm' 'https://nodejs.org'
-  record_skip 'npm install -g typescript'
+  record_not_done 'npm install -g typescript' 'npm not found'
 fi
 
 echo '== Extensions =='
 if have 'code'; then
-  if code --list-extensions | grep -qix 'esbenp.prettier-vscode' >/dev/null 2>&1; then record_skip 'code --install-extension esbenp.prettier-vscode'
+  if code --list-extensions | grep -qix 'esbenp.prettier-vscode' >/dev/null 2>&1; then record_done 'code --install-extension esbenp.prettier-vscode'
   elif code --install-extension 'esbenp.prettier-vscode'; then record_ok 'code --install-extension esbenp.prettier-vscode'
   else record_fail 'code --install-extension esbenp.prettier-vscode'; fi
 else
   missing 'code' 'https://code.visualstudio.com/docs/setup/setup-overview'
-  record_skip 'code --install-extension esbenp.prettier-vscode'
+  record_not_done 'code --install-extension esbenp.prettier-vscode' 'code not found'
 fi
 
 echo '== Files =='
 copy_file 'home/.zshrc' "$HOME/"'.zshrc'; rc=$?
 if [ $rc -eq 0 ]; then record_ok 'copy ~/.zshrc'
-elif [ $rc -eq 2 ]; then record_skip 'copy ~/.zshrc'
+elif [ $rc -eq 2 ]; then record_done 'copy ~/.zshrc'
 else record_fail 'copy ~/.zshrc'; fi
 copy_file 'home/it'\''s.json' "$HOME/"'it'\''s.json'; rc=$?
 if [ $rc -eq 0 ]; then record_ok 'copy ~/it'\''s.json'
-elif [ $rc -eq 2 ]; then record_skip 'copy ~/it'\''s.json'
+elif [ $rc -eq 2 ]; then record_done 'copy ~/it'\''s.json'
 else record_fail 'copy ~/it'\''s.json'; fi
 if have 'git' && [ -d "$HOME/.oh-my-zsh" ]; then
-  if [ -d "$HOME/"'.oh-my-zsh/custom/plugins/zsh-autosuggestions' ] >/dev/null 2>&1; then record_skip 'git clone https://github.com/zsh-users/zsh-autosuggestions'
+  if [ -d "$HOME/"'.oh-my-zsh/custom/plugins/zsh-autosuggestions' ] >/dev/null 2>&1; then record_done 'git clone https://github.com/zsh-users/zsh-autosuggestions'
   elif git clone 'https://github.com/zsh-users/zsh-autosuggestions' "$HOME/"'.oh-my-zsh/custom/plugins/zsh-autosuggestions'; then record_ok 'git clone https://github.com/zsh-users/zsh-autosuggestions'
   else record_fail 'git clone https://github.com/zsh-users/zsh-autosuggestions'; fi
 else
   missing 'oh-my-zsh' 'https://ohmyz.sh'
-  record_skip 'git clone https://github.com/zsh-users/zsh-autosuggestions'
+  record_not_done 'git clone https://github.com/zsh-users/zsh-autosuggestions' 'oh-my-zsh not found'
 fi
 
-printf '\nSummary\nOK:\n%sSkipped:\n%sFailed:\n%s' "$OK_LIST" "$SKIP_LIST" "$FAIL_LIST"
+printf '\nSummary\nOK:\n%sAlready done:\n%sNot done:\n%s' "$OK_LIST" "$DONE_LIST" "$NOT_DONE_LIST"
+if [ -n "$TOOLS_LIST" ]; then printf 'To finish these, install the missing tools and run this script again:\n%s' "$TOOLS_LIST"; fi
+printf 'Failed:\n%s' "$FAIL_LIST"
 echo 'Fill in these masked secrets:'
 printf '%s\n' '  - files/home/.zshrc line 3 (GITHUB_TOKEN)'
 echo 'Notes:'
