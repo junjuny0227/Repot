@@ -716,7 +716,8 @@ pre {
 }
 @media (max-width: 880px) {
   .install {
-    grid-template-columns: 1fr;
+    /* minmax(0, …): a long command in a <pre> scrolls instead of widening the page. */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 400px) {
