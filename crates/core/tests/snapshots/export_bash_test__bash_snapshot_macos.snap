@@ -9,7 +9,7 @@ expression: "render_bash(&sample_plan(Os::MacOs))"
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 STAMP="$(date +%Y%m%d%H%M%S)"
-OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
+PREFLIGHT_MISSING=0; OK_LIST=""; DONE_LIST=""; NOT_DONE_LIST=""; FAIL_LIST=""; TOOLS_LIST=""; FAILED=0
 have() { command -v "$1" >/dev/null 2>&1; }
 record_ok()   { OK_LIST="$OK_LIST  - $1
 "; echo "  ok: $1"; }
@@ -21,6 +21,11 @@ record_not_done() { NOT_DONE_LIST="$NOT_DONE_LIST  - $1 ($2)
 "; echo "  not done: $1 ($2)"; }
 record_fail() { FAIL_LIST="$FAIL_LIST  - $1
 "; FAILED=1; echo "  FAILED: $1"; }
+# Preflight: report whether a tool is here before anything runs.
+check_tool() {
+  if eval "$2"; then echo "  $1: found"
+  else echo "  $1: not found yet. Install it from $3"; PREFLIGHT_MISSING=1; fi
+}
 missing() {
   echo "  $1 not found. Install it first: $2"
   case "$TOOLS_LIST" in *"  $1: $2
@@ -47,6 +52,15 @@ printf '%s\n' '  - code --install-extension esbenp.prettier-vscode'
 printf '%s\n' '  - copy ~/.zshrc'
 printf '%s\n' '  - copy ~/it'\''s.json'
 printf '%s\n' '  - git clone https://github.com/zsh-users/zsh-autosuggestions'
+echo 'Tools this script uses:'
+check_tool 'brew' 'have '\''brew'\''' 'https://brew.sh'
+check_tool 'nvm' '[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]' 'https://github.com/nvm-sh/nvm'
+check_tool 'npm' 'have '\''npm'\''' 'https://nodejs.org'
+check_tool 'code' 'have '\''code'\''' 'https://code.visualstudio.com/docs/setup/setup-overview'
+check_tool 'oh-my-zsh' 'have git && [ -d "$HOME/.oh-my-zsh" ]' 'https://ohmyz.sh'
+if [ "$PREFLIGHT_MISSING" = 1 ]; then
+  echo 'Steps that need a missing tool will be listed under "Not done". An earlier step may install some of them (for example Node.js from Homebrew); otherwise install them and run this script again.'
+fi
 if [ "${1:-}" != '--yes' ]; then
   printf 'Continue? [y/N] '
   read -r answer

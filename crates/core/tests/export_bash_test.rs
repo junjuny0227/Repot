@@ -192,6 +192,14 @@ fn missing_tool_is_skipped_and_failure_sets_exit_code() {
     assert!(out.status.success());
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("brew not found. Install it first: https://brew.sh"));
+    // The preflight names the missing tool before anything runs.
+    let preflight = stdout
+        .find("Tools this script uses:\n  brew: not found yet. Install it from https://brew.sh\n");
+    let first_step = stdout.find("== Packages ==");
+    assert!(
+        matches!((preflight, first_step), (Some(p), Some(s)) if p < s),
+        "{stdout}"
+    );
     let summary = stdout.split("Summary\n").nth(1).unwrap();
     assert_eq!(
         summary,

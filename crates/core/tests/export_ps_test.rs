@@ -177,6 +177,17 @@ fn ps_copy_backs_up_once_on_windows() {
     assert_eq!(backups(), 1);
 }
 #[test]
+fn preflight_lists_each_tool_once_before_the_prompt() {
+    let s = render_powershell(&windows_plan());
+    let preflight = s.find("Write-Host 'Tools this script uses:'").unwrap();
+    assert!(preflight < s.find("Continue? [y/N]").unwrap());
+    assert_eq!(
+        s.matches("Test-Preflight 'winget' 'winget'").count(),
+        1,
+        "{s}"
+    );
+}
+#[test]
 fn steps_that_are_not_attempted_carry_a_reason() {
     let s = render_powershell(&windows_plan());
     assert!(
