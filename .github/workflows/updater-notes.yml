@@ -1,0 +1,34 @@
+name: Updater notes
+
+# latest.json "notes" is the text in the app's update sheet. tauri-action fills it
+# with the draft's releaseBody (the unsigned-install warning in Markdown), so once
+# a release is published, replace it with the plain-text Highlights section.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to fix (e.g. v0.4.2)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Rewrite latest.json notes
+        run: |
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body > "$RUNNER_TEMP/body.md"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern latest.json --dir "$RUNNER_TEMP"
+          node scripts/updater-notes.mjs "$RUNNER_TEMP/body.md" "$RUNNER_TEMP/latest.json"
+          gh release upload "$TAG" "$RUNNER_TEMP/latest.json" --repo "$GITHUB_REPOSITORY" --clobber
