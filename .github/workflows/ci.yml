@@ -551,6 +551,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Formatting, lint and import order for TS/JS/JSON/CSS (biome.json); writes nothing.
+      - run: pnpm exec biome ci .
       - run: node --test scripts/*.test.mjs scripts/package-map-gen/*.test.mjs
       - run: pnpm --filter @repot/desktop typecheck
       - run: pnpm --filter @repot/desktop test

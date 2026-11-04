@@ -1,5 +1,5 @@
-import { useContent } from "../content";
-import { SymbolTile, type ToolKey } from "../icons";
+import { useContent } from '../content';
+import { SymbolTile, type ToolKey } from '../icons';
 
 export function Tools() {
   const C = useContent();
@@ -11,7 +11,10 @@ export function Tools() {
       <dl className="group tools">
         {C.tools.groups.map((g) => (
           <div key={g.key} className="tool-row">
-            <dt><SymbolTile name={g.key as ToolKey} />{g.name}</dt>
+            <dt>
+              <SymbolTile name={g.key as ToolKey} />
+              {g.name}
+            </dt>
             <dd>{g.tools}</dd>
           </div>
         ))}

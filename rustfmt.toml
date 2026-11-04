@@ -1,0 +1,8 @@
+# Stable rustfmt options only (the toolchain is stable). Everything else stays at the
+# rustfmt defaults, which most Rust projects use: 4-space indent, 100-column lines.
+edition = "2024"
+newline_style = "Unix"
+# `Point { x: x }` -> `Point { x }`
+use_field_init_shorthand = true
+# `try!(x)` -> `x?`
+use_try_shorthand = true

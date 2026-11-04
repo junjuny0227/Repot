@@ -1,5 +1,5 @@
-import { useContent } from "../content";
-import { Screenshot } from "./Screenshot";
+import { useContent } from '../content';
+import { Screenshot } from './Screenshot';
 
 export function HowItWorks() {
   const C = useContent();
@@ -13,7 +13,9 @@ export function HowItWorks() {
         <ol className="group steps">
           {C.how.steps.map((s, i) => (
             <li key={s.title} className="step">
-              <span className="step-number" aria-hidden="true">{i + 1}</span>
+              <span className="step-number" aria-hidden="true">
+                {i + 1}
+              </span>
               <div>
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
@@ -22,7 +24,11 @@ export function HowItWorks() {
           ))}
         </ol>
         <div className="how-shot">
-          <Screenshot name="export" alt={C.how.screenshotAlt} sizes="(min-width: 1128px) 620px, (min-width: 880px) 56vw, calc(100vw - 48px)" />
+          <Screenshot
+            name="export"
+            alt={C.how.screenshotAlt}
+            sizes="(min-width: 1128px) 620px, (min-width: 880px) 56vw, calc(100vw - 48px)"
+          />
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classify, verify, commandFor, selectNames } from './check-package-map.mjs';
+import test from 'node:test';
+import { classify, commandFor, selectNames, verify } from './check-package-map.mjs';
 
 test('recognizes exact identities, not successful empty or unrelated output', () => {
   const cases = [
@@ -21,17 +21,31 @@ test('recognizes exact identities, not successful empty or unrelated output', ()
 });
 
 test('metadata mentioning networking, SSL and certificates is not a transport error', () => {
-  assert.equal(classify('pacman', 'curl', { status: 0, stdout: 'Name : curl\nDescription : network transfer with SSL\nDepends On : openssl ca-certificates ruby-timeout' }), 'found');
+  assert.equal(
+    classify('pacman', 'curl', {
+      status: 0,
+      stdout:
+        'Name : curl\nDescription : network transfer with SSL\nDepends On : openssl ca-certificates ruby-timeout',
+    }),
+    'found',
+  );
 });
 
 test('release notes are metadata, not diagnostics', () => {
-  assert.equal(classify('winget', 'GitHub.GitLFS', { status: 0, stdout: 'Found Git LFS [GitHub.GitLFS]\nRelease Notes:\nFixed authentication timeouts and network error handling' }), 'found');
+  assert.equal(
+    classify('winget', 'GitHub.GitLFS', {
+      status: 0,
+      stdout:
+        'Found Git LFS [GitHub.GitLFS]\nRelease Notes:\nFixed authentication timeouts and network error handling',
+    }),
+    'found',
+  );
 });
 
 test('distinguishes authoritative absence from transport and command failures', () => {
   const cases = [
     ['brew', 'Error: No available formula with the name "missing"'],
-    ['brewCask', 'Error: Cask \'missing\' is unavailable: No Cask with this name exists.'],
+    ['brewCask', "Error: Cask 'missing' is unavailable: No Cask with this name exists."],
     ['winget', 'No package found matching input criteria.'],
     ['scoop', "Could not find manifest for 'missing' in local buckets."],
     ['choco', '0 packages found.'],
@@ -42,30 +56,79 @@ test('distinguishes authoritative absence from transport and command failures', 
   ];
   for (const [manager, stdout] of cases) {
     assert.equal(classify(manager, 'missing', { status: 1, stdout }), 'missing');
-    assert.equal(classify(manager, 'missing', { status: 1, stdout: `HTTP 503 service unavailable\n${stdout}` }), 'transient');
-    assert.equal(classify(manager, 'missing', { status: 1, stdout: 'TLS handshake failed' }), 'transient');
-    assert.equal(classify(manager, 'missing', { status: null, error: 'ENOENT', stdout }), 'transient');
+    assert.equal(
+      classify(manager, 'missing', {
+        status: 1,
+        stdout: `HTTP 503 service unavailable\n${stdout}`,
+      }),
+      'transient',
+    );
+    assert.equal(
+      classify(manager, 'missing', { status: 1, stdout: 'TLS handshake failed' }),
+      'transient',
+    );
+    assert.equal(
+      classify(manager, 'missing', { status: null, error: 'ENOENT', stdout }),
+      'transient',
+    );
   }
   assert.equal(classify('choco', 'jq', { status: 1, stdout: 'jq|1.7' }), 'transient');
-  assert.equal(classify('choco', 'jq', { status: 0, stdout: 'jq|1.7\nERROR: source unavailable' }), 'transient');
+  assert.equal(
+    classify('choco', 'jq', { status: 0, stdout: 'jq|1.7\nERROR: source unavailable' }),
+    'transient',
+  );
 });
 
 test('retries only transient failures and never passes an exhausted retry', async () => {
   let calls = 0;
-  const run = () => (++calls < 3 ? { status: 1, stdout: 'HTTP 503' } : { status: 0, stdout: 'Package: jq' });
+  const run = () =>
+    ++calls < 3 ? { status: 1, stdout: 'HTTP 503' } : { status: 0, stdout: 'Package: jq' };
   assert.equal(await verify('apt', 'jq', { run, sleep: async () => {} }), 'found');
   assert.equal(calls, 3);
   calls = 0;
-  assert.equal(await verify('apt', 'missing', { run: () => { calls++; return { status: 100, stdout: 'E: No packages found' }; }, sleep: async () => {} }), 'missing');
+  assert.equal(
+    await verify('apt', 'missing', {
+      run: () => {
+        calls++;
+        return { status: 100, stdout: 'E: No packages found' };
+      },
+      sleep: async () => {},
+    }),
+    'missing',
+  );
   assert.equal(calls, 1);
   calls = 0;
-  assert.equal(await verify('apt', 'jq', { run: () => { calls++; return { status: 1, stdout: 'network failure' }; }, sleep: async () => {} }), 'transient');
+  assert.equal(
+    await verify('apt', 'jq', {
+      run: () => {
+        calls++;
+        return { status: 1, stdout: 'network failure' };
+      },
+      sleep: async () => {},
+    }),
+    'transient',
+  );
   assert.equal(calls, 3);
 });
 
 test('selects only known names for requested managers, preserving explicit absence', () => {
-  assert.deepEqual(selectNames({ packages: { a: { brew: 'a', apt: null }, b: { apt: 'b' } } }, ['apt']), [['apt', 'b']]);
-  assert.deepEqual(commandFor('winget', 'Git.Git'), ['winget', ['show', '--id', 'Git.Git', '--exact', '--source', 'winget', '--accept-source-agreements', '--disable-interactivity']]);
+  assert.deepEqual(
+    selectNames({ packages: { a: { brew: 'a', apt: null }, b: { apt: 'b' } } }, ['apt']),
+    [['apt', 'b']],
+  );
+  assert.deepEqual(commandFor('winget', 'Git.Git'), [
+    'winget',
+    [
+      'show',
+      '--id',
+      'Git.Git',
+      '--exact',
+      '--source',
+      'winget',
+      '--accept-source-agreements',
+      '--disable-interactivity',
+    ],
+  ]);
   assert.throws(() => commandFor('apt', 'x;rm'), /Invalid/);
   assert.throws(() => commandFor('unknown', 'x'), /manager/);
 });

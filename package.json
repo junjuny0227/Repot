@@ -4,6 +4,12 @@
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "desktop": "pnpm --filter @repot/desktop tauri",
-    "package-map:gen": "node scripts/package-map-gen/cli.mjs"
+    "package-map:gen": "node scripts/package-map-gen/cli.mjs",
+    "check": "biome check .",
+    "fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.4"
   }
 }
