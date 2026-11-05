@@ -27,7 +27,7 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - 현재 기기 스캔 → 설명과 함께 목록 표시 → 항목 선택 → 내보내기
 - 출발 OS는 자동 감지, 목적지 OS는 사용자가 선택
 - 내보내기 형식: **통합 스크립트** 또는 **네이티브 매니페스트 묶음** 중 하나
-- 스캔 카테고리 A~F (§7)
+- 스캔 카테고리 A~G (§7)
 - 비밀정보 감지·마스킹 (§8)
 - 공식 Tauri updater를 통한 서명된 앱 자동 업데이트 (계획 8)
 - 앱에 내장한 대응표를 통한 OS 간 패키지 이름 대응. Windows 목적지는 winget·Scoop·Chocolatey 중 고른다 (계획 9, §9)
@@ -36,11 +36,12 @@ Repot은 현재 기기의 개발 환경을 스캔해 **무엇이 설치·설정�
 - `repot.json`에 목적지에서 쓸 수 없어 빠진 항목도 "이번 내보내기에 없음" 표시와 함께 저장해, 다른 목적지로 다시 내보낼 수 있게 함 (계획 13)
 - 명령줄 도구 `repot`(`scan`, `compare`, `export`). 앱과 같은 core·세션·처음 선택을 쓰고, 출력은 영어와 `--json` (계획 15)
 - JetBrains IDE의 설정(코드 스타일, 키맵, 색 구성표, 라이브 템플릿, 글꼴·테마 선택)과 사용자가 설치한 플러그인 (계획 14)
+- SSH 클라이언트 설정 `~/.ssh/config`와 그 파일이 `Include`로 불러오는 `~/.ssh` 안의 설정 파일. 키는 옮기지 않고 설정이 가리키는 키 경로만 안내한다 (계획 16)
 
 ### 제외 (MVP 이후 검토)
 
 - 앱 안에서 복원 실행, 두 기기 직접 연결
-- SSH(키·config)
+- SSH 키(개인 키·`.pub`), `known_hosts`, `authorized_keys`와 `~/.ssh`의 나머지 파일. 설정은 계획 16에서 포함
 - 온라인 정보 조회, AI 설명
 - Flatpak, Snap
 - 스캔 결과 전체 저장 (`repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 뺀 항목은 담지 않는다)
@@ -129,7 +130,7 @@ pub enum Os { MacOs, Windows, Linux(LinuxFamily) }
 pub enum LinuxFamily { Debian, Fedora, Arch, Other }
 pub enum Shell { Zsh, Bash, Fish, PowerShell }
 
-pub enum Category { PackageManager, Runtime, GlobalPackage, Editor, Git, Shell }
+pub enum Category { PackageManager, Runtime, GlobalPackage, Editor, Git, Shell, Ssh }
 
 pub struct Item {
     pub id: String,                 // 예: "brew:formula:ripgrep"
@@ -179,6 +180,7 @@ pub enum FindingKind {              // 문장은 UI가 만든다 (§5 계층 경
     OsSpecificLine { key: String }, // 예: "credential.helper"
     Duplicate { other_provider: String },
     Unreadable,
+    KeyFile { path: String },       // SSH 설정이 가리키는 키 경로. 키는 옮기지 않는다 (계획 16)
 }
 
 pub struct Selection {
@@ -231,6 +233,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 | | `jetbrains` (IntelliJ IDEA, WebStorm, PyCharm 등, 계획 14) | IDE별 최신 버전 설정 폴더의 `codestyles/`·`keymaps/`·`colors/`·`templates/`와 글꼴·테마 선택 파일, 플러그인 폴더의 jar 속 `META-INF/plugin.xml` | plugin.xml `<description>`, 설정 파일은 내장 | Any |
 | E Git | `git` | `~/.gitconfig`, `~/.config/git/config`, `core.excludesFile`가 가리키는 파일 | 내장 | Any |
 | F 셸 | `shell` | `.zshrc`, `.zprofile`, `.bashrc`, `.bash_profile`, `.profile`, `config.fish`, PowerShell `$PROFILE`, oh-my-zsh 커스텀 플러그인·테마, `starship.toml` | 내장 | SameShell (`starship.toml`은 Any) |
+| G SSH | `ssh` (계획 16) | `~/.ssh/config`와 `Include`가 가리키는 `~/.ssh` 안의 파일(마지막 조각의 `*`·`?`만, 깊이 16, 32개까지). 키·`known_hosts`·`authorized_keys`·`*.pub`과 개인 키 블록이 든 파일은 항목으로 만들지 않고, `IdentityFile`이 가리키는 파일은 읽지 않는다 | 내장 | Any |
 
 ### 항목 단위
 
@@ -256,7 +259,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - `detect`가 false인 Provider는 "감지되지 않은 도구" 목록에 들어간다.
 - 한 Provider의 실패는 다른 Provider에 영향을 주지 않는다.
 - 스캔이 끝나면 패키지 매니저 사이에 이름이 같은 항목(대소문자 무시)에 `Duplicate` Finding을 붙인다. 예: "choco로도 감지됨". 자동으로 제거하지는 않는다.
-- 비밀정보 검사는 D·E·F의 설정 파일 항목에만 적용한다.
+- 비밀정보 검사는 D·E·F·G의 설정 파일 항목에만 적용한다.
 
 ### 알려진 함정과 대응
 
@@ -270,7 +273,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 ### 대상 패턴
 
 - 잘 알려진 토큰 형식: AWS Access Key(`AKIA…`), GitHub(`ghp_`, `gho_`, `github_pat_`), OpenAI(`sk-…`), Anthropic(`sk-ant-…`), Slack(`xox[abpr]-…`), Google API Key(`AIza…`)
-- 이름 기반: `export`/`$env:`/`set -x`로 정의된 변수 중 이름에 `TOKEN`, `SECRET`, `PASSWORD`, `PASSWD`, `API_KEY`, `ACCESS_KEY`, `PRIVATE_KEY`가 들어가고 값이 비어 있지 않은 것
+- 이름 기반: `export`/`$env:`/`set -x`/SSH `SetEnv`로 정의된 변수 중 이름에 `TOKEN`, `SECRET`, `PASSWORD`, `PASSWD`, `API_KEY`, `ACCESS_KEY`, `PRIVATE_KEY`가 들어가고 값이 비어 있지 않은 것
 - 자격 증명이 들어간 URL: `scheme://user:pass@host`, `https://<token>@host`
 - 개인 키 블록: `-----BEGIN … PRIVATE KEY-----`
 
@@ -331,6 +334,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - **Git**: `credential.helper`(`osxkeychain` ↔ `manager` 등), `core.autocrlf`, `gpg.program`, 절대 경로가 든 `core.editor` 같은 OS 전용 줄은 주석 처리하고, 목적지 OS용 대안을 주석으로 단다.
 - **VS Code/Cursor**: User 폴더 경로를 목적지 OS 기준으로 바꾼다(macOS `~/Library/Application Support/<App>/User`, Windows `%APPDATA%\<App>\User`, Linux `~/.config/<App>/User`). `keybindings.json`은 `cmd`/`ctrl` 차이에 대한 안내를 남긴다.
 - **PowerShell profile**: 목적지 OS의 `$PROFILE` 위치로 바꾼다.
+- **SSH 설정**: 대상은 `~/.ssh/config`(Windows `%USERPROFILE%\.ssh\config`)이고 `~`로 시작하는 경로는 그대로 둔다. OpenSSH는 모르는 옵션이 있으면 설정 전체를 거부하므로 OS 종류가 다를 때 `UseKeychain`(목적지가 macOS가 아닐 때), `ControlMaster`·`ControlPath`·`ControlPersist`(목적지가 Windows일 때), 절대 경로나 `~/Library/` 경로를 값으로 쓰는 `IdentityFile`·`CertificateFile`·`IdentityAgent`·`UserKnownHostsFile`·`ControlPath`를 주석 처리한다. 줄 번호가 바뀌지 않도록 `IgnoreUnknown`을 더하지 않는다(계획 16).
 - **JetBrains**: 설정 폴더 기준 위치(macOS `~/Library/Application Support/JetBrains`, Windows `%APPDATA%\JetBrains`, Linux `~/.config/JetBrains`)를 목적지 OS로 바꾸고, 버전 폴더는 스크립트가 실행할 때 고른다(대상에 있는 같은 IDE의 최신 버전, 없으면 출발 기기의 버전 이름). 플러그인은 `<IDE 명령> installPlugins <id>`로 설치한다(계획 14).
 
 ## 10. 내보내기
@@ -372,7 +376,7 @@ pub enum Step {
 
 `export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다. 다른 OS 패키지는 §9 패키지 대응표의 이름으로 바꾸고 `mapped_from`에 원래 이름을 남긴다. 렌더러는 그 단계 위에 `# from brew: ripgrep` 같은 영어 주석을 달고, 대응에 Scoop bucket이 필요하면 `AddTap`을 먼저 만든다. 두 출발 항목이 같은 목적지 이름으로 대응되면 첫 항목만 내보내고 경고한다. 내보내기 README에는 대응된 패키지 목록을 적는다.
 
-사용자 Scoop bucket(`url`이 있는 항목)은 `scoop bucket add '<name>' '<url>'`로, 알려진 bucket과 대응용 bucket은 `scoop bucket add '<name>'`으로 추가한다. 이미 있는지는 둘 다 `scoop bucket list`가 돌려주는 bucket의 `Name`이 정확히 같은지로 본다. `scoop.json`의 `buckets`에도 `url`이 있으면 `Source`로 적는다(`scoop import`가 그 주소로 추가한다). 주소는 `https://…` 또는 `git@host:path` 형태이고, 접두어 뒤에 `@`가 없으며(자격 증명이 든 주소를 스크립트에 쓰지 않는다), 이름과 같은 안전 문자(영숫자와 `@._+/:-`)만 쓸 때만 내보낸다. 아니면 그 bucket 항목을 `InvalidValue` 경고와 함께 뺀다. `repot.json`에서도 같은 검사를 하고, `url`은 Scoop bucket 항목에만 허용한다. 어긋나면 그 항목을 건너뛴다. `url` 필드는 0.9에 더했고 없으면 `None`이라 이전 파일도 그대로 열린다.
+사용자 Scoop bucket(`url`이 있는 항목)은 `scoop bucket add '<name>' '<url>'`로, 알려진 bucket과 대응용 bucket은 `scoop bucket add '<name>'`으로 추가한다. 이미 있는지는 둘 다 `scoop bucket list`가 돌려주는 bucket의 `Name`이 정확히 같은지로 본다. `scoop.json`의 `buckets`에도 `url`이 있으면 `Source`로 적는다(`scoop import`가 그 주소로 추가한다). 주소는 `https://…` 또는 `git@host:path` 형태이고, 접두어 뒤에 `@`가 없으며(자격 증명이 든 주소를 스크립트에 쓰지 않는다), 이름과 같은 안전 문자(영숫자와 `@._+/:-`)만 쓸 때만 내보낸다. 아니면 그 bucket 항목을 `InvalidValue` 경고와 함께 뺀다. `repot.json`에서도 같은 검사를 하고, `url`은 Scoop bucket 항목에만 허용한다. 어긋나면 그 항목을 건너뛴다. 설정 파일 대상이 `.ssh/` 아래면 `ssh` 항목이고 키·`known_hosts`·`authorized_keys` 같은 금지 이름이 아니어야 하며, `ssh` 항목은 `.ssh/` 아래만 쓸 수 있다(계획 16, `ssh::is_config_target`을 `is_scanned_config_target`에 더한다). `url` 필드는 0.9에 더했고 없으면 `None`이라 이전 파일도 그대로 열린다.
 
 `TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile`, `JetBrains { ide, version, rel }` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
@@ -401,6 +405,7 @@ repot-export-2026-11-02/
 - 한 단계가 실패해도 계속 진행하고 요약에 기록한다.
 - 패키지 매니저나 버전 관리자 자체가 없으면 설치하지 않는다. 공식 설치 방법을 안내하고 그 섹션을 건너뛴다. oh-my-zsh도 같다.
 - 설정 파일을 복사할 때 대상 파일이 이미 있으면 `<파일>.repot-backup-<YYYYMMDDHHMMSS>`로 백업한 뒤 덮어쓴다.
+- `~/.ssh` 아래 파일은 bash가 umask 077로 복사해 새 폴더는 0700, 파일은 0600으로 만들고 복사 뒤 `chmod 600`을 한다. 이미 있던 `~/.ssh` 폴더의 권한은 바꾸지 않는다. Windows는 `%USERPROFILE%`의 상속 ACL을 그대로 쓴다. SSH 설정을 내보내면 설정이 가리키는 키 경로(`IdentityFile`·`CertificateFile`)를 요약과 README의 "Copy these SSH keys yourself"에 적는다. 키 내용과 존재 여부는 적지 않는다(계획 16).
 - 런타임은 스캔한 정확한 버전으로, 전역 패키지·확장은 최신 버전으로 설치한다.
 - "이미 됨" 확인은 목록에서 이름·버전이 통째로 같아야 한다. 부분 문자열로 찾으면 `java` bucket이 `java-extra`나 다른 bucket 주소에, `20.1.1`이 `20.1.10`에, `eslint`가 `eslint-plugin-react`에 맞아 설치하지 않은 항목을 "이미 됨"으로 남긴다. brew tap·pyenv 버전·에디터 확장은 줄 전체(`grep -qxF`, 확장은 대소문자 무시), fnm·volta·nvm-windows 목록은 공백으로 나눈 낱말, pnpm·pipx·cargo 목록은 줄의 첫 낱말, Scoop bucket은 `Name`으로 비교한다. npm 전역 패키지는 두 스크립트 모두 `npm ls -g --depth=0 <name>`의 종료 코드로 본다. 패키지(winget·choco `--exact`, `scoop prefix`, `brew list`, `dpkg -s`, `rpm -q`, `pacman -Q`), nvm(`nvm ls <정확한 버전>`), SDKMAN!·JetBrains 플러그인(폴더 확인)은 처음부터 그 이름 하나만 본다.
 - rustup 툴체인은 툴체인과 담긴 component·target이 모두 있어야 "이미 됨"이다(bash `rustup_has`, PowerShell `Test-RustupToolchain`). 확인할 때 목적지 component 목록에서도 툴체인 호스트 접미사를 뗀다. 툴체인 이름은 `<채널>-<영문자로 시작하는 호스트>`로 찾아 `nightly`가 날짜 붙은 nightly와 맞지 않게 한다. 툴체인이 이미 있으면 다시 설치하지 않고(채널이 업데이트된다) `rustup component add --toolchain <t> …`, `rustup target add --toolchain <t> …`만 실행한다. 단계 이름에 component·target을 적는다(`rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)`).
@@ -484,6 +489,7 @@ repot-export-2026-11-02/
 - **패키지 대응표**: 데이터 형식(알려진 매니저 키, 정렬, 빈 값, 허용 패턴)과 역색인 유일성(대소문자 무시)을 테스트하고, CI `package-map` 작업이 이름을 실제 매니저로 확인한다.
 - **렌더러**: `restore.sh`, `restore.ps1`, 각 매니페스트를 `insta` 스냅샷으로 고정한다.
 - **Repot 파일**: 커밋한 v1 fixture는 고치지 않고 모든 이후 버전이 읽어야 한다. 모르는 필드·enum 값, 새 버전, 크기·경로·URL·값 검증, 바로 내보내기와 파일을 거친 내보내기의 결과 동일성을 테스트한다.
+- **SSH 설정**: `Include` 규칙(`~/.ssh` 밖, `..`, 금지 이름, 순환)과 목적지별 주석 처리를 표로 테스트하고, CI가 Linux·Windows 러너의 실제 OpenSSH로 준비한 설정을 `ssh -G`로 읽고 복원한 파일 권한을 확인한다(계획 16).
 - **이 기기 비교**: 같은 OS와 다른 OS(Windows winget·Scoop)에서 패키지·런타임 버전·전역 패키지·확장·플러그인·설정 파일(같음·다름·비밀 줄만 다름) 판정을 표 기반으로 테스트한다.
 - **CI (GitHub Actions)**:
   - macOS, Windows, Ubuntu 러너에서 `cargo test`, `clippy`, `fmt`
@@ -523,10 +529,11 @@ repot-export-2026-11-02/
 - `repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 체크를 끈 항목은 나중에 다시 내보낼 수 없다. 파일 안에서 가린 비밀정보는 되살릴 수 없다. 0.6 이하 앱은 `notExported` 표시를 몰라 그 항목을 보통 항목처럼 보여준다.
 - JetBrains는 IDE별 최신 버전 설정 폴더만 읽는다. 플러그인은 JetBrains Marketplace에서 `installPlugins`로 받으므로 사용자 지정 저장소나 디스크에서 설치한 플러그인은 복원되지 않고, 설치 중에는 IDE를 닫아야 한다. IDE 자체는 설치하지 않는다(없으면 Toolbox 안내). 0.6 이하 앱은 JetBrains 항목이 든 `repot.json`을 열 때 그 항목을 건너뛴다.
 - `core.excludesFile`가 홈 바로 아래나 `.config/git/` 바로 아래가 아닌 곳(예: `~/dotfiles/gitignore`)을 가리키거나 이름에 `ignore`가 없으면, 기기에서 바로 내보낼 때는 그 파일이 들어가지만 그 `repot.json`을 다시 열면 그 항목은 건너뛴다(§10). 남이 준 파일이 같은 자리로 SSH 키 목록이나 자동 실행 파일을 쓰지 못하게 하려는 보수적인 선택이다.
+- SSH는 설정만 옮긴다. 키는 사용자가 직접 복사하고, `known_hosts`는 새 기기에서 다시 쌓인다. `~/.ssh` 밖을 가리키는 `Include`(OrbStack, colima 등)와 중간 조각에 와일드카드가 있는 `Include`는 따라가지 않고 줄만 남긴다(상세 패널에 그 줄을 알린다). `ProxyCommand`·`Match exec` 속 명령이 OS 전용이어도 판단하지 않고, 명령 인자의 비밀은 알려진 토큰 형식일 때만 가린다. 이전 앱은 SSH 항목이 든 `repot.json`을 열 때 그 항목을 건너뛴다.
 
 ## 16. 향후 방향
 
 - "새 기기에서 앱으로 복원" 기능 (`repot.json`과 `Step` 모델을 그대로 재사용)
-- SSH(암호화 내보내기 포함), Flatpak, Snap Provider
+- SSH 키를 암호화해 내보내기 (계획 16 2단계), Flatpak, Snap Provider
 - 사용자 동의 하의 온라인 설명 보강
 - CLI의 crates.io 게시와 homebrew-core·공식 Scoop bucket 등록 (core 공개 API가 안정된 뒤)
