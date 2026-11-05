@@ -148,7 +148,8 @@ pub struct Item {
 pub enum ItemDetails {
     Package { manager: PackageManager, kind: PackageKind,             // Formula, Cask, Tap, Package
               url: Option<String> },                                  // Scoop이 이름으로 모르는 bucket의 주소만
-    Runtime { tool: RuntimeTool, runtime: String, is_default: bool }, // runtime: "node", "python" …
+    Runtime { tool: RuntimeTool, runtime: String, is_default: bool,  // runtime: "node", "python" …
+              components: Vec<String>, targets: Vec<String> },       // rustup만 채운다(§7), 비면 직렬화하지 않는다
     GlobalPackage { manager: GlobalManager },
     Extension { editor: Editor },
     ConfigFile { source: PathBuf, target: TargetPath },
@@ -220,7 +221,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 | | `nvm-windows` | `nvm list` | 내장 | Mapped |
 | | `fnm`, `volta` | `fnm list`, `volta list --format plain` | 내장 | Mapped |
 | | `pyenv` (pyenv-win 포함) | `pyenv versions --bare`, `pyenv global` | 내장 | Mapped |
-| | `rustup` | `rustup toolchain list` (툴체인만) | 내장 | Mapped |
+| | `rustup` | `rustup toolchain list`, 툴체인마다 `rustup component list --installed --toolchain <t>`·`rustup target list --installed --toolchain <t>` | 내장 | Mapped |
 | | `sdkman` | `~/.sdkman/candidates/*/` 폴더 읽기 | 내장 | Mapped |
 | C 전역 패키지 | `npm` | `npm ls -g --depth=0 --json` (`npm`, `corepack` 제외) | 각 패키지 `package.json` | Any |
 | | `pnpm` | `pnpm ls -g --json` | 각 패키지 `package.json` | Any |
@@ -234,6 +235,11 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 ### 항목 단위
 
 - 패키지, 런타임 버전, 확장은 하나가 한 항목이다.
+- rustup component·target은 따로 항목을 만들지 않고 툴체인 항목의 `components`·`targets`에 담는다. 툴체인 없이 component만 옮기는 일은 없고, 목록이 길어지지 않게 하기 위해서다.
+  - 호스트 전용 component는 rustup이 `clippy-aarch64-apple-darwin`처럼 툴체인 호스트를 붙여 출력하므로 그 접미사를 떼고 저장한다(목적지 호스트가 다를 수 있다).
+  - `rust-std-<target>`은 `rustup target list --installed`와 같은 내용이라 component에서 빼고 target으로만 담는다. 툴체인 호스트 target은 어느 툴체인에나 딸려 오고 다른 OS에서는 교차 컴파일 target이 되므로 뺀다.
+  - 기본 profile에 든 component(rustc, cargo, rust-docs …)는 rustup 출력만으로 사용자가 더한 것과 구별할 수 없어 그대로 둔다. 복원할 때 이미 있으면 `component add`가 확인만 한다.
+  - 이름은 `^[a-z0-9][a-z0-9._-]{0,63}$`에 맞는 것만 받는다(`thumbv8m.main-none-eabi` 같은 target에 점이 있다). 목록 명령이 실패하면 그 툴체인은 component·target 없이 담는다.
 - 설정 파일은 파일 하나가 한 항목이고, 그 안의 비밀정보·OS 전용 줄은 줄 번호가 있는 `Finding`으로 붙는다.
 - **직접 설치한 최상위 패키지만** 보여준다. 의존성으로 설치된 패키지는 숨긴다.
   - choco는 각 nuspec의 의존성을 읽어 다른 패키지의 의존성인 패키지를 제외한다.
@@ -334,7 +340,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - 결과는 사용자가 고른 위치의 `repot-export-<YYYY-MM-DD>/` 폴더다. 같은 이름의 폴더가 있으면 `-2`, `-3`을 붙인다.
 - 임시 폴더에 모두 쓴 뒤 마지막에 이름을 바꾼다. 중간에 실패하면 임시 폴더를 지운다.
 - 선택된 항목 중 목적지 OS에서 사용할 수 없는 항목은 내보내지 않는다.
-- 스크립트·매니페스트에 들어가는 값(패키지 이름, 런타임 버전, 확장 ID, URL)은 허용 패턴(`^[A-Za-z0-9@._+/:-]+$`)에 맞아야 한다. 패키지·전역 패키지·확장은 최신 버전으로 설치하므로 스캔한 버전은 검사하지 않는다(예: brew cask 버전의 쉼표). 맞지 않으면 내보내지 않고 경고한다. 렌더러는 모든 값을 셸 규칙에 맞게 따옴표로 감싼다.
+- 스크립트·매니페스트에 들어가는 값(패키지 이름, 런타임 버전, 확장 ID, URL)은 허용 패턴(`^[A-Za-z0-9@._+/:-]+$`)에 맞아야 한다. rustup component·target 이름은 §7의 더 좁은 패턴에 맞아야 하고, 열린 `repot.json`에서 맞지 않으면 그 항목을 건너뛴다. 패키지·전역 패키지·확장은 최신 버전으로 설치하므로 스캔한 버전은 검사하지 않는다(예: brew cask 버전의 쉼표). 맞지 않으면 내보내지 않고 경고한다. 렌더러는 모든 값을 셸 규칙에 맞게 따옴표로 감싼다.
 - 설정 파일 내용은 스크립트에 넣지 않고 `files/` 아래에만 둔다.
 - 형식과 상관없이 폴더 맨 위에 `repot.json`을 함께 쓴다. 이번 내보내기에 실제로 들어간 항목과, 목적지에서 쓸 수 없어 빠진 항목(`notExported: true`, 계획 13)을 담고, 설정 파일 내용은 출발 기기 형태 그대로 비밀정보만 가려 넣는다(사용자가 보이기로 한 줄만 원문). 형식은 내부 모델과 분리된 버전 타입(`schemaVersion`)이며, 같은 버전 안에서는 필드·enum 값을 더하기만 하고, 지우거나 뜻을 바꾸면 버전을 올리고 옛 버전 읽기를 남긴다. 상세는 계획 11.
 - `notExported` 항목은 열 때와 "이 기기와 비교" 후에 처음 선택하지 않고 "이전 내보내기에 없던 항목"으로 표시한다. 사용자가 직접 켠다. 사용자가 체크를 끈 항목, 읽을 수 없던 항목, 스크립트에 쓰기 위험한 값이 든 항목은 저장하지 않는다.
@@ -353,7 +359,8 @@ pub enum Step {
              url: Option<String> },                        // brew tap, scoop bucket. url은 사용자 bucket만
     InstallPackage { manager: PackageManager, kind: PackageKind, name: String,
                      mapped_from: Option<MappedFrom> },             // 대응된 경우 원래 매니저·종류·이름
-    InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool },
+    InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool,
+                     components: Vec<String>, targets: Vec<String> },  // rustup만 채운다
     InstallGlobal { manager: GlobalManager, name: String },
     InstallExtension { editor: Editor, id: String },
     InstallIdePlugin { ide: JetBrainsIde, id: String, folder: String }, // installPlugins, folder로 이미 있음 확인
@@ -394,6 +401,7 @@ repot-export-2026-11-02/
 - 패키지 매니저나 버전 관리자 자체가 없으면 설치하지 않는다. 공식 설치 방법을 안내하고 그 섹션을 건너뛴다. oh-my-zsh도 같다.
 - 설정 파일을 복사할 때 대상 파일이 이미 있으면 `<파일>.repot-backup-<YYYYMMDDHHMMSS>`로 백업한 뒤 덮어쓴다.
 - 런타임은 스캔한 정확한 버전으로, 전역 패키지·확장은 최신 버전으로 설치한다.
+- rustup 툴체인은 툴체인과 담긴 component·target이 모두 있어야 "이미 됨"이다(bash `rustup_has`, PowerShell `Test-RustupToolchain`). 확인할 때 목적지 component 목록에서도 툴체인 호스트 접미사를 뗀다. 툴체인 이름은 `<채널>-<영문자로 시작하는 호스트>`로 찾아 `nightly`가 날짜 붙은 nightly와 맞지 않게 한다. 툴체인이 이미 있으면 다시 설치하지 않고(채널이 업데이트된다) `rustup component add --toolchain <t> …`, `rustup target add --toolchain <t> …`만 실행한다. 단계 이름에 component·target을 적는다(`rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)`).
 
 ### ② 네이티브 매니페스트 묶음
 
@@ -507,9 +515,9 @@ repot-export-2026-11-02/
 - WSL, Git Bash 환경은 고려하지 않는다.
 - winget은 `winget` 소스 패키지만 다룬다(msstore 제외).
 - volta는 런타임만 다룬다(volta로 설치한 전역 패키지 제외).
-- rustup은 툴체인만 다룬다(component·target 제외).
+- rustup component·target은 이름으로만 옮긴다. 목적지 호스트에 없는 component·target이면 그 툴체인 단계는 실패로 기록된다. 0.8 이하 앱은 `repot.json`의 `components`·`targets`를 모르고 툴체인만 복원한다.
 - Scoop의 알려진 bucket 이름(`extras` 등)을 다른 주소(포크)로 추가했어도 이름만 저장하므로 복원하면 공식 bucket이 추가된다. 로컬 경로나 `http://`·`ssh://`·자격 증명이 든 주소의 bucket은 내보내지 않는다. 0.8 이하 앱은 `repot.json`의 bucket `url`을 몰라 이름만으로 추가하므로 사용자 bucket 복원이 실패한다.
-- `repot.json`과 이 기기 비교는 내보낼 스크립트가 쓰는 매니저 기준이다. 다른 매니저로 설치한 패키지와 다른 버전의 런타임은 "없음"으로 본다.
+- `repot.json`과 이 기기 비교는 내보낼 스크립트가 쓰는 매니저 기준이다. 다른 매니저로 설치한 패키지와 다른 버전의 런타임은 "없음"으로 본다. rustup 툴체인은 파일에 적힌 component·target이 이 기기에 모두 있어야 "이미 있음"이다(스크립트 확인과 같다).
 - `repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 체크를 끈 항목은 나중에 다시 내보낼 수 없다. 파일 안에서 가린 비밀정보는 되살릴 수 없다. 0.6 이하 앱은 `notExported` 표시를 몰라 그 항목을 보통 항목처럼 보여준다.
 - JetBrains는 IDE별 최신 버전 설정 폴더만 읽는다. 플러그인은 JetBrains Marketplace에서 `installPlugins`로 받으므로 사용자 지정 저장소나 디스크에서 설치한 플러그인은 복원되지 않고, 설치 중에는 IDE를 닫아야 한다. IDE 자체는 설치하지 않는다(없으면 Toolbox 안내). 0.6 이하 앱은 JetBrains 항목이 든 `repot.json`을 열 때 그 항목을 건너뛴다.
 

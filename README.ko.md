@@ -212,7 +212,8 @@ repot export repot.json --only-missing        # 이 기기에 없는 것만 내�
 - WSL과 Git Bash 환경은 지원하지 않습니다.
 - winget은 `winget` 소스만 다루고, Microsoft Store(`msstore`) 패키지는 다루지 않습니다.
 - Volta는 런타임만 스캔하고, Volta로 설치한 전역 패키지는 스캔하지 않습니다.
-- rustup은 툴체인만 스캔하고, 컴포넌트와 타깃은 스캔하지 않습니다.
+- rustup 컴포넌트와 타깃은 이름으로만 옮깁니다. 목적지 호스트에 없는 컴포넌트나 타깃이 있으면
+  그 툴체인 단계는 실패합니다.
 - 이름이 알려진 Scoop bucket(`extras`, `versions` 등)은 이 기기에서 포크로 추가했더라도
   공식 주소로 복원됩니다. 사용자 bucket은 `https://`나 `git@` 주소를 그대로 쓰고, 로컬 폴더나
   다른 주소의 bucket은 내보내지 않습니다.
