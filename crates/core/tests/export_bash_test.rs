@@ -52,6 +52,8 @@ fn sample_plan(target: Os) -> ScriptPlan {
                 runtime: "node".into(),
                 version: "20.11.0".into(),
                 set_default: true,
+                components: vec![],
+                targets: vec![],
             },
             Step::InstallGlobal {
                 manager: GlobalManager::Npm,
@@ -365,4 +367,160 @@ fn jetbrains_plugins_without_the_ide_are_not_done() {
         "{stdout}"
     );
     assert!(stdout.contains("  WebStorm: https://www.jetbrains.com/toolbox-app/"));
+}
+
+fn rustup_step(version: &str, components: &[&str], targets: &[&str]) -> Step {
+    Step::InstallRuntime {
+        tool: RuntimeTool::Rustup,
+        runtime: "rust".into(),
+        version: version.into(),
+        set_default: false,
+        components: components.iter().map(|s| (*s).to_owned()).collect(),
+        targets: targets.iter().map(|s| (*s).to_owned()).collect(),
+    }
+}
+
+#[test]
+fn rustup_steps_check_and_add_components_and_targets() {
+    let s = render_bash(&plan(
+        Os::MacOs,
+        vec![
+            rustup_step(
+                "stable",
+                &["clippy", "rust-src"],
+                &["wasm32-unknown-unknown"],
+            ),
+            rustup_step("1.80.0", &[], &[]),
+        ],
+    ));
+    assert!(s.contains("rustup_has() {"), "{s}");
+    assert!(
+        s.contains(
+            "if rustup_has 'stable' 'clippy rust-src' 'wasm32-unknown-unknown' >/dev/null 2>&1; then record_done 'rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)'"
+        ),
+        "{s}"
+    );
+    assert!(
+        s.contains(
+            "elif { rustup_has 'stable' '' '' || rustup toolchain install 'stable'; } && rustup component add --toolchain 'stable' 'clippy' 'rust-src' && rustup target add --toolchain 'stable' 'wasm32-unknown-unknown'; then"
+        ),
+        "{s}"
+    );
+    assert!(
+        s.contains("if rustup_has '1.80.0' '' '' >/dev/null 2>&1; then record_done 'rustup install rust 1.80.0'\n  elif rustup toolchain install '1.80.0'; then"),
+        "{s}"
+    );
+    let plain = render_bash(&plan(Os::MacOs, vec![]));
+    assert!(!plain.contains("rustup_has"));
+}
+
+/// A stand-in rustup with one host, state kept in files under `dir/rustup`.
+#[cfg(unix)]
+fn fake_rustup(dir: &std::path::Path) -> std::path::PathBuf {
+    use std::os::unix::fs::PermissionsExt;
+    let bin = dir.join("bin");
+    let state = dir.join("rustup");
+    std::fs::create_dir_all(&bin).unwrap();
+    std::fs::create_dir_all(&state).unwrap();
+    let host = "x86_64-unknown-linux-gnu";
+    std::fs::write(
+        state.join("toolchains"),
+        format!("stable-{host} (default)\nnightly-2024-11-01-{host}\n"),
+    )
+    .unwrap();
+    std::fs::write(
+        state.join("components-stable"),
+        format!("cargo-{host}\nclippy-{host}\nrust-std-{host}\nrustc-{host}\n"),
+    )
+    .unwrap();
+    std::fs::write(state.join("targets-stable"), format!("{host}\n")).unwrap();
+    let script = format!(
+        r#"#!/bin/sh
+s='{state}'; h='{host}'
+echo "$*" >> "$s/log"
+short() {{ echo "${{1%-$h}}"; }}
+case "$1 $2" in
+  "toolchain list") cat "$s/toolchains" ;;
+  "toolchain install") echo "$3-$h" >> "$s/toolchains"; printf 'cargo-%s\nrustc-%s\nrust-std-%s\n' "$h" "$h" "$h" > "$s/components-$3"; echo "$h" > "$s/targets-$3" ;;
+  "component list") cat "$s/components-$(short "$5")" ;;
+  "target list") cat "$s/targets-$(short "$5")" ;;
+  "component add") t=$4; shift 4; for c in "$@"; do if [ "$c" = rust-src ]; then echo "$c"; else echo "$c-$h"; fi >> "$s/components-$t"; done ;;
+  "target add") t=$4; shift 4; for x in "$@"; do echo "$x" >> "$s/targets-$t"; done ;;
+  *) exit 1 ;;
+esac
+"#,
+        state = state.display()
+    );
+    std::fs::write(bin.join("rustup"), script).unwrap();
+    std::fs::set_permissions(bin.join("rustup"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    bin
+}
+
+#[cfg(unix)]
+#[test]
+fn rustup_adds_missing_components_without_reinstalling_the_toolchain() {
+    let dir = tempfile::tempdir().unwrap();
+    let home = dir.path().join("home");
+    std::fs::create_dir_all(&home).unwrap();
+    let bin = fake_rustup(dir.path());
+    let p = plan(
+        current_target(),
+        vec![
+            // Installed, but rust-src and the wasm target are missing.
+            rustup_step(
+                "stable",
+                &["clippy", "rust-src"],
+                &["wasm32-unknown-unknown"],
+            ),
+            // Not installed at all.
+            rustup_step("1.80.0", &["clippy"], &[]),
+            // Only a dated nightly is installed; that is not "nightly".
+            rustup_step("nightly", &[], &[]),
+        ],
+    );
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let envs = [("HOME", home.to_str().unwrap()), ("PATH", path.as_str())];
+    let out = run_script(&p, dir.path(), &envs);
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(out.status.success(), "{stdout}");
+    let log = std::fs::read_to_string(dir.path().join("rustup/log")).unwrap();
+    let changes: Vec<&str> = log
+        .lines()
+        .filter(|l| l.contains(" add ") || l.contains(" install "))
+        .collect();
+    assert_eq!(
+        changes,
+        vec![
+            "component add --toolchain stable clippy rust-src",
+            "target add --toolchain stable wasm32-unknown-unknown",
+            "toolchain install 1.80.0",
+            "component add --toolchain 1.80.0 clippy",
+            "toolchain install nightly",
+        ],
+        "{stdout}"
+    );
+    let summary = stdout.split("Summary\n").nth(1).unwrap();
+    assert!(
+        summary.starts_with(
+            "OK:\n  - rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)\n  - rustup install rust 1.80.0 (components: clippy)\n  - rustup install rust nightly\nAlready done:\nNot done:\n"
+        ),
+        "{stdout}"
+    );
+    // Second run: everything is already there and nothing else is installed.
+    let second = run_script(&p, dir.path(), &envs);
+    let stdout = String::from_utf8_lossy(&second.stdout);
+    assert!(second.status.success(), "{stdout}");
+    let summary = stdout.split("Summary\n").nth(1).unwrap();
+    assert!(
+        summary.starts_with("OK:\nAlready done:\n  - rustup install rust stable"),
+        "{stdout}"
+    );
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("rustup/log"))
+            .unwrap()
+            .lines()
+            .filter(|l| l.contains(" add ") || l.contains(" install "))
+            .count(),
+        5
+    );
 }

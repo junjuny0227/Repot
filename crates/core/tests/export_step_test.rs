@@ -53,6 +53,8 @@ fn maps_items_to_steps() {
                 tool,
                 runtime: "node".into(),
                 is_default: true,
+                components: vec![],
+                targets: vec![],
             },
             "node",
             Some("20.11.0"),
@@ -64,7 +66,9 @@ fn maps_items_to_steps() {
             tool: RuntimeTool::NvmWindows,
             runtime: "node".into(),
             version: "20.11.0".into(),
-            set_default: true
+            set_default: true,
+            components: vec![],
+            targets: vec![],
         }]
     );
     assert!(steps_for(&rt(RuntimeTool::Sdkman), Os::Windows).is_empty());

@@ -98,6 +98,12 @@ pub enum ItemDetails {
         tool: RuntimeTool,
         runtime: String,
         is_default: bool,
+        /// rustup only: installed components without the host suffix (`clippy`, `rust-src`).
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        components: Vec<String>,
+        /// rustup only: installed targets other than the toolchain's own host.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        targets: Vec<String>,
     },
     GlobalPackage {
         manager: GlobalManager,

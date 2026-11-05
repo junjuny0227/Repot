@@ -50,6 +50,8 @@ fn runtime(tool: RuntimeTool, runtime: &str, version: &str) -> Item {
             tool,
             runtime: runtime.into(),
             is_default: false,
+            components: vec![],
+            targets: vec![],
         },
     );
     i.version = Some(version.into());
@@ -390,5 +392,66 @@ fn jetbrains_plugins_and_settings_compare_across_versions() {
     assert_eq!(
         result["jetbrains:IntelliJIdea:file:codestyles/Default.xml"],
         Presence::Present
+    );
+}
+
+fn toolchain(version: &str, components: &[&str], targets: &[&str]) -> Item {
+    let mut i = runtime(RuntimeTool::Rustup, "rust", version);
+    if let ItemDetails::Runtime {
+        components: c,
+        targets: t,
+        ..
+    } = &mut i.details
+    {
+        *c = components.iter().map(|s| (*s).to_owned()).collect();
+        *t = targets.iter().map(|s| (*s).to_owned()).collect();
+    }
+    i
+}
+
+#[test]
+fn a_toolchain_without_a_listed_component_or_target_is_missing() {
+    let snap = file(
+        vec![
+            toolchain(
+                "stable",
+                &["clippy", "rust-src"],
+                &["wasm32-unknown-unknown"],
+            ),
+            toolchain("1.80.0", &["clippy"], &[]),
+            toolchain("beta", &[], &["wasm32-unknown-unknown"]),
+            toolchain("nightly", &[], &[]),
+        ],
+        &[],
+    );
+    let env = FakeEnv::new(Os::Linux(os::LinuxFamily::Debian), "/home/new");
+    let machine = vec![
+        // More components than the file lists is fine.
+        toolchain(
+            "stable",
+            &["cargo", "clippy", "rust-src", "rustfmt"],
+            &["wasm32-unknown-unknown", "x86_64-pc-windows-gnu"],
+        ),
+        toolchain("1.80.0", &["rustfmt"], &[]),
+        // A component name is not a target.
+        toolchain("beta", &["wasm32-unknown-unknown"], &[]),
+        toolchain("nightly", &["clippy"], &[]),
+    ];
+    let result = compare(
+        &snap.items,
+        snap.source,
+        Target::default_for(Os::Linux(os::LinuxFamily::Debian)),
+        &snap,
+        &machine,
+        Os::Linux(os::LinuxFamily::Debian),
+        &env,
+    );
+    assert_eq!(
+        ids(&result, Presence::Present),
+        vec!["rustup:rust:nightly", "rustup:rust:stable"]
+    );
+    assert_eq!(
+        ids(&result, Presence::Missing),
+        vec!["rustup:rust:1.80.0", "rustup:rust:beta"]
     );
 }

@@ -196,6 +196,15 @@ fn is_safe_item(item: &ItemV1) -> bool {
                 && folder != "."
                 && folder != ".."
         }
+        // Passed to `rustup component add` / `rustup target add` by the restore script.
+        DetailsV1::Runtime {
+            components,
+            targets,
+            ..
+        } => components
+            .iter()
+            .chain(targets)
+            .all(|name| crate::providers::rustup::is_rustup_name(name)),
         DetailsV1::ShellPlugin { url, target } => {
             url.starts_with("https://")
                 && crate::export::step::is_safe_value(url)

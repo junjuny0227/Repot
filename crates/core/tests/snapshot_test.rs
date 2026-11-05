@@ -680,3 +680,75 @@ fn jetbrains_items_round_trip_and_unsafe_ones_are_skipped() {
         snapshot::render_snapshot(&snap.created_at, &snap.repot_version, snap.source, &items);
     assert_eq!(parse_snapshot(&text).unwrap().snapshot, snap);
 }
+
+#[test]
+fn rustup_components_and_targets_round_trip_and_unsafe_names_are_skipped() {
+    let toolchain = |id: &str, extra: serde_json::Value| {
+        let mut details =
+            serde_json::json!({ "tool": "rustup", "runtime": "rust", "isDefault": true });
+        details
+            .as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        serde_json::json!({
+            "id": id,
+            "provider": "rustup",
+            "category": "runtime",
+            "name": "Rust toolchain",
+            "version": "stable",
+            "origin": { "command": "rustup toolchain list" },
+            "portability": { "mapped": "rustup" },
+            "details": { "runtime": details }
+        })
+    };
+    let cases = vec![
+        // Files written before components were scanned have neither field.
+        toolchain("rustup:rust:old", serde_json::json!({})),
+        toolchain(
+            "rustup:rust:stable",
+            serde_json::json!({ "components": ["clippy", "rust-src"], "targets": ["wasm32-unknown-unknown"] }),
+        ),
+        toolchain(
+            "bad:component",
+            serde_json::json!({ "components": ["clippy; rm -rf ~"] }),
+        ),
+        toolchain(
+            "bad:option",
+            serde_json::json!({ "components": ["--force"] }),
+        ),
+        toolchain("bad:target", serde_json::json!({ "targets": ["../x"] })),
+    ];
+    let opened = parse_snapshot(&with_items(serde_json::Value::Array(cases))).unwrap();
+    assert_eq!(opened.skipped_items, 3);
+    let snap = opened.snapshot;
+    let details = |i: usize| match &snap.items[i].details {
+        ItemDetails::Runtime {
+            components,
+            targets,
+            ..
+        } => (components.clone(), targets.clone()),
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(details(0), (vec![], vec![]));
+    assert_eq!(
+        details(1),
+        (
+            vec!["clippy".to_owned(), "rust-src".to_owned()],
+            vec!["wasm32-unknown-unknown".to_owned()]
+        )
+    );
+    let items: Vec<_> = snap
+        .items
+        .iter()
+        .map(|i| snapshot::StoredItem {
+            item: i.clone(),
+            config: None,
+            not_exported: false,
+        })
+        .collect();
+    let text =
+        snapshot::render_snapshot(&snap.created_at, &snap.repot_version, snap.source, &items);
+    // Empty lists are not written, so toolchain items without them keep the old shape.
+    assert_eq!(text.matches("\"components\"").count(), 1, "{text}");
+    assert_eq!(parse_snapshot(&text).unwrap().snapshot, snap);
+}

@@ -34,6 +34,8 @@ fn rt(runtime: &str, version: &str, set_default: bool) -> Step {
         runtime: runtime.into(),
         version: version.into(),
         set_default,
+        components: vec![],
+        targets: vec![],
     }
 }
 fn sample_steps() -> Vec<Step> {
@@ -209,4 +211,28 @@ fn empty_export_has_only_readme() {
     assert_eq!(files[0].path, "README.md");
     assert!(!files[0].contents.contains("## Masked secrets"));
     assert!(!files[0].contents.contains("## Notes"));
+}
+
+#[test]
+fn readme_lists_rustup_components_and_targets() {
+    let steps = vec![Step::InstallRuntime {
+        tool: RuntimeTool::Rustup,
+        runtime: "rust".into(),
+        version: "stable".into(),
+        set_default: true,
+        components: vec!["clippy".into(), "rust-src".into()],
+        targets: vec!["wasm32-unknown-unknown".into()],
+    }];
+    let files = render_manifests(&header(Os::MacOs), &steps, &[], &[]);
+    let readme = &files
+        .iter()
+        .find(|f| f.path == "README.md")
+        .unwrap()
+        .contents;
+    assert!(
+        readme.contains(
+            "rustup toolchain install stable\nrustup component add --toolchain stable clippy rust-src\nrustup target add --toolchain stable wasm32-unknown-unknown\n"
+        ),
+        "{readme}"
+    );
 }

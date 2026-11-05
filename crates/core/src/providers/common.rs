@@ -113,6 +113,8 @@ pub(crate) fn runtime_item(spec: RuntimeSpec) -> Item {
             tool: spec.tool,
             runtime: spec.runtime.into(),
             is_default: spec.is_default,
+            components: vec![],
+            targets: vec![],
         },
         findings: vec![],
     }

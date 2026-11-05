@@ -13,7 +13,7 @@ use crate::export::{
 };
 use crate::{Item, ItemDetails, PackageManager, Target, os::Os};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -90,11 +90,28 @@ pub fn compare(
 ) -> HashMap<String, Presence> {
     let mut installed = HashSet::new();
     let mut places: HashMap<String, &Item> = HashMap::new();
-    for item in machine {
-        for step in steps_for(item, machine_os) {
-            let key = key(&step);
+    // A toolchain counts as here only with every component and target the file lists,
+    // like the restore script's check.
+    let mut extras: HashMap<Key, Extras> = HashMap::new();
+    let machine_steps: Vec<(&Item, Vec<Step>)> = machine
+        .iter()
+        .map(|item| (item, steps_for(item, machine_os)))
+        .collect();
+    for (item, steps) in &machine_steps {
+        for step in steps {
+            let key = key(step);
+            if let Step::InstallRuntime {
+                components,
+                targets,
+                ..
+            } = step
+            {
+                let here = extras.entry(key.clone()).or_default();
+                here.0.extend(components);
+                here.1.extend(targets);
+            }
             if let (Key::Place(place), ItemDetails::ConfigFile { .. }) = (&key, &item.details) {
-                places.insert(place.clone(), item);
+                places.insert(place.clone(), *item);
             }
             installed.insert(key);
         }
@@ -124,12 +141,32 @@ pub fn compare(
                     }
                 }
             },
-            _ if installed.contains(&key) => Presence::Present,
+            _ if installed.contains(&key) && has_extras(&step, extras.get(&key)) => {
+                Presence::Present
+            }
             _ => Presence::Missing,
         };
         result.insert(item.id.clone(), presence);
     }
     result
+}
+
+/// Components and targets of a toolchain on this machine.
+type Extras<'a> = (BTreeSet<&'a String>, BTreeSet<&'a String>);
+
+fn has_extras(step: &Step, here: Option<&Extras>) -> bool {
+    let Step::InstallRuntime {
+        components,
+        targets,
+        ..
+    } = step
+    else {
+        return true;
+    };
+    let empty = Extras::default();
+    let (have_components, have_targets) = here.unwrap_or(&empty);
+    components.iter().all(|c| have_components.contains(c))
+        && targets.iter().all(|t| have_targets.contains(t))
 }
 
 /// Both sides are masked with nothing revealed, so only non-secret text decides.

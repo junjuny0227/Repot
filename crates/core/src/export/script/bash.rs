@@ -103,6 +103,8 @@ fn commands(step: &Step, target: Os) -> (String, String) {
             runtime,
             version,
             set_default,
+            components,
+            targets,
         } => {
             let v = q(version);
             let r = q(runtime);
@@ -128,8 +130,12 @@ fn commands(step: &Step, target: Os) -> (String, String) {
                     format!("pyenv global {v}"),
                 ),
                 RuntimeTool::Rustup => (
-                    format!("rustup toolchain list | grep -q '^'{v}"),
-                    format!("rustup toolchain install {v}"),
+                    format!(
+                        "rustup_has {v} {} {}",
+                        q(&components.join(" ")),
+                        q(&targets.join(" "))
+                    ),
+                    rustup_install(version, components, targets),
                     format!("rustup default {v}"),
                 ),
                 RuntimeTool::Sdkman => (
@@ -182,6 +188,57 @@ fn commands(step: &Step, target: Os) -> (String, String) {
         ),
         Step::CopyFile { .. } => unreachable!("copy uses its own return codes"),
     }
+}
+
+/// Installs the toolchain only if it is missing (installing an existing channel would
+/// update it), then adds the components and targets the source machine had.
+fn rustup_install(version: &str, components: &[String], targets: &[String]) -> String {
+    let v = q(version);
+    if components.is_empty() && targets.is_empty() {
+        return format!("rustup toolchain install {v}");
+    }
+    let mut install = format!("{{ rustup_has {v} '' '' || rustup toolchain install {v}; }}");
+    for (kind, names) in [("component", components), ("target", targets)] {
+        if !names.is_empty() {
+            let names: Vec<String> = names.iter().map(|n| q(n)).collect();
+            write!(
+                install,
+                " && rustup {kind} add --toolchain {v} {}",
+                names.join(" ")
+            )
+            .unwrap();
+        }
+    }
+    install
+}
+
+/// `rustup_has <toolchain> <components> <targets>`, only when the plan has rustup steps.
+fn write_rustup_helper(out: &mut String, plan: &ScriptPlan) {
+    if !plan.steps.iter().any(|s| {
+        matches!(
+            s,
+            Step::InstallRuntime {
+                tool: RuntimeTool::Rustup,
+                ..
+            }
+        )
+    }) {
+        return;
+    }
+    out.push_str(
+        r#"# The toolchain is installed with every listed component and target (space-separated).
+# rustup prints host-specific components as <name>-<host>, so the host suffix is dropped.
+# "<channel>-<letter>" keeps "nightly" from matching a dated nightly.
+rustup_has() {
+  tc=$(rustup toolchain list | grep -m 1 "^$1-[a-z]") || return 1
+  tc=${tc%% *}; host=${tc#"$1"-}
+  have_components=$(rustup component list --installed --toolchain "$tc" | sed "s/-$host\$//") || return 1
+  have_targets=$(rustup target list --installed --toolchain "$tc") || return 1
+  for c in $2; do printf '%s\n' "$have_components" | grep -qxF "$c" || return 1; done
+  for t in $3; do printf '%s\n' "$have_targets" | grep -qxF "$t" || return 1; done
+}
+"#,
+    );
 }
 
 /// How the preflight looks for a tool. nvm and SDKMAN! are shell functions that exist only
@@ -316,6 +373,7 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         .unwrap();
     }
     write_jetbrains_helpers(&mut out, plan);
+    write_rustup_helper(&mut out, plan);
     write_preflight(&mut out, plan);
     out.push_str("if [ \"${1:-}\" != '--yes' ]; then\n  printf 'Continue? [y/N] '\n  read -r answer\n  case \"$answer\" in y|Y) ;; *) exit 0 ;; esac\nfi\n");
     let mut i = 0;
