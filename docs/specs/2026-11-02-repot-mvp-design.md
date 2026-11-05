@@ -505,6 +505,7 @@ repot-export-2026-11-02/
 
 - `tauri-action`으로 macOS(`.dmg`, Apple silicon·Intel), Windows(`.msi`/설치 파일), Linux(`.AppImage`, `.deb`)를 빌드해 GitHub Releases에 올린다.
 - CLI는 같은 릴리스에 `repot-cli-<버전>-<target>.tar.gz`(macOS arm64·x64, Linux x64)와 `.zip`(Windows x64)으로 올린다. 자체 Homebrew tap(`brew install junjuny0227/tap/repot`)과 Scoop bucket(`junjuny0227/scoop-bucket`)은 릴리스를 공개하면 워크플로가 갱신한다. `cargo install --git`도 안내한다. crates.io 게시는 하지 않는다. (계획 15)
+- winget(`microsoft/winget-pkgs`)에는 앱(`junjuny0227.Repot`, `.msi`)과 CLI(`junjuny0227.RepotCLI`, `.zip` 안의 `repot.exe`, 명령 `repot`)를 따로 올린다. 첫 버전(0.9.0)은 손으로 제출했고, 다음 버전부터는 릴리스를 공개하면 `winget.yml`이 사용자의 `winget-pkgs` 포크에서 PR을 연다(`WINGET_TOKEN`, classic PAT `public_repo`·`workflow`). Microsoft의 자동 검사와 검토를 거친 뒤에야 `winget install`에 나타나므로, README·사이트 안내는 첫 버전이 받아들여진 뒤에 더한다. MSI 제작자 이름은 `bundle.publisher`(`junjuny0227`)로 정한다.
 - 코드 서명이 없으므로 README에 첫 실행 방법(macOS "확인 없이 열기", Windows "추가 정보 → 실행")을 안내한다.
 - 업데이트 자산은 별도의 updater 키로 서명한다. 공개 키만 앱에 포함하고 비밀 키/암호는 GitHub secrets로 전달한다. `bundle.createUpdaterArtifacts`와 tauri-action `uploadUpdaterJson`을 켠다. Windows 설치 모드는 passive다.
 - updater endpoint는 `https://github.com/junjuny0227/Repot/releases/latest/download/latest.json`이다. draft를 사람이 공개해야 접근 가능하다. 0.1.0 사용자는 updater가 포함된 버전을 한 번 수동 설치해야 한다.
