@@ -72,6 +72,79 @@ fn scan_lists_items_with_their_ids() {
     assert!(scan.items.iter().any(|i| i.id == "brew:cask:rectangle"));
 }
 
+/// The fake Mac plus a cask whose version (Homebrew's `version,commit`) is longer than the
+/// label column.
+fn mac_with_long_version() -> FakeEnv {
+    mac(true)
+        .with_command("brew", &["list", "--cask"], "claude\nrectangle\n")
+        .with_command(
+            "brew",
+            &["info", "--json=v2", "--installed"],
+            r#"{"formulae":[{"name":"ripgrep","desc":"Search files quickly","installed":[{"version":"14.1.1"}]}],"casks":[{"token":"claude","desc":"Anthropic's desktop app","installed":"2.7032.0,6c468ab6ed862a68c9555cce34f11186c35f526d"},{"token":"rectangle","desc":"Move and resize windows","installed":"0.85"}]}"#,
+        )
+}
+
+/// Every item line starts its id in the same column, and the id is never cut.
+fn assert_ids_aligned(out: &str, ids: &[&str]) {
+    let lines: Vec<&str> = out.lines().filter(|l| l.starts_with("  ")).collect();
+    assert!(!lines.is_empty(), "{out}");
+    for line in &lines {
+        let id = line.rsplit(' ').next().unwrap();
+        assert_eq!(
+            line.chars().count() - id.chars().count(),
+            43,
+            "id column moved: {line:?}\n{out}"
+        );
+    }
+    for id in ids {
+        assert!(
+            lines.iter().any(|l| l.ends_with(&format!(" {id}"))),
+            "{out}"
+        );
+    }
+}
+
+#[test]
+fn long_versions_keep_the_id_column() {
+    let o = repot(mac_with_long_version(), &["scan"]);
+    assert_eq!(o.code, 0, "{}", o.err);
+    assert!(
+        o.out
+            .contains("  claude 2.7032.0,6c468ab6ed862a68c9555cc… brew:cask:claude\n"),
+        "{}",
+        o.out
+    );
+    assert_ids_aligned(&o.out, &["brew:cask:claude", "brew:formula:ripgrep"]);
+    // --json keeps the whole version.
+    let scan: ScanResult =
+        serde_json::from_str(&repot(mac_with_long_version(), &["scan", "--json"]).out).unwrap();
+    let claude = scan
+        .items
+        .iter()
+        .find(|i| i.id == "brew:cask:claude")
+        .unwrap();
+    assert_eq!(
+        claude.version.as_deref(),
+        Some("2.7032.0,6c468ab6ed862a68c9555cce34f11186c35f526d")
+    );
+    // compare lists items the same way.
+    let dir = tempfile::tempdir().unwrap();
+    let o = repot(
+        mac_with_long_version(),
+        &["export", "--out", dir.path().to_str().unwrap()],
+    );
+    assert_eq!(o.code, 0, "{}", o.err);
+    let file =
+        std::fs::read_to_string(dir.path().join("repot-export-2026-11-04/repot.json")).unwrap();
+    let o = repot(
+        mac(true).with_file("/x/repot.json", &file),
+        &["compare", "/x/repot.json"],
+    );
+    assert_eq!(o.code, 0, "{}", o.err);
+    assert!(o.out.contains("\nMissing: 1\n"), "{}", o.out);
+    assert_ids_aligned(&o.out, &["brew:cask:claude"]);
+}
+
 #[test]
 fn dry_run_writes_nothing() {
     let dir = tempfile::tempdir().unwrap();
