@@ -91,7 +91,46 @@ pub(crate) fn note_text(n: &ExportNote) -> String {
         ExportNote::KeybindingsMayDiffer { file } => {
             format!("files/{file}: key bindings may use Cmd vs Ctrl differently on this OS.")
         }
+        ExportNote::SshKey { file, line, path } => format!("{path} (files/{file} line {line})"),
     }
+}
+/// Notes listed under `Notes`; SSH keys get their own list.
+pub(crate) fn general_notes(notes: &[ExportNote]) -> Vec<&ExportNote> {
+    notes
+        .iter()
+        .filter(|n| !matches!(n, ExportNote::SshKey { .. }))
+        .collect()
+}
+pub(crate) const SSH_KEYS_HEADING: &str =
+    "Copy these SSH keys yourself (Repot does not export keys):";
+/// Lines under [`SSH_KEYS_HEADING`]: each key path once (first line wins), or the default
+/// key names when the config names none. Empty when no SSH file is restored.
+pub(crate) fn ssh_key_lines(steps: &[Step], notes: &[ExportNote], target: Os) -> Vec<String> {
+    let copies_ssh = steps
+        .iter()
+        .any(|s| matches!(s, Step::CopyFile { dest, .. } if dest.is_private()));
+    let mut seen = std::collections::HashSet::new();
+    let mut lines: Vec<String> = notes
+        .iter()
+        .filter_map(|n| match n {
+            ExportNote::SshKey { path, .. } if seen.insert(path) => {
+                Some(format!("  - {}", note_text(n)))
+            }
+            _ => None,
+        })
+        .collect();
+    if lines.is_empty() {
+        if !copies_ssh {
+            return lines;
+        }
+        lines.push("  - the keys you use (default names: id_ed25519, id_ecdsa, id_rsa)".into());
+    }
+    lines.push(if target == Os::Windows {
+        "  Copy each key and its .pub file from your old machine into %USERPROFILE%\\.ssh.".into()
+    } else {
+        "  Copy each key and its .pub file from your old machine into ~/.ssh, then run chmod 600 on the private keys.".into()
+    });
+    lines
 }
 impl Step {
     pub fn mapped_origin(&self) -> Option<String> {

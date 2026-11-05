@@ -72,6 +72,20 @@ fn scan_lists_items_with_their_ids() {
     assert!(scan.items.iter().any(|i| i.id == "brew:cask:rectangle"));
 }
 
+#[test]
+fn scan_lists_ssh_items_after_shell() {
+    let env = mac(true).with_file(
+        "/Users/demo/.ssh/config",
+        "Host gh\n  HostName github.com\n",
+    );
+    let o = repot(env, &["scan"]);
+    assert_eq!(o.code, 0, "{}", o.err);
+    let shell = o.out.find("\nShell (1)\n").expect("shell section");
+    let ssh = o.out.find("\nSSH (1)\n").expect("SSH section");
+    assert!(shell < ssh, "{}", o.out);
+    assert!(o.out.contains("ssh:file:.ssh/config"), "{}", o.out);
+}
+
 /// The fake Mac plus a cask whose version (Homebrew's `version,commit`) is longer than the
 /// label column.
 fn mac_with_long_version() -> FakeEnv {

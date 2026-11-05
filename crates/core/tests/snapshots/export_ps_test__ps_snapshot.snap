@@ -59,6 +59,7 @@ Write-Host '  - npm install -g typescript'
 Write-Host '  - code --install-extension esbenp.prettier-vscode'
 Write-Host '  - copy %USERPROFILE%\.gitconfig'
 Write-Host '  - copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1'
+Write-Host '  - copy %USERPROFILE%\.ssh\config'
 Write-Host 'Tools this script uses:'
 Test-Preflight 'scoop' 'scoop' 'https://scoop.sh'
 Test-Preflight 'winget' 'winget' 'https://learn.microsoft.com/windows/package-manager/winget/'
@@ -144,6 +145,8 @@ $rc = Copy-RepotFile 'home/.gitconfig' (Join-Path $HOME '.gitconfig')
 if ($rc -eq 0) { Add-Ok 'copy %USERPROFILE%\.gitconfig' } elseif ($rc -eq 2) { Add-Done 'copy %USERPROFILE%\.gitconfig' } else { Add-Fail 'copy %USERPROFILE%\.gitconfig' }
 $rc = Copy-RepotFile 'powershell/Microsoft.PowerShell_profile.ps1' (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Microsoft.PowerShell_profile.ps1')
 if ($rc -eq 0) { Add-Ok 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } elseif ($rc -eq 2) { Add-Done 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' } else { Add-Fail 'copy Documents\PowerShell\Microsoft.PowerShell_profile.ps1' }
+$rc = Copy-RepotFile 'home/.ssh/config' (Join-Path $HOME '.ssh\config')
+if ($rc -eq 0) { Add-Ok 'copy %USERPROFILE%\.ssh\config' } elseif ($rc -eq 2) { Add-Done 'copy %USERPROFILE%\.ssh\config' } else { Add-Fail 'copy %USERPROFILE%\.ssh\config' }
 
 Write-Host 'Summary'
 Write-Host 'OK:'; $script:Ok | ForEach-Object { Write-Host "  - $_" }
@@ -153,4 +156,9 @@ if ($script:Tools.Count -gt 0) { Write-Host 'To finish these, install the missin
 Write-Host 'Failed:'; $script:Failed | ForEach-Object { Write-Host "  - $_" }
 Write-Host 'Fill in these masked secrets:'
 Write-Host '  - files/home/.gitconfig line 9 (value)'
+Write-Host 'Copy these SSH keys yourself (Repot does not export keys):'
+Write-Host '  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)'
+Write-Host '  Copy each key and its .pub file from your old machine into %USERPROFILE%\.ssh.'
+Write-Host 'Notes:'
+Write-Host 'files/home/.ssh/config line 6: UseKeychain was commented out because it is OS-specific.'
 if ($script:Failed.Count -gt 0) { exit 1 } else { exit 0 }

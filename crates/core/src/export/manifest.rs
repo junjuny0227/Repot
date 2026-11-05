@@ -2,7 +2,9 @@ use super::{
     OutputFile,
     paths::{display_path, os_label},
     payload::{ExportNote, MaskedLine},
-    script::{ScriptHeader, masked_text, note_text},
+    script::{
+        SSH_KEYS_HEADING, ScriptHeader, general_notes, masked_text, note_text, ssh_key_lines,
+    },
     step::Step,
 };
 use crate::{model::*, os::Os};
@@ -77,6 +79,18 @@ pub(crate) fn mapped_packages(steps: &[Step]) -> String {
         }
     }
     text
+}
+
+/// `## SSH keys` for a README, empty when no SSH file is restored (plan 16).
+pub(crate) fn ssh_keys_section(steps: &[Step], notes: &[ExportNote], target: Os) -> String {
+    let lines = ssh_key_lines(steps, notes, target);
+    if lines.is_empty() {
+        return String::new();
+    }
+    format!(
+        "\n## SSH keys\n\n{SSH_KEYS_HEADING}\n{}\n",
+        lines.join("\n")
+    )
 }
 
 pub fn render_manifests(
@@ -327,6 +341,7 @@ pub fn render_manifests(
         .collect::<Vec<_>>();
     if !copies.is_empty() {
         readme.push_str("\n### Config files\n\nBack up existing destination files before copying.\n\n| Source | Destination |\n| --- | --- |\n");
+        let private = copies.iter().any(|(_, dest)| dest.is_private());
         for (src, dest) in copies {
             writeln!(
                 readme,
@@ -334,6 +349,9 @@ pub fn render_manifests(
                 display_path(dest, header.target)
             )
             .unwrap();
+        }
+        if private && !windows {
+            readme.push_str("\nOpenSSH rejects SSH files that others can write: if you create `~/.ssh`, run `chmod 700 ~/.ssh`, and run `chmod 600` on each file you copy into it.\n");
         }
     }
     let clones = steps
@@ -356,6 +374,8 @@ pub fn render_manifests(
             writeln!(readme, "  - {}", masked_text(m)).unwrap();
         }
     }
+    readme.push_str(&ssh_keys_section(steps, notes, header.target));
+    let notes = general_notes(notes);
     if !notes.is_empty() {
         readme.push_str("\n## Notes\n");
         for n in notes {

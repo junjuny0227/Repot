@@ -518,9 +518,17 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
             writeln!(out, "Write-Host {}", q(&format!("  - {}", masked_text(m)))).unwrap();
         }
     }
-    if !plan.notes.is_empty() {
+    let keys = ssh_key_lines(&plan.steps, &plan.notes, h.target);
+    if !keys.is_empty() {
+        writeln!(out, "Write-Host {}", q(SSH_KEYS_HEADING)).unwrap();
+        for line in keys {
+            writeln!(out, "Write-Host {}", q(&line)).unwrap();
+        }
+    }
+    let notes = general_notes(&plan.notes);
+    if !notes.is_empty() {
         out.push_str("Write-Host 'Notes:'\n");
-        for n in &plan.notes {
+        for n in notes {
             writeln!(out, "Write-Host {}", q(&note_text(n))).unwrap();
         }
     }

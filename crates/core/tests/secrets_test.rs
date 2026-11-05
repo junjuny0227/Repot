@@ -133,3 +133,51 @@ fn named_syntax_quotes_unicode_and_line_endings() {
     }
     assert_eq!(mask("\n\r\n", &[]), "\n\r\n");
 }
+#[test]
+fn ssh_setenv_values_are_masked_to_the_end_of_the_line() {
+    // (line, masked line, name) — SSH `SetEnv` in any case, with `Key value` or `Key=value`.
+    for (line, masked, name) in [
+        (
+            "  SetEnv DEPLOY_TOKEN=abc123",
+            "  SetEnv DEPLOY_TOKEN=<REDACTED>",
+            Some("DEPLOY_TOKEN"),
+        ),
+        (
+            "setenv DB_PASSWORD=\"p w\"",
+            "setenv DB_PASSWORD=\"<REDACTED>\"",
+            Some("DB_PASSWORD"),
+        ),
+        (
+            "SETENV=API_KEY=abc",
+            "SETENV=API_KEY=<REDACTED>",
+            Some("API_KEY"),
+        ),
+        // The first name decides; the rest of the line is masked with it.
+        (
+            "SetEnv MY_TOKEN=abc OTHER=x",
+            "SetEnv MY_TOKEN=<REDACTED>",
+            Some("MY_TOKEN"),
+        ),
+        ("SetEnv LANG=C TOKEN=abc", "SetEnv LANG=C TOKEN=abc", None),
+        ("SetEnv TERM=xterm", "SetEnv TERM=xterm", None),
+        // Command arguments are masked only for known token shapes (spec §15).
+        (
+            "ProxyCommand cloudflared access ssh --service-token-secret abc",
+            "ProxyCommand cloudflared access ssh --service-token-secret abc",
+            None,
+        ),
+    ] {
+        assert_eq!(mask(line, &[]), masked, "{line}");
+        let found = findings(line);
+        match name {
+            Some(name) => assert_eq!(
+                found.iter().map(|f| f.kind.clone()).collect::<Vec<_>>(),
+                vec![FindingKind::Secret {
+                    name: Some(name.into())
+                }],
+                "{line}"
+            ),
+            None => assert!(found.is_empty(), "{line}"),
+        }
+    }
+}

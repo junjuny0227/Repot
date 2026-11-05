@@ -182,3 +182,195 @@ fn git_conversion_requires_provider_and_config_basename() {
         assert!(!p.contents.contains("# [repot]"));
     }
 }
+
+/// The plan's example `~/.ssh/config` (plan 16, 예시).
+const SSH_CONFIG: &str = "Include config.d/*
+Include ~/.orbstack/ssh/config
+
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_ed25519
+
+Host github-work
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/work_ed25519
+  IdentitiesOnly yes
+
+Host bastion
+  HostName bastion.example.com
+  ControlMaster auto
+  ControlPath ~/.ssh/cm-%r@%h:%p
+  ControlPersist 10m
+  SetEnv DEPLOY_TOKEN=abc123
+";
+fn ssh_item(rel: &str) -> Item {
+    let mut item = config(
+        "ssh",
+        &format!("/Users/demo/{rel}"),
+        TargetPath::Home(rel.into()),
+    );
+    item.category = Category::Ssh;
+    item
+}
+#[test]
+fn ssh_lines_are_commented_per_destination_and_keys_noted() {
+    let commented = |line: &str, key: &str, os: &str| {
+        format!("  # [repot] {line}  # {key} is OS-specific; adjust it for {os}")
+    };
+    let keys = vec![
+        ExportNote::SshKey {
+            file: "home/.ssh/config".into(),
+            line: 7,
+            path: "~/.ssh/id_ed25519".into(),
+        },
+        ExportNote::SshKey {
+            file: "home/.ssh/config".into(),
+            line: 12,
+            path: "~/.ssh/work_ed25519".into(),
+        },
+    ];
+    let note = |line: u32, key: &str| ExportNote::CommentedOsLine {
+        file: "home/.ssh/config".into(),
+        line,
+        key: key.into(),
+    };
+    // (destination, changed lines, comment notes)
+    type Case = (Os, Vec<(usize, String)>, Vec<ExportNote>);
+    let cases: Vec<Case> = vec![
+        (Os::MacOs, vec![], vec![]),
+        (
+            Os::Linux(LinuxFamily::Debian),
+            vec![(
+                6,
+                commented("UseKeychain yes", "UseKeychain", "Linux (Debian/Ubuntu)"),
+            )],
+            vec![note(6, "UseKeychain")],
+        ),
+        (
+            Os::Windows,
+            vec![
+                (6, commented("UseKeychain yes", "UseKeychain", "Windows")),
+                (
+                    17,
+                    commented("ControlMaster auto", "ControlMaster", "Windows"),
+                ),
+                (
+                    18,
+                    commented("ControlPath ~/.ssh/cm-%r@%h:%p", "ControlPath", "Windows"),
+                ),
+                (
+                    19,
+                    commented("ControlPersist 10m", "ControlPersist", "Windows"),
+                ),
+            ],
+            vec![
+                note(6, "UseKeychain"),
+                note(17, "ControlMaster"),
+                note(18, "ControlPath"),
+                note(19, "ControlPersist"),
+            ],
+        ),
+    ];
+    for (target, changed, notes) in cases {
+        let p = prepare_config(&ssh_item(".ssh/config"), SSH_CONFIG, &[], Os::MacOs, target);
+        assert_eq!(p.path, "home/.ssh/config");
+        let mut expected: Vec<String> = SSH_CONFIG.lines().map(str::to_owned).collect();
+        expected[19] = "  SetEnv DEPLOY_TOKEN=<REDACTED>".into();
+        for (line, text) in changed {
+            expected[line - 1] = text;
+        }
+        assert_eq!(
+            p.contents.lines().collect::<Vec<_>>(),
+            expected,
+            "{target:?}"
+        );
+        assert_eq!(
+            p.masked,
+            vec![MaskedLine {
+                file: "home/.ssh/config".into(),
+                line: 20,
+                name: Some("DEPLOY_TOKEN".into()),
+            }]
+        );
+        assert_eq!(p.notes, [notes, keys.clone()].concat(), "{target:?}");
+    }
+    // Included files without OS lines pass through unchanged.
+    let work = "Host *.corp.example.com\n  User alice\n  ProxyJump bastion\n";
+    let p = prepare_config(
+        &ssh_item(".ssh/config.d/work"),
+        work,
+        &[],
+        Os::MacOs,
+        Os::Windows,
+    );
+    assert_eq!((p.contents.as_str(), p.notes), (work, vec![]));
+}
+#[test]
+fn ssh_source_paths_are_commented_for_any_other_os() {
+    let text = "Host *\r\n  IdentityFile /Users/demo/keys/id\r\n  IdentityAgent \"~/Library/Group Containers/x/agent.sock\"\r\n  UserKnownHostsFile ~/.ssh/known_hosts2\r\n  CertificateFile C:\\Users\\demo\\.ssh\\cert.pub\r\n";
+    let p = prepare_config(
+        &ssh_item(".ssh/config"),
+        text,
+        &[],
+        Os::MacOs,
+        Os::Linux(LinuxFamily::Fedora),
+    );
+    let lines: Vec<_> = p.contents.split("\r\n").collect();
+    assert!(lines[1].starts_with("  # [repot] IdentityFile /Users/demo/keys/id  # IdentityFile"));
+    assert!(lines[2].starts_with("  # [repot] IdentityAgent"));
+    assert_eq!(lines[3], "  UserKnownHostsFile ~/.ssh/known_hosts2");
+    assert!(lines[4].starts_with("  # [repot] CertificateFile C:"));
+    // Commented key lines are still listed for the user.
+    assert_eq!(
+        p.notes
+            .iter()
+            .filter_map(|n| match n {
+                ExportNote::SshKey { line, path, .. } => Some((*line, path.as_str())),
+                _ => None,
+            })
+            .collect::<Vec<_>>(),
+        vec![
+            (2, "/Users/demo/keys/id"),
+            (5, "C:\\Users\\demo\\.ssh\\cert.pub")
+        ]
+    );
+    // UseKeychain is Apple's own option: kept when the destination is a Mac.
+    let to_mac = prepare_config(
+        &ssh_item(".ssh/config"),
+        "Host *\n  UseKeychain yes\n  ControlMaster auto\n",
+        &[],
+        Os::Linux(LinuxFamily::Debian),
+        Os::MacOs,
+    );
+    assert_eq!(
+        to_mac.contents,
+        "Host *\n  UseKeychain yes\n  ControlMaster auto\n"
+    );
+    // Same kind of OS: nothing is commented.
+    let same = prepare_config(
+        &ssh_item(".ssh/config"),
+        text,
+        &[],
+        Os::Linux(LinuxFamily::Debian),
+        Os::Linux(LinuxFamily::Fedora),
+    );
+    assert_eq!(same.contents, text);
+    // Other providers never get SSH rules.
+    let other = prepare_config(
+        &config(
+            "shell",
+            "/Users/demo/.zshrc",
+            TargetPath::Home(".zshrc".into()),
+        ),
+        "UseKeychain yes\n",
+        &[],
+        Os::MacOs,
+        Os::Windows,
+    );
+    assert_eq!(
+        (other.contents.as_str(), other.notes),
+        ("UseKeychain yes\n", vec![])
+    );
+}

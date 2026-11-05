@@ -153,6 +153,13 @@ fn sample_plan(target: Os) -> ScriptPlan {
         src: "powershell/profile.ps1".into(),
         dest: TargetPath::PowerShellProfile,
     });
+    // SSH config files: the linters see `copy_private_file` and the key list (plan 16).
+    for rel in [".ssh/config", ".ssh/config.d/work"] {
+        steps.push(Step::CopyFile {
+            src: format!("home/{rel}"),
+            dest: TargetPath::Home(rel.into()),
+        });
+    }
     if target != Os::Windows {
         steps.push(Step::GitClone {
             url: "https://github.com/zsh-users/zsh-autosuggestions.git".into(),
@@ -173,9 +180,16 @@ fn sample_plan(target: Os) -> ScriptPlan {
             line: 1,
             name: Some("DEMO_TOKEN".into()),
         }],
-        notes: vec![ExportNote::KeybindingsMayDiffer {
-            file: "editor/keybindings.json".into(),
-        }],
+        notes: vec![
+            ExportNote::KeybindingsMayDiffer {
+                file: "editor/keybindings.json".into(),
+            },
+            ExportNote::SshKey {
+                file: "home/.ssh/config".into(),
+                line: 7,
+                path: "~/.ssh/id_ed25519".into(),
+            },
+        ],
     }
 }
 
@@ -270,7 +284,12 @@ mod tests {
                     .any(|s| matches!(s, Step::InstallIdePlugin { .. }))
             );
             assert_eq!(plan.masked.len(), 1);
-            assert_eq!(plan.notes.len(), 1);
+            assert_eq!(plan.notes.len(), 2);
+            assert!(
+                plan.steps
+                    .iter()
+                    .any(|s| matches!(s, Step::CopyFile { dest, .. } if dest.is_private()))
+            );
         }
         assert!(steps.iter().any(|s| matches!(s, Step::AddTap { .. })));
         assert!(steps.iter().any(|s| matches!(s, Step::GitClone { .. })));

@@ -195,6 +195,7 @@ pub fn build_export(
             };
             let windows = req.target.os == Os::Windows;
             let mappings = manifest::mapped_packages(&plan.steps);
+            let keys = manifest::ssh_keys_section(&plan.steps, &plan.notes, req.target.os);
             let mut files = vec![OutputFile {
                 path: if windows { "restore.ps1" } else { "restore.sh" }.into(),
                 contents: if windows {
@@ -204,8 +205,8 @@ pub fn build_export(
                 },
                 executable: !windows,
             }];
-            if !mappings.is_empty() {
-                files.push(OutputFile { path: "README.md".into(), contents: format!("# Repot export\n\nReview the restore script before running it. Install the required package managers first.\n{mappings}"), executable: false });
+            if !mappings.is_empty() || !keys.is_empty() {
+                files.push(OutputFile { path: "README.md".into(), contents: format!("# Repot export\n\nReview the restore script before running it. Install the required package managers first.\n{mappings}{keys}"), executable: false });
             }
             files
         }

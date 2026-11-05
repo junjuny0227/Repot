@@ -181,6 +181,7 @@ pub enum FindingKind {              // 문장은 UI가 만든다 (§5 계층 경
     Duplicate { other_provider: String },
     Unreadable,
     KeyFile { path: String },       // SSH 설정이 가리키는 키 경로. 키는 옮기지 않는다 (계획 16)
+    ExternalInclude { path: String }, // 따라가지 않는 SSH `Include`(`~/.ssh` 밖, `..`, 중간 와일드카드). 줄은 그대로 둔다 (계획 16)
 }
 
 pub struct Selection {
@@ -347,7 +348,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - 스크립트·매니페스트에 들어가는 값(패키지 이름, 런타임 버전, 확장 ID, URL)은 허용 패턴(`^[A-Za-z0-9@._+/:-]+$`)에 맞아야 한다. rustup component·target 이름은 §7의 더 좁은 패턴에 맞아야 하고, 열린 `repot.json`에서 맞지 않으면 그 항목을 건너뛴다. 패키지·전역 패키지·확장은 최신 버전으로 설치하므로 스캔한 버전은 검사하지 않는다(예: brew cask 버전의 쉼표). 맞지 않으면 내보내지 않고 경고한다. 렌더러는 모든 값을 셸 규칙에 맞게 따옴표로 감싼다.
 - 설정 파일 내용은 스크립트에 넣지 않고 `files/` 아래에만 둔다.
 - 형식과 상관없이 폴더 맨 위에 `repot.json`을 함께 쓴다. 이번 내보내기에 실제로 들어간 항목과, 목적지에서 쓸 수 없어 빠진 항목(`notExported: true`, 계획 13)을 담고, 설정 파일 내용은 출발 기기 형태 그대로 비밀정보만 가려 넣는다(사용자가 보이기로 한 줄만 원문). 형식은 내부 모델과 분리된 버전 타입(`schemaVersion`)이며, 같은 버전 안에서는 필드·enum 값을 더하기만 하고, 지우거나 뜻을 바꾸면 버전을 올리고 옛 버전 읽기를 남긴다. 상세는 계획 11.
-- 열린 `repot.json`은 남이 준 파일일 수 있어 신뢰하지 않는다. 경로가 상대 경로이고 `..`가 없어도 홈 아래에는 `.ssh/authorized_keys`, `Library/LaunchAgents/`, `.config/autostart/`처럼 Repot이 쓰지 않는 곳이 있다. 그래서 설정 파일 항목의 대상은 그 항목의 `provider`가 스캔할 때 만드는 곳일 때만 받는다. 목록은 각 Provider의 파일 목록 상수에서 가져와 스캔과 같은 곳에 둔다(`git`·`shell`·`vscode`·`jetbrains`의 `is_config_target`). `git`은 `.gitconfig`, `.config/git/config`, `.config/git/ignore`와, 사용자가 `core.excludesFile`로 정한 전역 ignore 파일 중 이름에 `ignore`가 들어가고 홈 바로 아래나 `.config/git/` 바로 아래에 있는 것, `shell`은 스캔하는 셸 시작 파일과 PowerShell 프로필, 에디터는 `User` 폴더의 `settings.json`·`keybindings.json`·`snippets/<파일>`, JetBrains는 설정 폴더 종류별 확장자 파일과 `options/`의 글꼴·테마 파일이다. 셸 플러그인은 `shell` 항목이고 `.oh-my-zsh/custom/{plugins,themes}/<이름>` 바로 아래여야 한다. 어긋나면 다른 위험 항목처럼 그 항목을 건너뛰고 개수를 알린다. 기기에서 바로 내보낸 파일은 그대로 다시 열린다.
+- 열린 `repot.json`은 남이 준 파일일 수 있어 신뢰하지 않는다. 경로가 상대 경로이고 `..`가 없어도 홈 아래에는 `.ssh/authorized_keys`, `Library/LaunchAgents/`, `.config/autostart/`처럼 Repot이 쓰지 않는 곳이 있다. 그래서 설정 파일 항목의 대상은 그 항목의 `provider`가 스캔할 때 만드는 곳일 때만 받는다. 목록은 각 Provider의 파일 목록 상수에서 가져와 스캔과 같은 곳에 둔다(`git`·`shell`·`vscode`·`jetbrains`·`ssh`의 `is_config_target`). `git`은 `.gitconfig`, `.config/git/config`, `.config/git/ignore`와, 사용자가 `core.excludesFile`로 정한 전역 ignore 파일 중 이름에 `ignore`가 들어가고 홈 바로 아래나 `.config/git/` 바로 아래에 있는 것, `shell`은 스캔하는 셸 시작 파일과 PowerShell 프로필, 에디터는 `User` 폴더의 `settings.json`·`keybindings.json`·`snippets/<파일>`, JetBrains는 설정 폴더 종류별 확장자 파일과 `options/`의 글꼴·테마 파일, `ssh`는 `.ssh/` 아래에서 키·`known_hosts`·`authorized_keys`·`*.pub`·`environment`·`rc`가 아닌 파일이다. `.ssh/` 아래를 받는 것은 `ssh`뿐이다. 셸 플러그인은 `shell` 항목이고 `.oh-my-zsh/custom/{plugins,themes}/<이름>` 바로 아래여야 한다. 어긋나면 다른 위험 항목처럼 그 항목을 건너뛰고 개수를 알린다. 기기에서 바로 내보낸 파일은 그대로 다시 열린다.
 - `notExported` 항목은 열 때와 "이 기기와 비교" 후에 처음 선택하지 않고 "이전 내보내기에 없던 항목"으로 표시한다. 사용자가 직접 켠다. 사용자가 체크를 끈 항목, 읽을 수 없던 항목, 스크립트에 쓰기 위험한 값이 든 항목은 저장하지 않는다.
 - 같은 항목과 목적지라면, 기기에서 바로 내보낸 결과와 `repot.json`을 열어 다시 내보낸 결과는 생성 시각을 빼고 같다.
 - 생성 파일(스크립트 출력 문구, 매니페스트, README)은 영어로 쓴다. 터미널에서 읽는 배포물이라 UI 언어와 상관없이 통일하고, 내보내기 명령은 로캘을 받지 않는다.

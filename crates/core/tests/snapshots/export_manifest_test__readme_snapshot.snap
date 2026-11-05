@@ -49,6 +49,9 @@ Back up existing destination files before copying.
 | Source | Destination |
 | --- | --- |
 | `files/home/.zshrc` | `~/.zshrc` |
+| `files/home/.ssh/config` | `~/.ssh/config` |
+
+OpenSSH rejects SSH files that others can write: if you create `~/.ssh`, run `chmod 700 ~/.ssh`, and run `chmod 600` on each file you copy into it.
 
 ### oh-my-zsh plugins
 
@@ -62,6 +65,12 @@ git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/p
 
 Fill in these masked secrets:
   - files/home/.zshrc line 3 (GITHUB_TOKEN)
+
+## SSH keys
+
+Copy these SSH keys yourself (Repot does not export keys):
+  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)
+  Copy each key and its .pub file from your old machine into ~/.ssh, then run chmod 600 on the private keys.
 
 ## Notes
 
