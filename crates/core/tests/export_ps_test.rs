@@ -19,6 +19,7 @@ fn windows_plan() -> ScriptPlan {
             Step::AddTap {
                 manager: PackageManager::Scoop,
                 name: "extras".into(),
+                url: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Winget,
@@ -79,6 +80,20 @@ fn native_output_is_assigned_before_conditionals() {
     assert!(s.contains("if ($installed) { Add-Done"));
 }
 
+#[test]
+fn custom_scoop_bucket_is_added_with_its_url() {
+    let mut plan = windows_plan();
+    plan.steps = vec![Step::AddTap {
+        manager: PackageManager::Scoop,
+        name: "repot".into(),
+        url: Some("https://github.com/junjuny0227/scoop-bucket".into()),
+    }];
+    let s = render_powershell(&plan);
+    assert!(s.contains("& scoop bucket add 'repot' 'https://github.com/junjuny0227/scoop-bucket'"));
+    assert!(s.contains(
+        "$installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'repot' -Quiet"
+    ));
+}
 #[test]
 fn ps_snapshot() {
     insta::assert_snapshot!(render_powershell(&windows_plan()));

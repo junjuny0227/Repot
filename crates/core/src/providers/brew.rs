@@ -99,6 +99,7 @@ impl Provider for Brew {
                     details: ItemDetails::Package {
                         manager: PackageManager::Brew,
                         kind,
+                        url: None,
                     },
                     findings: vec![],
                 });

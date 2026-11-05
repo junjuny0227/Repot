@@ -14,7 +14,11 @@ fn package(manager: PackageManager, kind: PackageKind, name: &str) -> Item {
         catalog_id: None,
         origin: Origin::Command("fixture".into()),
         portability: Portability::Package,
-        details: ItemDetails::Package { manager, kind },
+        details: ItemDetails::Package {
+            manager,
+            kind,
+            url: None,
+        },
         findings: vec![],
     }
 }
@@ -115,6 +119,7 @@ fn taps_other_linux_and_unreadable_are_unavailable() {
     item.details = ItemDetails::Package {
         manager: PackageManager::Brew,
         kind: PackageKind::Formula,
+        url: None,
     };
     assert_eq!(
         availability(

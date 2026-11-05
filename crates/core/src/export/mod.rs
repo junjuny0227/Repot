@@ -171,7 +171,7 @@ pub fn build_export(
             not_exported: false,
         });
         steps.extend(item_steps.into_iter().filter(|s| match s {
-            step::Step::AddTap { manager, name } if req.source != req.target.os => {
+            step::Step::AddTap { manager, name, .. } if req.source != req.target.os => {
                 taps.insert((*manager, name.to_ascii_lowercase()))
             }
             _ => true,
@@ -241,6 +241,12 @@ pub fn build_export(
 fn values_are_safe(item: &Item) -> bool {
     let (name, extra, version) = match &item.details {
         ItemDetails::ConfigFile { .. } => return true,
+        ItemDetails::Package { url: Some(url), .. } => {
+            if !step::is_safe_bucket_url(url) {
+                return false;
+            }
+            (Some(item.name.as_str()), None, None)
+        }
         ItemDetails::ShellPlugin { url, .. } => {
             (Some(item.name.as_str()), Some(url.as_str()), None)
         }

@@ -17,7 +17,11 @@ fn package(id: &str, manager: PackageManager, kind: PackageKind, name: &str) -> 
         catalog_id: None,
         origin: Origin::Command("fixture".into()),
         portability: Portability::Package,
-        details: ItemDetails::Package { manager, kind },
+        details: ItemDetails::Package {
+            manager,
+            kind,
+            url: None,
+        },
         findings: vec![],
     }
 }
@@ -68,7 +72,8 @@ fn mapped_step_preserves_origin_and_adds_bucket_first() {
         vec![
             Step::AddTap {
                 manager: PackageManager::Scoop,
-                name: "extras".into()
+                name: "extras".into(),
+                url: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Scoop,

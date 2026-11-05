@@ -146,7 +146,8 @@ pub struct Item {
 }
 
 pub enum ItemDetails {
-    Package { manager: PackageManager, kind: PackageKind },          // Formula, Cask, Tap, Package
+    Package { manager: PackageManager, kind: PackageKind,             // Formula, Cask, Tap, Package
+              url: Option<String> },                                  // Scoop이 이름으로 모르는 bucket의 주소만
     Runtime { tool: RuntimeTool, runtime: String, is_default: bool }, // runtime: "node", "python" …
     GlobalPackage { manager: GlobalManager },
     Extension { editor: Editor },
@@ -210,7 +211,7 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 |---|---|---|---|---|
 | A 패키지 | `brew` | `brew leaves --installed-on-request`, `brew list --cask`, `brew tap` | `brew info --json=v2 --installed`의 `desc` | SameOs |
 | | `winget` | `winget export` (JSON) | 없음 | SameOs |
-| | `scoop` | `scoop export` | 로컬 bucket 매니페스트 `description` | SameOs |
+| | `scoop` | `scoop export` (bucket은 `Name`·`Source`) | 로컬 bucket 매니페스트 `description` | SameOs |
 | | `choco` | `choco list` (v2, 로컬) + `lib/<pkg>/<pkg>.nuspec` | nuspec `summary`/`description` | SameOs |
 | | `apt` | `apt-mark showmanual` | `dpkg-query`의 Description | SameOs |
 | | `dnf` | `dnf repoquery --userinstalled` | `dnf info` 로컬 결과 | SameOs |
@@ -236,6 +237,12 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 - 설정 파일은 파일 하나가 한 항목이고, 그 안의 비밀정보·OS 전용 줄은 줄 번호가 있는 `Finding`으로 붙는다.
 - **직접 설치한 최상위 패키지만** 보여준다. 의존성으로 설치된 패키지는 숨긴다.
   - choco는 각 nuspec의 의존성을 읽어 다른 패키지의 의존성인 패키지를 제외한다.
+
+### Scoop bucket
+
+- `main`은 Scoop에 늘 있으므로 항목으로 만들지 않는다.
+- Scoop이 이름만으로 추가할 수 있는 알려진 bucket(Scoop `buckets.json`: `main`, `extras`, `versions`, `nirsoft`, `sysinternals`, `php`, `nerd-fonts`, `nonportable`, `java`, `games`, 대소문자 무시)은 이름만 저장한다. 공식 주소를 저장할 이유가 없고, 복원도 `scoop bucket add <name>`이 공식 주소를 쓴다.
+- 그 밖의 bucket은 `scoop export`의 `Source`를 `url`에 그대로 저장한다. 비어 있거나 없으면 `None`이다. 주소 검사는 내보내기와 `repot.json` 열기에서 한다(§10). 스캔에서 버리면 이름만으로 내보내져 복원 때 "알 수 없는 bucket"으로 실패하기 때문이다.
 
 ### 실행
 
@@ -342,7 +349,8 @@ Provider는 스캔만 한다. 내보내기는 `ItemDetails`를 해석하는 중�
 
 ```rust
 pub enum Step {
-    AddTap { manager: PackageManager, name: String },     // brew tap, scoop bucket
+    AddTap { manager: PackageManager, name: String,
+             url: Option<String> },                        // brew tap, scoop bucket. url은 사용자 bucket만
     InstallPackage { manager: PackageManager, kind: PackageKind, name: String,
                      mapped_from: Option<MappedFrom> },             // 대응된 경우 원래 매니저·종류·이름
     InstallRuntime { tool: RuntimeTool, runtime: String, version: String, set_default: bool },
@@ -355,6 +363,8 @@ pub enum Step {
 ```
 
 `export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다. 다른 OS 패키지는 §9 패키지 대응표의 이름으로 바꾸고 `mapped_from`에 원래 이름을 남긴다. 렌더러는 그 단계 위에 `# from brew: ripgrep` 같은 영어 주석을 달고, 대응에 Scoop bucket이 필요하면 `AddTap`을 먼저 만든다. 두 출발 항목이 같은 목적지 이름으로 대응되면 첫 항목만 내보내고 경고한다. 내보내기 README에는 대응된 패키지 목록을 적는다.
+
+사용자 Scoop bucket(`url`이 있는 항목)은 `scoop bucket add '<name>' '<url>'`로, 알려진 bucket과 대응용 bucket은 `scoop bucket add '<name>'`으로 추가한다. 이미 있는지는 둘 다 `scoop bucket list`에서 이름으로 본다. `scoop.json`의 `buckets`에도 `url`이 있으면 `Source`로 적는다(`scoop import`가 그 주소로 추가한다). 주소는 `https://…` 또는 `git@host:path` 형태이고, 접두어 뒤에 `@`가 없으며(자격 증명이 든 주소를 스크립트에 쓰지 않는다), 이름과 같은 안전 문자(영숫자와 `@._+/:-`)만 쓸 때만 내보낸다. 아니면 그 bucket 항목을 `InvalidValue` 경고와 함께 뺀다. `repot.json`에서도 같은 검사를 하고, `url`은 Scoop bucket 항목에만 허용한다. 어긋나면 그 항목을 건너뛴다. `url` 필드는 0.9에 더했고 없으면 `None`이라 이전 파일도 그대로 열린다.
 
 `TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile`, `JetBrains { ide, version, rel }` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
@@ -498,7 +508,7 @@ repot-export-2026-11-02/
 - winget은 `winget` 소스 패키지만 다룬다(msstore 제외).
 - volta는 런타임만 다룬다(volta로 설치한 전역 패키지 제외).
 - rustup은 툴체인만 다룬다(component·target 제외).
-- scoop은 기본 bucket 이외의 사용자 지정 bucket URL을 보존하지 않는다.
+- Scoop의 알려진 bucket 이름(`extras` 등)을 다른 주소(포크)로 추가했어도 이름만 저장하므로 복원하면 공식 bucket이 추가된다. 로컬 경로나 `http://`·`ssh://`·자격 증명이 든 주소의 bucket은 내보내지 않는다. 0.8 이하 앱은 `repot.json`의 bucket `url`을 몰라 이름만으로 추가하므로 사용자 bucket 복원이 실패한다.
 - `repot.json`과 이 기기 비교는 내보낼 스크립트가 쓰는 매니저 기준이다. 다른 매니저로 설치한 패키지와 다른 버전의 런타임은 "없음"으로 본다.
 - `repot.json`은 고른 항목과 목적지에서 쓸 수 없던 항목만 담는다. 사용자가 체크를 끈 항목은 나중에 다시 내보낼 수 없다. 파일 안에서 가린 비밀정보는 되살릴 수 없다. 0.6 이하 앱은 `notExported` 표시를 몰라 그 항목을 보통 항목처럼 보여준다.
 - JetBrains는 IDE별 최신 버전 설정 폴더만 읽는다. 플러그인은 JetBrains Marketplace에서 `installPlugins`로 받으므로 사용자 지정 저장소나 디스크에서 설치한 플러그인은 복원되지 않고, 설치 중에는 IDE를 닫아야 한다. IDE 자체는 설치하지 않는다(없으면 Toolbox 안내). 0.6 이하 앱은 JetBrains 항목이 든 `repot.json`을 열 때 그 항목을 건너뛴다.

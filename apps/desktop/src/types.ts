@@ -43,7 +43,7 @@ export type Portability =
   | { sameShell: Shell }
   | { mapped: RuntimeTool };
 export type ItemDetails =
-  | { package: { manager: string; kind: 'formula' | 'cask' | 'tap' | 'package' } }
+  | { package: { manager: string; kind: 'formula' | 'cask' | 'tap' | 'package'; url?: string } }
   | { runtime: { tool: RuntimeTool; runtime: string; isDefault: boolean } }
   | { globalPackage: { manager: string } }
   | { extension: { editor: Editor } }

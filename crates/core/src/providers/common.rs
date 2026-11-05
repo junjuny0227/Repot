@@ -20,7 +20,11 @@ pub(crate) fn package_item(
         catalog_id: None,
         origin: Origin::Command(command.into()),
         portability: Portability::Package,
-        details: ItemDetails::Package { manager, kind },
+        details: ItemDetails::Package {
+            manager,
+            kind,
+            url: None,
+        },
         findings: vec![],
     }
 }

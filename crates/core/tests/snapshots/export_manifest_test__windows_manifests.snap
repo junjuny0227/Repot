@@ -39,6 +39,10 @@ expression: "files.iter().map(|f|\nformat!(\"--- {} ---\\n{}\", f.path, f.conten
   "buckets": [
     {
       "Name": "extras"
+    },
+    {
+      "Name": "repot",
+      "Source": "https://github.com/junjuny0227/scoop-bucket"
     }
   ]
 }

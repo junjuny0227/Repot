@@ -33,7 +33,11 @@ fn package(manager: PackageManager, kind: PackageKind, name: &str) -> Item {
         name,
         "fixture",
         Portability::Package,
-        ItemDetails::Package { manager, kind },
+        ItemDetails::Package {
+            manager,
+            kind,
+            url: None,
+        },
     )
 }
 fn runtime(tool: RuntimeTool, runtime: &str, version: &str) -> Item {

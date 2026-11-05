@@ -90,6 +90,9 @@ pub enum ItemDetails {
     Package {
         manager: PackageManager,
         kind: PackageKind,
+        /// Source of a Scoop bucket that Scoop does not know by name; `None` otherwise.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        url: Option<String>,
     },
     Runtime {
         tool: RuntimeTool,

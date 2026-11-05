@@ -48,7 +48,8 @@ fn scans_top_level_formulae_casks_and_taps() {
         rg.details,
         ItemDetails::Package {
             manager: PackageManager::Brew,
-            kind: PackageKind::Formula
+            kind: PackageKind::Formula,
+            url: None,
         }
     );
     assert!(!ids.contains(&"brew:formula:pcre2"));

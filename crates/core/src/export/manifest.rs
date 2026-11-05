@@ -91,6 +91,7 @@ pub fn render_manifests(
         if let Step::AddTap {
             manager: PackageManager::Brew,
             name,
+            ..
         } = s
         {
             writeln!(brew, "tap \"{name}\"").unwrap();
@@ -145,7 +146,11 @@ pub fn render_manifests(
             Step::AddTap {
                 manager: PackageManager::Scoop,
                 name,
-            } => Some(json!({"Name":name})),
+                url,
+            } => Some(match url {
+                Some(url) => json!({"Name":name, "Source":url}),
+                None => json!({"Name":name}),
+            }),
             _ => None,
         })
         .collect::<Vec<_>>();

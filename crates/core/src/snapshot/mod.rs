@@ -6,7 +6,7 @@ pub mod v1;
 use crate::export::{ConfigSource, ConfigText};
 use crate::os::Os;
 use crate::scan::mark_duplicates;
-use crate::{Item, ItemDetails};
+use crate::{Item, ItemDetails, PackageKind, PackageManager};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 pub use v1::StoredConfig;
@@ -177,6 +177,16 @@ fn is_safe_item(item: &ItemV1) -> bool {
         return false;
     }
     match &item.details {
+        // The URL is passed to `scoop bucket add`; only custom Scoop buckets carry one.
+        DetailsV1::Package {
+            manager,
+            kind,
+            url: Some(url),
+        } => {
+            *manager == PackageManager::Scoop
+                && *kind == PackageKind::Tap
+                && crate::export::step::is_safe_bucket_url(url)
+        }
         DetailsV1::ConfigFile { target, .. } => is_safe_target(target),
         // The folder name is joined to the plugins folder by the restore script.
         DetailsV1::IdePlugin { folder, .. } => {

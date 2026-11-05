@@ -60,7 +60,7 @@ pub fn availability(item: &Item, source: Os, target: Target) -> Availability {
     } else {
         match item.portability {
             Portability::Package if source != target.os => {
-                if let ItemDetails::Package { manager, kind } = item.details {
+                if let ItemDetails::Package { manager, kind, .. } = item.details {
                     if kind == PackageKind::Tap {
                         return Availability::Unavailable(UnavailableReason::DifferentOs {
                             source,

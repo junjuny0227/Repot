@@ -34,6 +34,15 @@ fn sample_plan(target: Os) -> ScriptPlan {
                     "extras"
                 }
                 .into(),
+                url: None,
+            });
+        }
+        if manager == PackageManager::Scoop {
+            // A custom bucket is added with its URL.
+            steps.push(Step::AddTap {
+                manager,
+                name: "repot".into(),
+                url: Some("https://github.com/junjuny0227/scoop-bucket".into()),
             });
         }
         steps.push(Step::InstallPackage {

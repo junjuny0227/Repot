@@ -17,6 +17,8 @@ struct Export {
 #[serde(rename_all = "PascalCase")]
 struct Bucket {
     name: String,
+    #[serde(default)]
+    source: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -25,6 +27,20 @@ struct App {
     source: String,
     version: Option<String>,
 }
+
+/// Buckets `scoop bucket add <name>` resolves without a URL (Scoop's `buckets.json`).
+const KNOWN_BUCKETS: &[&str] = &[
+    "main",
+    "extras",
+    "versions",
+    "nirsoft",
+    "sysinternals",
+    "php",
+    "nerd-fonts",
+    "nonportable",
+    "java",
+    "games",
+];
 
 pub struct Scoop;
 impl Provider for Scoop {
@@ -53,12 +69,21 @@ impl Provider for Scoop {
                 "scoop",
                 PackageManager::Scoop,
                 PackageKind::Tap,
-                bucket.name,
+                bucket.name.clone(),
                 None,
                 None,
                 "scoop export",
             );
             item.id = format!("scoop:bucket:{}", item.name);
+            // Kept as scanned; the export rejects a source that is not a safe URL.
+            let known = KNOWN_BUCKETS
+                .iter()
+                .any(|k| k.eq_ignore_ascii_case(&item.name));
+            if let ItemDetails::Package { url, .. } = &mut item.details
+                && !known
+            {
+                *url = bucket.source.filter(|s| !s.is_empty());
+            }
             items.push(item);
         }
         for app in export.apps {

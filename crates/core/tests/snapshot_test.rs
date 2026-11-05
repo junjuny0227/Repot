@@ -59,6 +59,7 @@ fn machine() -> (FakeEnv, Vec<Item>) {
             ItemDetails::Package {
                 manager: PackageManager::Brew,
                 kind: PackageKind::Formula,
+                url: None,
             },
         ),
         item(
@@ -68,6 +69,7 @@ fn machine() -> (FakeEnv, Vec<Item>) {
             ItemDetails::Package {
                 manager: PackageManager::Brew,
                 kind: PackageKind::Cask,
+                url: None,
             },
         ),
         item(
@@ -376,6 +378,105 @@ fn ignores_unknown_fields_and_skips_unknown_items() {
     let opened = parse_snapshot(&text.to_string()).unwrap();
     assert_eq!(opened.snapshot.items.len(), 1);
     assert_eq!(opened.skipped_items, 2);
+}
+
+#[test]
+fn scoop_bucket_urls_round_trip_and_unsafe_ones_are_skipped() {
+    let bucket = |id: &str, details: serde_json::Value| {
+        serde_json::json!({
+            "id": id,
+            "provider": "scoop",
+            "category": "packageManager",
+            "name": id.rsplit(':').next().unwrap(),
+            "origin": { "command": "scoop export" },
+            "portability": "package",
+            "details": { "package": details }
+        })
+    };
+    let repot_url = "https://github.com/junjuny0227/scoop-bucket";
+    let good = bucket(
+        "scoop:bucket:repot",
+        serde_json::json!({ "manager": "scoop", "kind": "tap", "url": repot_url }),
+    );
+    // Files written before the field existed have no url.
+    let old = bucket(
+        "scoop:bucket:extras",
+        serde_json::json!({ "manager": "scoop", "kind": "tap" }),
+    );
+    let mut cases = vec![good, old];
+    for (n, url) in [
+        "https://x.test/a b",
+        "https://x.test/a';calc;'",
+        "http://x.test/a",
+        "C:/buckets/x",
+        "-https://x.test/a",
+    ]
+    .iter()
+    .enumerate()
+    {
+        cases.push(bucket(
+            &format!("bad:url:{n}"),
+            serde_json::json!({ "manager": "scoop", "kind": "tap", "url": url }),
+        ));
+    }
+    // A url only belongs to a Scoop bucket.
+    cases.push(bucket(
+        "bad:kind:brew",
+        serde_json::json!({ "manager": "brew", "kind": "tap", "url": "https://github.com/a/b" }),
+    ));
+    cases.push(bucket(
+        "bad:kind:app",
+        serde_json::json!({ "manager": "scoop", "kind": "package", "url": "https://github.com/a/b" }),
+    ));
+    let opened = parse_snapshot(&with_items(serde_json::Value::Array(cases))).unwrap();
+    assert_eq!(opened.skipped_items, 7);
+    let snap = opened.snapshot;
+    assert_eq!(
+        snap.items
+            .iter()
+            .map(|i| i.details.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            ItemDetails::Package {
+                manager: PackageManager::Scoop,
+                kind: PackageKind::Tap,
+                url: Some(repot_url.into()),
+            },
+            ItemDetails::Package {
+                manager: PackageManager::Scoop,
+                kind: PackageKind::Tap,
+                url: None,
+            },
+        ]
+    );
+    let bundle = export(
+        &snap,
+        &snap.items,
+        &all(&snap.items, vec![]),
+        Os::Windows,
+        Target::default_for(Os::Windows),
+    );
+    let script = &bundle
+        .files
+        .iter()
+        .find(|f| f.path == "restore.ps1")
+        .unwrap()
+        .contents;
+    assert!(script.contains(&format!("& scoop bucket add 'repot' '{repot_url}'")));
+    let written: serde_json::Value = serde_json::from_str(repot_json(&bundle)).unwrap();
+    let details = written["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|i| i["details"]["package"].clone())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        details,
+        vec![
+            serde_json::json!({ "manager": "scoop", "kind": "tap", "url": repot_url }),
+            serde_json::json!({ "manager": "scoop", "kind": "tap" }),
+        ]
+    );
 }
 
 #[test]

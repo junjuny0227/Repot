@@ -48,6 +48,9 @@ pub enum DetailsV1 {
     Package {
         manager: PackageManager,
         kind: PackageKind,
+        /// Added in 0.9: source of a custom Scoop bucket.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        url: Option<String>,
     },
     Runtime {
         tool: RuntimeTool,
@@ -164,9 +167,10 @@ impl ItemV1 {
     /// `config` must be `Some` exactly for config-file items.
     pub fn from_item(item: &Item, config: Option<&StoredConfig>, not_exported: bool) -> Self {
         let details = match (&item.details, config) {
-            (ItemDetails::Package { manager, kind }, _) => DetailsV1::Package {
+            (ItemDetails::Package { manager, kind, url }, _) => DetailsV1::Package {
                 manager: *manager,
                 kind: *kind,
+                url: url.clone(),
             },
             (
                 ItemDetails::Runtime {
@@ -238,7 +242,9 @@ impl ItemV1 {
 
     pub fn into_item(self) -> (Item, Option<StoredConfig>) {
         let (details, config) = match self.details {
-            DetailsV1::Package { manager, kind } => (ItemDetails::Package { manager, kind }, None),
+            DetailsV1::Package { manager, kind, url } => {
+                (ItemDetails::Package { manager, kind, url }, None)
+            }
             DetailsV1::Runtime {
                 tool,
                 runtime,
