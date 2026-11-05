@@ -6,7 +6,14 @@ export interface Target {
   packages: PackageManager | null;
 }
 export type Shell = 'zsh' | 'bash' | 'fish' | 'powerShell';
-export type Category = 'packageManager' | 'runtime' | 'globalPackage' | 'editor' | 'git' | 'shell';
+export type Category =
+  | 'packageManager'
+  | 'runtime'
+  | 'globalPackage'
+  | 'editor'
+  | 'git'
+  | 'shell'
+  | 'ssh';
 export type RuntimeTool =
   | 'nvm'
   | 'nvmWindows'
@@ -63,7 +70,11 @@ export type FindingKind =
   | { secret: { name: string | null } }
   | { osSpecificLine: { key: string } }
   | { duplicate: { otherProvider: string } }
-  | 'unreadable';
+  | 'unreadable'
+  // An SSH key path the config names; Repot never reads or exports the key (plan 16).
+  | { keyFile: { path: string } }
+  // An SSH Include Repot does not follow; the line stays as written.
+  | { externalInclude: { path: string } };
 export interface Finding {
   line: number | null;
   kind: FindingKind;

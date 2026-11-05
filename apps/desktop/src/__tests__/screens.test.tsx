@@ -242,6 +242,22 @@ test('detail panel enables the reveal toggle only for checked items', () => {
   expect(html).toContain(reasonText({ shellUnsupported: 'zsh' }));
 });
 
+test('detail panel lists SSH key paths and the Include it does not follow', () => {
+  const config = scan.items.find((i) => i.id === 'ssh:file:.ssh/config')!;
+  const html = renderToStaticMarkup(
+    <DetailPanel item={config} state={reviewState('windows')} dispatch={noop} />,
+  );
+  expect(html).toContain(categoryLabel('ssh'));
+  const texts = config.findings.map((f) => findingText(f));
+  expect(texts).toContain(
+    'Line 2: Includes ~/.orbstack/ssh/config, which another tool manages on this machine. The line stays, but that file is not exported.',
+  );
+  expect(texts).toContain(
+    'Line 12: Uses the key ~/.ssh/work_ed25519. Repot does not export keys; copy it to the new machine yourself.',
+  );
+  for (const text of texts) expect(html).toContain(text);
+});
+
 test('not detected and failed providers are collapsed, with raw failure detail', () => {
   const failed = {
     ...scan,

@@ -5,7 +5,8 @@
     "globalPackage": "全局软件包",
     "editor": "编辑器",
     "git": "Git",
-    "shell": "Shell"
+    "shell": "Shell",
+    "ssh": "SSH"
   },
   "os": {
     "linux": "Linux（{family}）",
@@ -25,7 +26,9 @@
     "secretStored": "Repot 文件中已遮盖保存的密钥信息。恢复后请填写该值。",
     "secretStoredNamed": "Repot 文件中已遮盖保存的密钥信息（{name}）。恢复后请填写该值。",
     "osSpecificLine": "{key} 仅适用于当前系统，在其他系统上会被注释掉。",
-    "duplicate": "{provider} 也检测到了此项。"
+    "duplicate": "{provider} 也检测到了此项。",
+    "keyFile": "使用密钥 {path}。Repot 不会导出密钥，请自行将其复制到新电脑。",
+    "externalInclude": "引入了由本机其他工具管理的 {path}。此行会保留，但不会导出该文件。"
   },
   "reason": {
     "unreadable": "不可用：无法读取文件。",

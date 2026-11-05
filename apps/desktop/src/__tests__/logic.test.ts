@@ -9,6 +9,7 @@ const availWin = fixture.availability.windows as unknown as AvailabilityMap;
 import {
   applyTarget,
   buildSelection,
+  CATEGORIES,
   categoryCounts,
   choosesPackages,
   currentTarget,
@@ -56,6 +57,32 @@ test('filterItems by query and warnings', () => {
     filterItems(scan.items, availMac, { ...all, onlyWarnings: true }).map((i) => i.id),
   ).toContain('shell:file:.zshrc');
   expect(filterItems(scan.items, availMac, { ...all, query: 'ZSHRC' }).length).toBeGreaterThan(0);
+});
+
+test("an Include of another tool's file alone is not a warning, a key path is", () => {
+  // Plan 16: ExternalInclude needs nothing from the user; KeyFile asks them to copy a key.
+  const all = { query: '', onlyAvailable: false, onlyWarnings: true, onlyMissing: false };
+  const config = scan.items.find((i) => i.id === 'ssh:file:.ssh/config')!;
+  const only = (kind: 'externalInclude' | 'keyFile', id: string) => ({
+    ...config,
+    id,
+    findings: config.findings.filter((f) => typeof f.kind === 'object' && kind in f.kind),
+  });
+  const external = only('externalInclude', 'ssh:external');
+  const key = only('keyFile', 'ssh:key');
+  expect(external.findings).toHaveLength(1);
+  expect(key.findings).toHaveLength(2);
+  const ids = filterItems([...scan.items, external, key], availMac, all).map((i) => i.id);
+  expect(ids).toContain('ssh:key');
+  expect(ids).toContain('ssh:file:.ssh/config');
+  expect(ids).not.toContain('ssh:external');
+  expect(ids).not.toContain('ssh:file:.ssh/config.d/work');
+});
+
+test('SSH items are their own category after Shell', () => {
+  expect(CATEGORIES.slice(-2)).toEqual(['shell', 'ssh']);
+  const counts = categoryCounts(scan.items, initialChecked(scan.items, availWin));
+  expect(counts.ssh).toEqual({ total: 2, checked: 2 });
 });
 
 test('setCategory toggles only available items of that category', () => {

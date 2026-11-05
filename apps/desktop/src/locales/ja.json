@@ -5,7 +5,8 @@
     "globalPackage": "グローバルパッケージ",
     "editor": "エディタ",
     "git": "Git",
-    "shell": "シェル"
+    "shell": "シェル",
+    "ssh": "SSH"
   },
   "os": {
     "linux": "Linux（{family}）",
@@ -25,7 +26,9 @@
     "secretStored": "Repot ファイルに伏せた状態で保存された秘密情報です。復元後に値を入力してください。",
     "secretStoredNamed": "Repot ファイルに伏せた状態で保存された秘密情報（{name}）です。復元後に値を入力してください。",
     "osSpecificLine": "{key} はこの OS 固有の設定のため、別の OS ではコメントアウトされます。",
-    "duplicate": "{provider} でも検出されました。"
+    "duplicate": "{provider} でも検出されました。",
+    "keyFile": "鍵 {path} を使用します。Repot は鍵を書き出さないため、新しいコンピュータへ手動でコピーしてください。",
+    "externalInclude": "このコンピュータで別のツールが管理する {path} を読み込みます。この行は残りますが、そのファイルは書き出しません。"
   },
   "reason": {
     "unreadable": "使用不可：ファイルを読み込めませんでした。",

@@ -66,6 +66,8 @@ function findingBody(f: Finding, fromFile: boolean): string {
   if ('secret' in k)
     return k.secret.name ? format(m.secretNamed, { name: k.secret.name }) : m.secret;
   if ('osSpecificLine' in k) return format(m.osSpecificLine, { key: k.osSpecificLine.key });
+  if ('keyFile' in k) return format(m.keyFile, { path: k.keyFile.path });
+  if ('externalInclude' in k) return format(m.externalInclude, { path: k.externalInclude.path });
   return format(m.duplicate, { provider: k.duplicate.otherProvider });
 }
 
