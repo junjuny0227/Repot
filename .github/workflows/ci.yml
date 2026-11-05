@@ -587,6 +587,36 @@ jobs:
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
           $r = Invoke-ScriptAnalyzer -Path samples/restore.ps1 -Severity Warning,Error -ExcludeRule PSAvoidUsingWriteHost
           if ($r) { $r | Format-Table -AutoSize; exit 1 }
+      # Plan 16: the SSH config a Mac exports must load in each destination's real OpenSSH.
+      # An option it does not know (UseKeychain) makes `ssh -G` exit 255.
+      - name: Load prepared SSH configs with OpenSSH
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          ssh -V
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            ssh -G -F samples/ssh-config-macos github-work > /dev/null
+            exit 0
+          fi
+          resolved=$(ssh -G -F samples/ssh-config-linux github-work)
+          grep -qx 'hostname github.com' <<< "$resolved"
+          # The unprepared Mac file must fail here, or the check above proves nothing.
+          if ssh -G -F samples/ssh-config-macos github-work > /dev/null 2>&1; then
+            echo 'This OpenSSH accepted UseKeychain; the check proves nothing' >&2
+            exit 1
+          fi
+      - name: Load prepared SSH config with Windows OpenSSH
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ssh = Join-Path $env:WINDIR 'System32\OpenSSH\ssh.exe'
+          & $ssh -V
+          $resolved = & $ssh -G -F samples/ssh-config-windows github-work | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "ssh -G exited $LASTEXITCODE" }
+          if ($resolved -notmatch '(?m)^hostname github\.com\s*$') { throw 'github-work did not resolve' }
+          & $ssh -G -F samples/ssh-config-macos github-work *> $null
+          if ($LASTEXITCODE -eq 0) { throw 'This OpenSSH accepted UseKeychain; the check proves nothing' }
+          $global:LASTEXITCODE = 0
       - name: Restore smoke test (Bash)
         if: runner.os != 'Windows'
         shell: bash
@@ -596,8 +626,15 @@ jobs:
           export npm_config_prefix="$PWD/smoke-home/npm"
           HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes
           test "$(cat smoke-home/.repot-smoke)" = "smoke"
+          # ~/.ssh did not exist, so the script creates it 0700 and the config 0600.
+          mode() { stat -c %a "$1" 2>/dev/null || stat -f %Lp "$1"; }
+          test "$(mode smoke-home/.ssh)" = 700
+          test "$(mode smoke-home/.ssh/config)" = 600
+          resolved=$(ssh -G -F smoke-home/.ssh/config github-work)
+          grep -qx 'hostname github.com' <<< "$resolved"
           HOME="$PWD/smoke-home" bash "$out/restore.sh" --yes > smoke/second.log
           grep -q "already done: copy ~/.repot-smoke" smoke/second.log
+          grep -q "already done: copy ~/.ssh/config" smoke/second.log
       - name: Restore smoke test (PowerShell 5.1)
         if: runner.os == 'Windows'
         shell: powershell
@@ -612,3 +649,23 @@ jobs:
           $second = powershell -NoProfile -ExecutionPolicy Bypass -File "$out\restore.ps1" -Yes | Out-String
           if ($LASTEXITCODE -ne 0) { exit 1 }
           if ($second -notmatch 'already done: copy') { exit 1 }
+      - name: Restored SSH config with Windows OpenSSH
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # The default path, so OpenSSH also checks the file's owner and ACL (plan 16).
+          $ssh = Join-Path $env:WINDIR 'System32\OpenSSH\ssh.exe'
+          $resolved = & $ssh -G github-work | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "ssh -G exited $LASTEXITCODE" }
+          if ($resolved -notmatch '(?m)^hostname github\.com\s*$') { throw 'github-work did not resolve' }
+          # ssh -G prints IdentityFile as written; -v logs the expanded path before it
+          # connects (to a closed local port here).
+          $log = Join-Path $env:RUNNER_TEMP 'ssh-v.log'
+          Start-Process -FilePath $ssh -ArgumentList '-v', '-o', 'BatchMode=yes', '-o', 'HostName=127.0.0.1', '-o', 'Port=1', 'github-work' -RedirectStandardError $log -NoNewWindow -Wait
+          $text = Get-Content $log -Raw
+          Write-Host $text
+          $want = 'identity file ' + ($env:USERPROFILE -replace '[\\/]+', '/') + '/.ssh/work_ed25519'
+          if (-not ($text -replace '[\\/]+', '/').ToLowerInvariant().Contains($want.ToLowerInvariant())) {
+            throw "IdentityFile did not resolve under $env:USERPROFILE"
+          }
+          $global:LASTEXITCODE = 0
