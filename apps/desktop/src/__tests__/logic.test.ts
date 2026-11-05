@@ -76,7 +76,8 @@ test('setCategory on never checks unavailable items and counts follow', () => {
   expect(on.has('shell:file:.zshrc')).toBe(false);
   const counts = categoryCounts(scan.items, initialChecked(scan.items, availMac));
   expect(counts.shell).toEqual({ total: 1, checked: 1 });
-  expect(counts.runtime).toEqual({ total: 0, checked: 0 });
+  expect(counts.runtime).toEqual({ total: 1, checked: 1 });
+  expect(counts.editor).toEqual({ total: 0, checked: 0 });
 });
 
 test('osKey and targetOptions keep the current target selectable', () => {

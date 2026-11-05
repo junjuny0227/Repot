@@ -56,6 +56,12 @@ pub enum DetailsV1 {
         tool: RuntimeTool,
         runtime: String,
         is_default: bool,
+        /// rustup components without the host suffix. Added in 0.9; written only when present.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        components: Vec<String>,
+        /// rustup targets other than the host. Added in 0.9; written only when present.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        targets: Vec<String>,
     },
     GlobalPackage {
         manager: GlobalManager,
@@ -177,12 +183,16 @@ impl ItemV1 {
                     tool,
                     runtime,
                     is_default,
+                    components,
+                    targets,
                 },
                 _,
             ) => DetailsV1::Runtime {
                 tool: *tool,
                 runtime: runtime.clone(),
                 is_default: *is_default,
+                components: components.clone(),
+                targets: targets.clone(),
             },
             (ItemDetails::GlobalPackage { manager }, _) => {
                 DetailsV1::GlobalPackage { manager: *manager }
@@ -249,11 +259,15 @@ impl ItemV1 {
                 tool,
                 runtime,
                 is_default,
+                components,
+                targets,
             } => (
                 ItemDetails::Runtime {
                     tool,
                     runtime,
                     is_default,
+                    components,
+                    targets,
                 },
                 None,
             ),

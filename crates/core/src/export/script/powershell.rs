@@ -104,8 +104,13 @@ fn commands(s: &Step) -> (String, bool, String) {
             runtime,
             version,
             set_default,
+            components,
+            targets,
         } => {
             let v = q(version);
+            if *tool == RuntimeTool::Rustup {
+                return rustup_commands(version, *set_default, components, targets);
+            }
             let r = q(runtime);
             let (check, value, mut install, default) = match tool {
                 RuntimeTool::NvmWindows => (
@@ -131,12 +136,6 @@ fn commands(s: &Step) -> (String, bool, String) {
                     v.clone(),
                     format!("& pyenv install {v}"),
                     format!("& pyenv global {v}"),
-                ),
-                RuntimeTool::Rustup => (
-                    "rustup toolchain list".into(),
-                    v.clone(),
-                    format!("& rustup toolchain install {v}"),
-                    format!("& rustup default {v}"),
                 ),
                 _ => return ("$false".into(), true, "$global:LASTEXITCODE = 1".into()),
             };
@@ -185,6 +184,94 @@ fn commands(s: &Step) -> (String, bool, String) {
         ),
         _ => unreachable!("file steps use their own return codes"),
     }
+}
+
+fn ps_list(names: &[String]) -> String {
+    let names: Vec<String> = names.iter().map(|n| q(n)).collect();
+    format!("@({})", names.join(", "))
+}
+
+/// Same behavior as the Bash script: the check needs every component and target, and
+/// the toolchain is installed only if missing (installing an existing channel updates it).
+fn rustup_commands(
+    version: &str,
+    set_default: bool,
+    components: &[String],
+    targets: &[String],
+) -> (String, bool, String) {
+    let v = q(version);
+    let check = format!(
+        "Test-RustupToolchain {v} {} {}",
+        ps_list(components),
+        ps_list(targets)
+    );
+    let mut install = if components.is_empty() && targets.is_empty() {
+        format!("& rustup toolchain install {v}")
+    } else {
+        format!(
+            "$hasToolchain = Test-RustupToolchain {v} @() @(); if (-not $hasToolchain) {{ & rustup toolchain install {v} }}"
+        )
+    };
+    // PS 5.1 has no &&: each command runs only after the previous one succeeded.
+    let mut first = true;
+    for (kind, names) in [("component", components), ("target", targets)] {
+        if !names.is_empty() {
+            let names: Vec<String> = names.iter().map(|n| q(n)).collect();
+            let condition = if first {
+                "$hasToolchain -or $LASTEXITCODE -eq 0"
+            } else {
+                "$LASTEXITCODE -eq 0"
+            };
+            first = false;
+            write!(
+                install,
+                "; if ({condition}) {{ & rustup {kind} add --toolchain {v} {} }}",
+                names.join(" ")
+            )
+            .unwrap();
+        }
+    }
+    if set_default {
+        write!(
+            install,
+            "; if ($LASTEXITCODE -eq 0) {{ & rustup default {v} }}"
+        )
+        .unwrap();
+    }
+    (check, true, install)
+}
+
+/// `Test-RustupToolchain`, only when the plan has rustup steps.
+fn write_rustup_helper(out: &mut String, plan: &ScriptPlan) {
+    if !plan.steps.iter().any(|s| {
+        matches!(
+            s,
+            Step::InstallRuntime {
+                tool: RuntimeTool::Rustup,
+                ..
+            }
+        )
+    }) {
+        return;
+    }
+    out.push_str(
+        r#"# The toolchain is installed with every listed component and target.
+# rustup prints host-specific components as <name>-<host>, so the host suffix is dropped.
+# "<channel>-<letter>" keeps "nightly" from matching a dated nightly.
+function Test-RustupToolchain($Toolchain, $Components, $Targets) {
+  $pattern = '^' + [regex]::Escape($Toolchain) + '-[a-z]'
+  $line = @(& rustup toolchain list 2>$null | Where-Object { $_ -cmatch $pattern })
+  if ($line.Count -eq 0) { return $false }
+  $name = ($line[0] -split ' ')[0]
+  $suffix = $name.Substring($Toolchain.Length)
+  $haveComponents = @(& rustup component list --installed --toolchain $name 2>$null | ForEach-Object { if ($_.EndsWith($suffix)) { $_.Substring(0, $_.Length - $suffix.Length) } else { $_ } })
+  $haveTargets = @(& rustup target list --installed --toolchain $name 2>$null)
+  foreach ($c in $Components) { if ($haveComponents -cnotcontains $c) { return $false } }
+  foreach ($t in $Targets) { if ($haveTargets -cnotcontains $t) { return $false } }
+  return $true
+}
+"#,
+    );
 }
 
 /// The JetBrains IDE a tool tuple stands for, if any.
@@ -301,6 +388,7 @@ pub fn render_powershell(plan: &ScriptPlan) -> String {
         .unwrap();
     }
     write_jetbrains_helpers(&mut out, plan);
+    write_rustup_helper(&mut out, plan);
     write_preflight(&mut out, plan);
     out.push_str("if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -and $answer -cne 'Y') { exit 0 } }\n");
     let mut i = 0;

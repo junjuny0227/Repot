@@ -11,7 +11,19 @@ fn main() {
         .with_command("npm", &["root", "-g"], "/opt/npm")
         .with_file("/opt/npm/typescript/package.json", r#"{"description":"Typed JavaScript tooling"}"#)
         .with_file("/Users/demo/.zshrc", "export DEMO_TOKEN=synthetic-fixture-value\n")
-        .with_file("/Users/demo/.gitconfig", "[user]\n  name = Demo\n");
+        .with_file("/Users/demo/.gitconfig", "[user]\n  name = Demo\n")
+        .with_program("rustup")
+        .with_command("rustup", &["toolchain", "list"], "stable-aarch64-apple-darwin (default)\n")
+        .with_command(
+            "rustup",
+            &["component", "list", "--installed", "--toolchain", "stable-aarch64-apple-darwin"],
+            "cargo-aarch64-apple-darwin\nclippy-aarch64-apple-darwin\nrust-src\nrust-std-aarch64-apple-darwin\nrust-std-wasm32-unknown-unknown\nrustc-aarch64-apple-darwin\n",
+        )
+        .with_command(
+            "rustup",
+            &["target", "list", "--installed", "--toolchain", "stable-aarch64-apple-darwin"],
+            "aarch64-apple-darwin\nwasm32-unknown-unknown\n",
+        );
     let scan = scan(
         Arc::new(env),
         default_providers(),

@@ -224,7 +224,8 @@ selection.
 - WSL and Git Bash environments are not supported.
 - winget handles only the `winget` source, not Microsoft Store (`msstore`) packages.
 - Volta scans runtimes only, not global packages installed through Volta.
-- rustup scans toolchains only, not components or targets.
+- rustup moves components and targets by name. One that the destination's host does not
+  offer makes that toolchain's step fail.
 - Scoop buckets with a well-known name (`extras`, `versions`, ...) are restored from the
   official source, even if this machine added them from a fork. Custom buckets keep their
   `https://` or `git@` URL; buckets from a local folder or other URLs are not exported.

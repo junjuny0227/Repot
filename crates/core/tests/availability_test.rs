@@ -18,6 +18,8 @@ fn item(portability: Portability, findings: Vec<Finding>) -> Item {
             tool: RuntimeTool::Nvm,
             runtime: "node".into(),
             is_default: false,
+            components: vec![],
+            targets: vec![],
         },
         findings,
     }

@@ -89,11 +89,22 @@ fn sample_plan(target: Os) -> ScriptPlan {
             RuntimeTool::Sdkman => ("java", "21.0.5-tem"),
             _ => ("node", "22.11.0"),
         };
+        // rustup lists components and targets so the linters see its helper and commands.
+        let (components, targets) = if tool == RuntimeTool::Rustup {
+            (
+                vec!["clippy".to_owned(), "rust-src".to_owned()],
+                vec!["wasm32-unknown-unknown".to_owned()],
+            )
+        } else {
+            (vec![], vec![])
+        };
         steps.push(Step::InstallRuntime {
             tool,
             runtime: runtime.into(),
             version: version.into(),
             set_default: true,
+            components,
+            targets,
         });
     }
     for (manager, name) in [

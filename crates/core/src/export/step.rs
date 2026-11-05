@@ -25,6 +25,9 @@ pub enum Step {
         runtime: String,
         version: String,
         set_default: bool,
+        /// rustup only: components and targets the toolchain must have.
+        components: Vec<String>,
+        targets: Vec<String>,
     },
     InstallGlobal {
         manager: GlobalManager,
@@ -90,6 +93,8 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
             tool,
             runtime,
             is_default,
+            components,
+            targets,
         } => {
             let (Some(tool), Some(version)) = (counterpart(*tool, target), item.version.as_ref())
             else {
@@ -100,6 +105,8 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
                 runtime: runtime.clone(),
                 version: version.clone(),
                 set_default: *is_default,
+                components: components.clone(),
+                targets: targets.clone(),
             }
         }
         ItemDetails::GlobalPackage { manager } => Step::InstallGlobal {

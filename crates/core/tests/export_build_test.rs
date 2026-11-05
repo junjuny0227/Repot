@@ -42,6 +42,8 @@ fn fixture_machine() -> (FakeEnv, Vec<Item>) {
             tool: RuntimeTool::Sdkman,
             runtime: "java".into(),
             is_default: false,
+            components: vec![],
+            targets: vec![],
         },
     );
     runtime.version = Some("21.0.2-tem".into());
@@ -253,6 +255,8 @@ fn runtime_display_name_is_not_validated_but_package_name_is() {
             tool: RuntimeTool::Rustup,
             runtime: "rust".into(),
             is_default: true,
+            components: vec![],
+            targets: vec![],
         },
     );
     runtime.version = Some("stable".into());
@@ -359,6 +363,8 @@ fn package_version_is_not_validated_because_it_is_not_exported() {
             tool: RuntimeTool::Nvm,
             runtime: "node".into(),
             is_default: false,
+            components: vec![],
+            targets: vec![],
         },
     );
     runtime.version = Some("20,1".into());
@@ -380,4 +386,57 @@ fn package_version_is_not_validated_because_it_is_not_exported() {
         .unwrap()
         .contents;
     assert!(script.contains("zulu@17"));
+}
+
+#[test]
+fn rustup_component_and_target_names_are_validated() {
+    let toolchain = |id: &str, components: &[&str], targets: &[&str]| {
+        let mut i = item(
+            id,
+            "Rust toolchain",
+            Portability::Mapped(RuntimeTool::Rustup),
+            ItemDetails::Runtime {
+                tool: RuntimeTool::Rustup,
+                runtime: "rust".into(),
+                is_default: false,
+                components: components.iter().map(|s| (*s).to_owned()).collect(),
+                targets: targets.iter().map(|s| (*s).to_owned()).collect(),
+            },
+        );
+        i.version = Some(id.rsplit(':').next().unwrap().into());
+        i
+    };
+    let items = vec![
+        toolchain(
+            "rustup:rust:stable",
+            &["clippy"],
+            &["wasm32-unknown-unknown"],
+        ),
+        toolchain("rustup:rust:beta", &["clippy'; rm -rf ~; '"], &[]),
+        toolchain("rustup:rust:nightly", &[], &["-x"]),
+    ];
+    let selection = select_all(&items);
+    let env = FakeEnv::new(Os::MacOs, "/Users/t");
+    let bundle = build_export(
+        &env,
+        &request(&items, &selection, Os::MacOs, Os::MacOs, Format::Script),
+    );
+    assert_eq!(
+        bundle.warnings,
+        vec![
+            ExportWarning::InvalidValue {
+                item_id: "rustup:rust:beta".into(),
+            },
+            ExportWarning::InvalidValue {
+                item_id: "rustup:rust:nightly".into(),
+            },
+        ]
+    );
+    let script = &bundle
+        .files
+        .iter()
+        .find(|file| file.path == "restore.sh")
+        .unwrap()
+        .contents;
+    assert!(script.contains("rustup component add --toolchain 'stable' 'clippy'"));
 }

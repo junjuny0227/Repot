@@ -44,6 +44,8 @@ fn windows_plan() -> ScriptPlan {
                 runtime: "node".into(),
                 version: "20.11.0".into(),
                 set_default: true,
+                components: vec![],
+                targets: vec![],
             },
             Step::InstallGlobal {
                 manager: GlobalManager::Npm,
@@ -255,4 +257,156 @@ fn jetbrains_helpers_appear_only_when_needed() {
         ),
         "{s}"
     );
+}
+
+fn rustup_step(version: &str, components: &[&str], targets: &[&str]) -> Step {
+    Step::InstallRuntime {
+        tool: RuntimeTool::Rustup,
+        runtime: "rust".into(),
+        version: version.into(),
+        set_default: false,
+        components: components.iter().map(|s| (*s).to_owned()).collect(),
+        targets: targets.iter().map(|s| (*s).to_owned()).collect(),
+    }
+}
+
+#[test]
+fn rustup_steps_check_and_add_components_and_targets() {
+    let plain = render_powershell(&windows_plan());
+    assert!(!plain.contains("Test-RustupToolchain"));
+    let mut p = windows_plan();
+    p.steps = vec![
+        rustup_step(
+            "stable",
+            &["clippy", "rust-src"],
+            &["wasm32-unknown-unknown"],
+        ),
+        rustup_step("1.80.0", &[], &[]),
+    ];
+    let s = render_powershell(&p);
+    assert!(
+        s.contains("function Test-RustupToolchain($Toolchain, $Components, $Targets) {"),
+        "{s}"
+    );
+    assert!(
+        s.contains("  $installed = Test-RustupToolchain 'stable' @('clippy', 'rust-src') @('wasm32-unknown-unknown')\n  if ($installed) { Add-Done 'rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)' }"),
+        "{s}"
+    );
+    assert!(
+        s.contains("  else { $hasToolchain = Test-RustupToolchain 'stable' @() @(); if (-not $hasToolchain) { & rustup toolchain install 'stable' }; if ($hasToolchain -or $LASTEXITCODE -eq 0) { & rustup component add --toolchain 'stable' 'clippy' 'rust-src' }; if ($LASTEXITCODE -eq 0) { & rustup target add --toolchain 'stable' 'wasm32-unknown-unknown' }; if ($LASTEXITCODE -eq 0) { Add-Ok"),
+        "{s}"
+    );
+    assert!(
+        s.contains("  $installed = Test-RustupToolchain '1.80.0' @() @()\n  if ($installed) { Add-Done 'rustup install rust 1.80.0' }\n  else { & rustup toolchain install '1.80.0'; if ($LASTEXITCODE -eq 0) { Add-Ok"),
+        "{s}"
+    );
+}
+
+/// Same scenario as the Bash test: a stand-in rustup.ps1 on PATH with state in files.
+#[cfg(windows)]
+#[test]
+fn rustup_adds_missing_components_without_reinstalling_the_toolchain_on_windows() {
+    let dir = tempfile::tempdir().unwrap();
+    let bin = dir.path().join("bin");
+    let state = dir.path().join("rustup");
+    std::fs::create_dir_all(&bin).unwrap();
+    std::fs::create_dir_all(&state).unwrap();
+    let host = "x86_64-pc-windows-msvc";
+    std::fs::write(
+        state.join("toolchains"),
+        format!("stable-{host} (default)\nnightly-2024-11-01-{host}\n"),
+    )
+    .unwrap();
+    std::fs::write(
+        state.join("components-stable"),
+        format!("cargo-{host}\nclippy-{host}\nrust-std-{host}\nrustc-{host}\n"),
+    )
+    .unwrap();
+    std::fs::write(state.join("targets-stable"), format!("{host}\n")).unwrap();
+    let script = format!(
+        r#"$s = '{state}'; $h = '{host}'; $a = $args
+Add-Content -Path "$s\log" -Value ($a -join ' ')
+function Short($n) {{ if ($n.EndsWith("-$h")) {{ $n.Substring(0, $n.Length - $h.Length - 1) }} else {{ $n }} }}
+switch ("$($a[0]) $($a[1])") {{
+  'toolchain list' {{ Get-Content "$s\toolchains" }}
+  'toolchain install' {{
+    $t = $a[2]
+    Add-Content -Path "$s\toolchains" -Value "$t-$h"
+    Set-Content -Path "$s\components-$t" -Value @("cargo-$h", "rustc-$h", "rust-std-$h")
+    Set-Content -Path "$s\targets-$t" -Value $h
+  }}
+  'component list' {{ Get-Content "$s\components-$(Short $a[4])" }}
+  'target list' {{ Get-Content "$s\targets-$(Short $a[4])" }}
+  'component add' {{
+    $t = $a[3]
+    foreach ($c in $a[4..($a.Count - 1)]) {{ if ($c -eq 'rust-src') {{ Add-Content "$s\components-$t" $c }} else {{ Add-Content "$s\components-$t" "$c-$h" }} }}
+  }}
+  'target add' {{ $t = $a[3]; foreach ($x in $a[4..($a.Count - 1)]) {{ Add-Content "$s\targets-$t" $x }} }}
+  default {{ exit 1 }}
+}}
+exit 0
+"#,
+        state = state.display()
+    );
+    std::fs::write(bin.join("rustup.ps1"), script).unwrap();
+    let mut p = windows_plan();
+    p.steps = vec![
+        rustup_step(
+            "stable",
+            &["clippy", "rust-src"],
+            &["wasm32-unknown-unknown"],
+        ),
+        rustup_step("1.80.0", &["clippy"], &[]),
+        rustup_step("nightly", &[], &[]),
+    ];
+    std::fs::write(dir.path().join("restore.ps1"), render_powershell(&p)).unwrap();
+    // Only the stand-in and Windows itself: a real rustup on the runner must not answer.
+    let system = std::env::var("SystemRoot").unwrap();
+    let path = format!(
+        "{};{system}\\System32;{system}\\System32\\WindowsPowerShell\\v1.0",
+        bin.display()
+    );
+    let run = || {
+        std::process::Command::new("powershell")
+            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-File"])
+            .arg(dir.path().join("restore.ps1"))
+            .arg("-Yes")
+            .env("PATH", &path)
+            .output()
+            .unwrap()
+    };
+    let changes = || {
+        std::fs::read_to_string(state.join("log"))
+            .unwrap()
+            .lines()
+            .filter(|l| l.contains(" add ") || l.contains(" install "))
+            .map(str::to_owned)
+            .collect::<Vec<_>>()
+    };
+    let first = run();
+    let out = String::from_utf8_lossy(&first.stdout).replace("\r\n", "\n");
+    assert!(first.status.success(), "{out}");
+    assert_eq!(
+        changes(),
+        vec![
+            "component add --toolchain stable clippy rust-src",
+            "target add --toolchain stable wasm32-unknown-unknown",
+            "toolchain install 1.80.0",
+            "component add --toolchain 1.80.0 clippy",
+            "toolchain install nightly",
+        ],
+        "{out}"
+    );
+    assert!(
+        out.contains("Summary\nOK:\n  - rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)\n  - rustup install rust 1.80.0 (components: clippy)\n  - rustup install rust nightly\nAlready done:\nNot done:\n"),
+        "{out}"
+    );
+    let second = run();
+    let out = String::from_utf8_lossy(&second.stdout).replace("\r\n", "\n");
+    assert!(second.status.success(), "{out}");
+    assert!(
+        out.contains("Summary\nOK:\nAlready done:\n  - rustup install rust stable"),
+        "{out}"
+    );
+    assert_eq!(changes().len(), 5);
 }

@@ -136,8 +136,21 @@ impl Step {
                 tool,
                 runtime,
                 version,
+                components,
+                targets,
                 ..
-            } => format!("{} install {runtime} {version}", runtime_name(*tool)),
+            } => {
+                let mut label = format!("{} install {runtime} {version}", runtime_name(*tool));
+                let extras: Vec<String> = [("components", components), ("targets", targets)]
+                    .into_iter()
+                    .filter(|(_, names)| !names.is_empty())
+                    .map(|(kind, names)| format!("{kind}: {}", names.join(", ")))
+                    .collect();
+                if !extras.is_empty() {
+                    label.push_str(&format!(" ({})", extras.join("; ")));
+                }
+                label
+            }
             Self::InstallGlobal { manager, name } => format!(
                 "{} install {}{name}",
                 global_cmd(*manager),

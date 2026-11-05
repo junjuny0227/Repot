@@ -64,6 +64,8 @@ impl Provider for Nvm {
                     tool: RuntimeTool::Nvm,
                     runtime: "node".into(),
                     is_default: default == Some(i),
+                    components: vec![],
+                    targets: vec![],
                 },
                 findings: vec![],
             })

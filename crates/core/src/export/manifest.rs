@@ -288,9 +288,22 @@ pub fn render_manifests(
                 tool,
                 runtime,
                 version,
+                components,
+                targets,
                 ..
             } if !matches!(runtime.as_str(), "node" | "python") => Some(match tool {
-                RuntimeTool::Rustup => format!("rustup toolchain install {version}"),
+                RuntimeTool::Rustup => {
+                    let mut lines = vec![format!("rustup toolchain install {version}")];
+                    for (kind, names) in [("component", components), ("target", targets)] {
+                        if !names.is_empty() {
+                            lines.push(format!(
+                                "rustup {kind} add --toolchain {version} {}",
+                                names.join(" ")
+                            ));
+                        }
+                    }
+                    lines.join("\n")
+                }
                 RuntimeTool::Sdkman => format!("sdk install {runtime} {version}"),
                 _ => s.label(header.target),
             }),

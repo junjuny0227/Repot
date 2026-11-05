@@ -5,6 +5,7 @@
       "brew:formula:ripgrep": "available",
       "git:file:.gitconfig": "available",
       "npm:typescript": "available",
+      "rustup:rust:stable": "available",
       "shell:file:.zshrc": "available"
     },
     "windows": {
@@ -23,6 +24,7 @@
       },
       "git:file:.gitconfig": "available",
       "npm:typescript": "available",
+      "rustup:rust:stable": "available",
       "shell:file:.zshrc": {
         "unavailable": {
           "shellUnsupported": "zsh"
@@ -71,6 +73,38 @@
         "portability": "package",
         "provider": "brew",
         "version": "14.1.1"
+      },
+      {
+        "catalogId": "runtime:rust",
+        "category": "runtime",
+        "description": "The Rust toolchain compiles and builds Rust programs.",
+        "details": {
+          "runtime": {
+            "components": [
+              "cargo",
+              "clippy",
+              "rust-src",
+              "rustc"
+            ],
+            "isDefault": true,
+            "runtime": "rust",
+            "targets": [
+              "wasm32-unknown-unknown"
+            ],
+            "tool": "rustup"
+          }
+        },
+        "findings": [],
+        "id": "rustup:rust:stable",
+        "name": "Rust toolchain",
+        "origin": {
+          "command": "rustup toolchain list"
+        },
+        "portability": {
+          "mapped": "rustup"
+        },
+        "provider": "rustup",
+        "version": "stable"
       },
       {
         "catalogId": null,
@@ -215,7 +249,11 @@
       {
         "category": "runtime",
         "id": "rustup",
-        "status": "notDetected"
+        "status": {
+          "ok": {
+            "count": 1
+          }
+        }
       },
       {
         "category": "runtime",

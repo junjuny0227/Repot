@@ -250,7 +250,19 @@ fn values_are_safe(item: &Item) -> bool {
         ItemDetails::ShellPlugin { url, .. } => {
             (Some(item.name.as_str()), Some(url.as_str()), None)
         }
-        ItemDetails::Runtime { runtime, .. } => {
+        ItemDetails::Runtime {
+            runtime,
+            components,
+            targets,
+            ..
+        } => {
+            if !components
+                .iter()
+                .chain(targets)
+                .all(|name| crate::providers::rustup::is_rustup_name(name))
+            {
+                return false;
+            }
             (None, Some(runtime.as_str()), item.version.as_deref())
         }
         // The folder name ends up in the "already installed" check.
