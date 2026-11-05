@@ -22,6 +22,7 @@ const SETTINGS_DIRS: [(&str, &str, &str); 4] = [
     ("colors", ".icls", "file:jetbrains-colors"),
     ("templates", ".xml", "file:jetbrains-templates"),
 ];
+const OPTIONS_DIR: &str = "options";
 /// Font and theme choices. The rest of `options/` holds paths, JDKs, recent projects and
 /// accounts of this machine and is left out.
 const OPTION_FILES: [&str; 4] = [
@@ -30,6 +31,21 @@ const OPTION_FILES: [&str; 4] = [
     "colors.scheme.xml",
     "ui.lnf.xml",
 ];
+
+/// Whether an opened Repot file may restore a JetBrains file to `rel` inside the IDE's
+/// settings folder: one file of a settings folder's kind, or one of the option files.
+pub(crate) fn is_config_target(rel: &str) -> bool {
+    let Some((dir, file)) = rel.split_once('/') else {
+        return false;
+    };
+    if file.contains('/') {
+        return false;
+    }
+    SETTINGS_DIRS
+        .iter()
+        .any(|(d, ext, _)| *d == dir && file.ends_with(ext))
+        || (dir == OPTIONS_DIR && OPTION_FILES.contains(&file))
+}
 
 fn config_base(env: &dyn Env) -> PathBuf {
     let home = env.home_dir();
@@ -284,7 +300,7 @@ impl Provider for JetBrains {
             files.extend(
                 OPTION_FILES
                     .iter()
-                    .map(|f| (PathBuf::from("options").join(f), "file:jetbrains-options")),
+                    .map(|f| (PathBuf::from(OPTIONS_DIR).join(f), "file:jetbrains-options")),
             );
             for (rel, catalog_key) in files {
                 let rel_text = rel.to_string_lossy().replace('\\', "/");

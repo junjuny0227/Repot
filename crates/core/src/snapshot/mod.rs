@@ -5,6 +5,7 @@ pub mod v1;
 
 use crate::export::{ConfigSource, ConfigText};
 use crate::os::Os;
+use crate::providers;
 use crate::scan::mark_duplicates;
 use crate::{Item, ItemDetails, PackageKind, PackageManager};
 use serde::{Deserialize, Serialize};
@@ -170,7 +171,8 @@ pub fn parse_snapshot(text: &str) -> Result<OpenedSnapshot, SnapshotError> {
     })
 }
 
-/// Paths must stay inside the destination folder; plugin URLs must be https.
+/// Paths must stay inside the destination folder and, for config files and plugins, at a
+/// place the item's provider scans; plugin URLs must be https.
 /// Package names and versions are checked again by the export like scanned values.
 fn is_safe_item(item: &ItemV1) -> bool {
     if item.id.is_empty() || item.name.is_empty() {
@@ -187,7 +189,9 @@ fn is_safe_item(item: &ItemV1) -> bool {
                 && *kind == PackageKind::Tap
                 && crate::export::step::is_safe_bucket_url(url)
         }
-        DetailsV1::ConfigFile { target, .. } => is_safe_target(target),
+        DetailsV1::ConfigFile { target, .. } => {
+            is_safe_target(target) && is_scanned_config_target(&item.provider, target)
+        }
         // The folder name is joined to the plugins folder by the restore script.
         DetailsV1::IdePlugin { folder, .. } => {
             crate::export::step::is_safe_value(folder)
@@ -209,6 +213,8 @@ fn is_safe_item(item: &ItemV1) -> bool {
             url.starts_with("https://")
                 && crate::export::step::is_safe_value(url)
                 && is_safe_target(target)
+                && item.provider == "shell"
+                && matches!(target, TargetPathV1::Home(rel) if providers::shell::is_plugin_target(&rel.replace('\\', "/")))
         }
         _ => true,
     }
@@ -229,6 +235,24 @@ fn is_safe_target(target: &TargetPathV1) -> bool {
         && !rel.starts_with('~')
         && !rel.contains(':')
         && rel.split('/').all(|part| !part.is_empty() && part != "..")
+}
+
+/// A config file may only go where the provider named in the item writes its files on a
+/// scan. Being inside home is not enough: `.ssh/authorized_keys`, `Library/LaunchAgents/`
+/// or `.config/autostart/` are inside home too, and Repot never writes there.
+fn is_scanned_config_target(provider: &str, target: &TargetPathV1) -> bool {
+    let rel = target.relative().map(|rel| rel.replace('\\', "/"));
+    let rel = rel.as_deref().unwrap_or_default();
+    match (provider, target) {
+        ("git", TargetPathV1::Home(_)) => providers::git::is_config_target(rel),
+        ("shell", TargetPathV1::Home(_)) => providers::shell::is_config_target(rel),
+        ("shell", TargetPathV1::PowerShellProfile) => true,
+        ("vscode", TargetPathV1::EditorUser { .. }) => providers::vscode::is_config_target(rel),
+        ("jetbrains", TargetPathV1::JetBrains { .. }) => {
+            providers::jetbrains::is_config_target(rel)
+        }
+        _ => false,
+    }
 }
 
 impl ConfigSource for Snapshot {
