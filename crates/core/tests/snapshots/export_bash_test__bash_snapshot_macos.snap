@@ -69,7 +69,7 @@ fi
 
 echo '== Packages =='
 if have 'brew'; then
-  if brew tap | grep -qx 'oven-sh/bun' >/dev/null 2>&1; then record_done 'brew tap oven-sh/bun'
+  if brew tap | grep -qxF 'oven-sh/bun' >/dev/null 2>&1; then record_done 'brew tap oven-sh/bun'
   elif brew tap 'oven-sh/bun'; then record_ok 'brew tap oven-sh/bun'
   else record_fail 'brew tap oven-sh/bun'; fi
   if brew list --formula 'jq' >/dev/null 2>&1; then record_done 'brew install jq'
@@ -108,7 +108,7 @@ fi
 
 echo '== Extensions =='
 if have 'code'; then
-  if code --list-extensions | grep -qix 'esbenp.prettier-vscode' >/dev/null 2>&1; then record_done 'code --install-extension esbenp.prettier-vscode'
+  if code --list-extensions | grep -qixF 'esbenp.prettier-vscode' >/dev/null 2>&1; then record_done 'code --install-extension esbenp.prettier-vscode'
   elif code --install-extension 'esbenp.prettier-vscode'; then record_ok 'code --install-extension esbenp.prettier-vscode'
   else record_fail 'code --install-extension esbenp.prettier-vscode'; fi
 else

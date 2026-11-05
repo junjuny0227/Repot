@@ -63,10 +63,10 @@ if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -an
 
 Write-Host '== Packages =='
 if (Test-Tool 'scoop') {
-  $installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'main' -Quiet
+  $installed = @((& scoop bucket list 2>$null).Name) -contains 'main'
   if ($installed) { Add-Done 'scoop bucket add main' }
   else { & scoop bucket add 'main'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop bucket add main' } else { Add-Fail 'scoop bucket add main' } }
-  $installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'extras' -Quiet
+  $installed = @((& scoop bucket list 2>$null).Name) -contains 'extras'
   if ($installed) { Add-Done 'scoop bucket add extras' }
   else { & scoop bucket add 'extras'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop bucket add extras' } else { Add-Fail 'scoop bucket add extras' } }
   # from brew: ripgrep

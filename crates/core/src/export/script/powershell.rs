@@ -63,9 +63,11 @@ fn tool(s: &Step) -> Option<(&'static str, &'static str)> {
 // Output checks are PowerShell expressions; exit-code checks are commands.
 fn commands(s: &Step) -> (String, bool, String) {
     match s {
+        // `scoop bucket list` returns objects: compare the Name column, not the printed
+        // table, so `java` does not match `java-extra` or a URL that contains it.
         Step::AddTap { name, url, .. } => (
             format!(
-                "& scoop bucket list 2>$null | Select-String -SimpleMatch {} -Quiet",
+                "@((& scoop bucket list 2>$null).Name) -contains {}",
                 q(name)
             ),
             true,
@@ -143,8 +145,9 @@ fn commands(s: &Step) -> (String, bool, String) {
             if *set_default && !default.is_empty() {
                 write!(install, "; if ($LASTEXITCODE -eq 0) {{ {default} }}").unwrap();
             }
+            // Whole words of the list, so 20.1.1 does not match an installed 20.1.10.
             (
-                format!("& {check} 2>$null | Select-String -SimpleMatch {value} -Quiet"),
+                format!("@(& {check} 2>$null | ForEach-Object {{ -split $_ }}) -contains {value}"),
                 true,
                 install,
             )
@@ -152,14 +155,25 @@ fn commands(s: &Step) -> (String, bool, String) {
         Step::InstallGlobal { manager, name } => {
             let c = global_cmd(*manager);
             let n = q(name);
+            // Same checks as the Bash script: npm by its exit code, the others by the
+            // first word of each line (`<name> <version>`), so `eslint` does not match
+            // `eslint-plugin-react`.
             let (check, action) = match manager {
-                GlobalManager::Npm => ("ls -g --depth=0", "install -g"),
+                GlobalManager::Npm => {
+                    return (
+                        format!("npm ls -g --depth=0 {n}"),
+                        false,
+                        format!("& npm install -g {n}"),
+                    );
+                }
                 GlobalManager::Pnpm => ("ls -g --depth=0", "add -g"),
                 GlobalManager::Pipx => ("list --short", "install"),
                 GlobalManager::Cargo => ("install --list", "install"),
             };
             (
-                format!("& {c} {check} 2>$null | Select-String -SimpleMatch {n} -Quiet"),
+                format!(
+                    "@(& {c} {check} 2>$null | ForEach-Object {{ ($_ -split ' ')[0] }}) -contains {n}"
+                ),
                 true,
                 format!("& {c} {action} {n}"),
             )
@@ -168,7 +182,7 @@ fn commands(s: &Step) -> (String, bool, String) {
             let c = editor_cmd(*editor);
             let id = q(id);
             (
-                format!("& {c} --list-extensions 2>$null | Select-String -SimpleMatch {id} -Quiet"),
+                format!("@(& {c} --list-extensions 2>$null) -contains {id}"),
                 true,
                 format!("& {c} --install-extension {id}"),
             )

@@ -72,7 +72,7 @@ if (-not $Yes) { $answer = Read-Host 'Continue? [y/N]'; if ($answer -cne 'y' -an
 
 Write-Host '== Packages =='
 if (Test-Tool 'scoop') {
-  $installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'extras' -Quiet
+  $installed = @((& scoop bucket list 2>$null).Name) -contains 'extras'
   if ($installed) { Add-Done 'scoop bucket add extras' }
   else { & scoop bucket add 'extras'; if ($LASTEXITCODE -eq 0) { Add-Ok 'scoop bucket add extras' } else { Add-Fail 'scoop bucket add extras' } }
 } else {
@@ -111,7 +111,7 @@ if (Test-Tool 'choco') {
 
 Write-Host '== Runtimes =='
 if (Test-Tool 'nvm') {
-  $installed = & nvm list 2>$null | Select-String -SimpleMatch '20.11.0' -Quiet
+  $installed = @(& nvm list 2>$null | ForEach-Object { -split $_ }) -contains '20.11.0'
   if ($installed) { Add-Done 'nvm-windows install node 20.11.0' }
   else { & nvm install '20.11.0'; if ($LASTEXITCODE -eq 0) { & nvm use '20.11.0' }; if ($LASTEXITCODE -eq 0) { Add-Ok 'nvm-windows install node 20.11.0' } else { Add-Fail 'nvm-windows install node 20.11.0' } }
 } else {
@@ -121,8 +121,8 @@ if (Test-Tool 'nvm') {
 
 Write-Host '== Global packages =='
 if (Test-Tool 'npm') {
-  $installed = & npm ls -g --depth=0 2>$null | Select-String -SimpleMatch 'typescript' -Quiet
-  if ($installed) { Add-Done 'npm install -g typescript' }
+  & npm ls -g --depth=0 'typescript' *> $null
+  if ($LASTEXITCODE -eq 0) { Add-Done 'npm install -g typescript' }
   else { & npm install -g 'typescript'; if ($LASTEXITCODE -eq 0) { Add-Ok 'npm install -g typescript' } else { Add-Fail 'npm install -g typescript' } }
 } else {
   Write-Missing 'npm' 'https://nodejs.org'
@@ -131,7 +131,7 @@ if (Test-Tool 'npm') {
 
 Write-Host '== Extensions =='
 if (Test-Tool 'code') {
-  $installed = & code --list-extensions 2>$null | Select-String -SimpleMatch 'esbenp.prettier-vscode' -Quiet
+  $installed = @(& code --list-extensions 2>$null) -contains 'esbenp.prettier-vscode'
   if ($installed) { Add-Done 'code --install-extension esbenp.prettier-vscode' }
   else { & code --install-extension 'esbenp.prettier-vscode'; if ($LASTEXITCODE -eq 0) { Add-Ok 'code --install-extension esbenp.prettier-vscode' } else { Add-Fail 'code --install-extension esbenp.prettier-vscode' } }
 } else {
