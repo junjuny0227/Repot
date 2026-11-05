@@ -1,6 +1,9 @@
 use repot_core::{
+    env::FakeEnv,
     export::*,
     os::{LinuxFamily, Os, Shell},
+    providers::{git::Git, jetbrains::JetBrains, shell::ShellProvider, vscode::VsCode},
+    scan::Provider,
     snapshot::{self, SnapshotError, parse_snapshot},
     *,
 };
@@ -630,6 +633,8 @@ fn jetbrains_items_round_trip_and_unsafe_ones_are_skipped() {
     let zshrc = base["items"][6].clone();
     let mut good_file = zshrc.clone();
     good_file["id"] = "jetbrains:IntelliJIdea:file:codestyles/Default.xml".into();
+    good_file["provider"] = "jetbrains".into();
+    good_file["category"] = "editor".into();
     good_file["details"]["configFile"]["target"] = serde_json::json!({
         "jetBrains": { "ide": "intelliJIdea", "version": "2026.1", "rel": "codestyles/Default.xml" }
     });
@@ -751,4 +756,287 @@ fn rustup_components_and_targets_round_trip_and_unsafe_names_are_skipped() {
     // Empty lists are not written, so toolchain items without them keep the old shape.
     assert_eq!(text.matches("\"components\"").count(), 1, "{text}");
     assert_eq!(parse_snapshot(&text).unwrap().snapshot, snap);
+}
+
+#[test]
+fn skips_config_files_aimed_where_repot_never_writes() {
+    let base: serde_json::Value = serde_json::from_str(V1_BASIC).unwrap();
+    let gitconfig = base["items"][5].clone();
+    let zshrc = base["items"][6].clone();
+    let settings = base["items"][7].clone();
+    let plugin = base["items"][8].clone();
+    let aimed = |from: &serde_json::Value, id: &str, target: serde_json::Value| {
+        let mut item = from.clone();
+        item["id"] = id.into();
+        item["details"]["configFile"]["target"] = target;
+        item
+    };
+    let jetbrains = |rel: &str| serde_json::json!({ "jetBrains": { "ide": "intelliJIdea", "version": "2026.1", "rel": rel } });
+    let mut ok = vec![
+        aimed(
+            &gitconfig,
+            "ok:git:custom-ignore",
+            serde_json::json!({ "home": ".gitignore_global" }),
+        ),
+        aimed(
+            &gitconfig,
+            "ok:git:xdg-config",
+            serde_json::json!({ "home": ".config/git/config" }),
+        ),
+        aimed(
+            &gitconfig,
+            "ok:git:xdg-ignore",
+            serde_json::json!({ "home": ".config/git/ignore" }),
+        ),
+        aimed(
+            &zshrc,
+            "ok:shell:fish",
+            serde_json::json!({ "home": ".config/fish/config.fish" }),
+        ),
+        aimed(
+            &zshrc,
+            "ok:shell:pwsh",
+            serde_json::json!("powerShellProfile"),
+        ),
+        aimed(
+            &settings,
+            "ok:vscode:snippet",
+            serde_json::json!({ "editorUser": { "editor": "cursor", "rel": "snippets/rust.json" } }),
+        ),
+    ];
+    let mut jb = aimed(
+        &settings,
+        "ok:jetbrains:font",
+        jetbrains("options/editor-font.xml"),
+    );
+    jb["provider"] = "jetbrains".into();
+    ok.push(jb.clone());
+    let mut theme = plugin.clone();
+    theme["id"] = "ok:shell:theme".into();
+    theme["details"]["shellPlugin"]["target"] =
+        serde_json::json!({ "home": ".oh-my-zsh/custom/themes/powerlevel10k" });
+    ok.push(theme);
+
+    let home = |rel: &str| serde_json::json!({ "home": rel });
+    let mut bad = vec![
+        // Inside home, but places no provider scans.
+        aimed(&gitconfig, "bad:git:ssh", home(".ssh/authorized_keys")),
+        aimed(&zshrc, "bad:shell:ssh", home(".ssh/authorized_keys")),
+        aimed(
+            &zshrc,
+            "bad:shell:launch-agent",
+            home("Library/LaunchAgents/x.plist"),
+        ),
+        aimed(
+            &gitconfig,
+            "bad:git:autostart",
+            home(".config/autostart/x.desktop"),
+        ),
+        aimed(
+            &gitconfig,
+            "bad:git:autostart-ignore",
+            home(".config/autostart/ignore.desktop"),
+        ),
+        aimed(
+            &gitconfig,
+            "bad:git:launch-agent-ignore",
+            home("Library/LaunchAgents/ignore.plist"),
+        ),
+        aimed(
+            &gitconfig,
+            "bad:git:other-name",
+            home(".config/git/credentials"),
+        ),
+        aimed(&zshrc, "bad:shell:zshenv", home(".zshenv")),
+        // A place another provider writes.
+        aimed(&gitconfig, "bad:git:zshrc", home(".zshrc")),
+        aimed(&zshrc, "bad:shell:gitconfig", home(".gitconfig")),
+        aimed(
+            &gitconfig,
+            "bad:git:pwsh",
+            serde_json::json!("powerShellProfile"),
+        ),
+        aimed(
+            &zshrc,
+            "bad:shell:editor",
+            settings["details"]["configFile"]["target"].clone(),
+        ),
+        aimed(
+            &zshrc,
+            "bad:shell:jetbrains",
+            jetbrains("options/editor-font.xml"),
+        ),
+        aimed(&settings, "bad:vscode:home", home(".zshrc")),
+        // Inside the editor or IDE folder, but not a file Repot reads there.
+        aimed(
+            &settings,
+            "bad:vscode:storage",
+            serde_json::json!({ "editorUser": { "editor": "vsCode", "rel": "globalStorage/state.vscdb" } }),
+        ),
+        aimed(
+            &settings,
+            "bad:vscode:nested-snippet",
+            serde_json::json!({ "editorUser": { "editor": "vsCode", "rel": "snippets/a/b.json" } }),
+        ),
+    ];
+    for (n, rel) in [
+        "options/jdk.table.xml",
+        "codestyles/x.txt",
+        "codestyles/a/b.xml",
+        "plugins/x.jar",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let mut item = jb.clone();
+        item["id"] = format!("bad:jetbrains:{n}").into();
+        item["details"]["configFile"]["target"] = jetbrains(rel);
+        bad.push(item);
+    }
+    let mut unknown = gitconfig.clone();
+    unknown["id"] = "bad:brew:gitconfig".into();
+    unknown["provider"] = "brew".into();
+    bad.push(unknown);
+    for (n, rel) in [
+        ".oh-my-zsh/custom/plugins/x/y",
+        ".oh-my-zsh/custom/plugins",
+        ".oh-my-zsh/plugins/x",
+        ".ssh",
+        "Library/LaunchAgents/x",
+    ]
+    .iter()
+    .enumerate()
+    {
+        let mut item = plugin.clone();
+        item["id"] = format!("bad:plugin:{n}").into();
+        item["details"]["shellPlugin"]["target"] = home(rel);
+        bad.push(item);
+    }
+    let mut git_plugin = plugin.clone();
+    git_plugin["id"] = "bad:plugin:git".into();
+    git_plugin["provider"] = "git".into();
+    bad.push(git_plugin);
+
+    let bad_count = bad.len();
+    let ok_ids: Vec<String> = ok
+        .iter()
+        .map(|i| i["id"].as_str().unwrap().to_owned())
+        .collect();
+    let opened = parse_snapshot(&with_items(serde_json::Value::Array([ok, bad].concat()))).unwrap();
+    let kept: Vec<_> = opened.snapshot.items.iter().map(|i| i.id.clone()).collect();
+    assert_eq!(kept, ok_ids);
+    assert_eq!(opened.skipped_items, bad_count);
+}
+
+/// Every place the providers write on a real scan, on two OSes.
+fn every_scanned_place(os: Os) -> FakeEnv {
+    let (home, user, jetbrains, pwsh) = match os {
+        Os::Windows => (
+            "C:/Users/t",
+            "C:/Users/t/AppData/Roaming/Code/User",
+            "C:/Users/t/AppData/Roaming/JetBrains/IntelliJIdea2026.1",
+            "C:/Users/t/Documents/PowerShell/Microsoft.PowerShell_profile.ps1",
+        ),
+        _ => (
+            "/Users/t",
+            "/Users/t/Library/Application Support/Code/User",
+            "/Users/t/Library/Application Support/JetBrains/IntelliJIdea2026.1",
+            "/Users/t/.config/powershell/Microsoft.PowerShell_profile.ps1",
+        ),
+    };
+    let cursor = user.replace("/Code/", "/Cursor/");
+    let ignore = if os == Os::Windows {
+        "~/.config/git/gitignore"
+    } else {
+        "~/.gitignore_global"
+    };
+    let mut env = FakeEnv::new(os, home)
+        .with_file(
+            format!("{home}/.gitconfig"),
+            &format!("[core]\n\texcludesFile = {ignore}\n"),
+        )
+        .with_file(format!("{home}/{}", &ignore[2..]), "*.log\n")
+        .with_file(format!("{home}/.config/git/config"), "[user]\n\tname = T\n")
+        .with_file(pwsh, "Set-Alias g git\n");
+    for rc in [
+        ".zshrc",
+        ".zprofile",
+        ".bashrc",
+        ".bash_profile",
+        ".profile",
+        ".config/fish/config.fish",
+        ".config/starship.toml",
+    ] {
+        env = env.with_file(format!("{home}/{rc}"), "# rc\n");
+    }
+    for (kind, name) in [
+        ("plugins", "zsh-autosuggestions"),
+        ("themes", "powerlevel10k"),
+    ] {
+        env = env.with_file(
+            format!("{home}/.oh-my-zsh/custom/{kind}/{name}/.git/config"),
+            &format!("[remote \"origin\"]\n\turl = https://github.com/x/{name}\n"),
+        );
+    }
+    for dir in [user, cursor.as_str()] {
+        for rel in [
+            "settings.json",
+            "keybindings.json",
+            "snippets/rust.json",
+            "snippets/all.code-snippets",
+        ] {
+            env = env.with_file(format!("{dir}/{rel}"), "{}");
+        }
+    }
+    for rel in [
+        "codestyles/Default.xml",
+        "keymaps/Mine.xml",
+        "colors/Dark.icls",
+        "templates/Custom.xml",
+        "options/editor-font.xml",
+        "options/console-font.xml",
+        "options/colors.scheme.xml",
+        "options/ui.lnf.xml",
+    ] {
+        env = env.with_file(format!("{jetbrains}/{rel}"), "<application/>");
+    }
+    env
+}
+
+#[test]
+fn every_place_a_real_scan_writes_loads_from_the_file() {
+    for os in [Os::MacOs, Os::Windows] {
+        let env = every_scanned_place(os);
+        let mut items = vec![];
+        for provider in [&Git as &dyn Provider, &ShellProvider, &VsCode, &JetBrains] {
+            items.extend(provider.scan(&env).unwrap());
+        }
+        let config_files = items
+            .iter()
+            .filter(|i| matches!(i.details, ItemDetails::ConfigFile { .. }))
+            .count();
+        // 3 git, 7 rc files + a PowerShell profile, 2 editors x 4, 8 JetBrains.
+        assert_eq!(config_files, 3 + 8 + 8 + 8, "{os:?}");
+        assert_eq!(items.len() - config_files, 2, "{os:?}: two shell plugins");
+        let selection = all(&items, vec![]);
+        let saved = export(&env, &items, &selection, os, Target::default_for(os));
+        let text = repot_json(&saved);
+        assert_eq!(ids(text).len(), items.len(), "{os:?}");
+        let opened = parse_snapshot(text).unwrap();
+        assert_eq!(opened.skipped_items, 0, "{os:?}");
+        let snap = &opened.snapshot;
+        assert_eq!(
+            snap.items.iter().map(|i| &i.details).collect::<Vec<_>>(),
+            items.iter().map(|i| &i.details).collect::<Vec<_>>(),
+            "{os:?}"
+        );
+        let via_file = export(
+            snap,
+            &snap.items,
+            &all(&snap.items, vec![]),
+            snap.source,
+            Target::default_for(os),
+        );
+        assert_eq!(saved, via_file, "{os:?}");
+    }
 }

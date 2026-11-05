@@ -5,6 +5,22 @@ use crate::{
     scan::{Provider, ProviderError},
 };
 pub struct Git;
+/// Config files read for every user, in reading order.
+const CONFIG_FILES: [&str; 2] = [".gitconfig", ".config/git/config"];
+/// The global ignore file when `core.excludesFile` is not set.
+const DEFAULT_IGNORE: &str = ".config/git/ignore";
+
+/// Whether an opened Repot file may restore a git item to `rel` (home-relative, `/`).
+/// A custom `core.excludesFile` is accepted only as a file named like an ignore file,
+/// directly in home or in `.config/git/`: anything else could be an SSH key list, a
+/// login item or an autostart entry that Repot itself never writes.
+pub(crate) fn is_config_target(rel: &str) -> bool {
+    if CONFIG_FILES.contains(&rel) || rel == DEFAULT_IGNORE {
+        return true;
+    }
+    let (dir, file) = rel.rsplit_once('/').unwrap_or(("", rel));
+    (dir.is_empty() || dir == ".config/git") && file.to_ascii_lowercase().contains("ignore")
+}
 // Preserve source line numbers, including CRLF, and normalize only section/key names.
 pub(crate) fn entries(content: &str) -> Vec<(u32, String, String, String)> {
     let mut section = String::new();
@@ -54,15 +70,16 @@ impl Provider for Git {
         Category::Git
     }
     fn detect(&self, env: &dyn Env) -> bool {
-        [".gitconfig", ".config/git/config", ".config/git/ignore"]
+        CONFIG_FILES
             .iter()
+            .chain([&DEFAULT_IGNORE])
             .any(|p| env.exists(&env.home_dir().join(p)))
     }
     fn scan(&self, env: &dyn Env) -> Result<Vec<Item>, ProviderError> {
         let home = env.home_dir();
         let mut items = vec![];
         let mut ignore = None;
-        for rel in [".gitconfig", ".config/git/config"] {
+        for rel in CONFIG_FILES {
             let path = home.join(rel);
             if let Ok(content) = env.read_file(&path) {
                 for (_, section, key, value) in entries(&content) {
@@ -93,10 +110,10 @@ impl Provider for Git {
                 items.push(item);
             }
         }
-        let path = ignore.unwrap_or_else(|| home.join(".config/git/ignore"));
+        let path = ignore.unwrap_or_else(|| home.join(DEFAULT_IGNORE));
         let rel = path
             .strip_prefix(&home)
-            .unwrap_or(std::path::Path::new(".config/git/ignore"))
+            .unwrap_or(std::path::Path::new(DEFAULT_IGNORE))
             .to_path_buf();
         if !items.iter().any(|i| i.origin == Origin::Path(path.clone()))
             && let Some(item) = config_file_item(

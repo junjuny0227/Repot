@@ -19,6 +19,22 @@ struct Identifier {
     id: String,
 }
 pub struct VsCode;
+/// Files in the editor's `User` folder, with their catalog entries.
+const USER_FILES: [(&str, &str); 2] = [
+    ("settings.json", "file:vscode-settings"),
+    ("keybindings.json", "file:vscode-keybindings"),
+];
+/// Folder in `User` whose files are all user snippets.
+const SNIPPETS_DIR: &str = "snippets";
+
+/// Whether an opened Repot file may restore an editor file to `rel` inside `User`.
+pub(crate) fn is_config_target(rel: &str) -> bool {
+    USER_FILES.iter().any(|(file, _)| *file == rel)
+        || rel
+            .strip_prefix(SNIPPETS_DIR)
+            .and_then(|r| r.strip_prefix('/'))
+            .is_some_and(|file| !file.is_empty() && !file.contains('/'))
+}
 fn roots(env: &dyn Env, editor: Editor) -> (PathBuf, PathBuf) {
     let home = env.home_dir();
     let (dot, app) = if editor == Editor::VsCode {
@@ -131,16 +147,16 @@ impl Provider for VsCode {
                 Err(EnvError::NotFound) => {}
                 Err(e) => return Err(e.into()),
             }
-            let mut files = vec![
-                (PathBuf::from("settings.json"), "file:vscode-settings"),
-                (PathBuf::from("keybindings.json"), "file:vscode-keybindings"),
-            ];
-            match env.list_dir(&user.join("snippets")) {
+            let mut files: Vec<_> = USER_FILES
+                .iter()
+                .map(|(file, catalog_key)| (PathBuf::from(file), *catalog_key))
+                .collect();
+            match env.list_dir(&user.join(SNIPPETS_DIR)) {
                 Ok(mut paths) => {
                     paths.sort();
                     for path in paths {
                         files.push((
-                            PathBuf::from("snippets").join(path.file_name().unwrap()),
+                            PathBuf::from(SNIPPETS_DIR).join(path.file_name().unwrap()),
                             "file:vscode-snippet",
                         ));
                     }
