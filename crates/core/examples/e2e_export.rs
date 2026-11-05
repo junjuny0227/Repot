@@ -36,13 +36,21 @@ fn e2e_bundle(os: Os) -> ExportBundle {
         item(
             package,
             Category::PackageManager,
-            ItemDetails::Package { manager, kind },
+            ItemDetails::Package {
+                manager,
+                kind,
+                url: None,
+            },
             Portability::SameOs,
         ),
         item(
             MISSING,
             Category::PackageManager,
-            ItemDetails::Package { manager, kind },
+            ItemDetails::Package {
+                manager,
+                kind,
+                url: None,
+            },
             Portability::SameOs,
         ),
         item(

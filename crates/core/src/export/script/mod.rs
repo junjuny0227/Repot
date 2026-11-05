@@ -109,7 +109,7 @@ impl Step {
     }
     pub fn label(&self, target: Os) -> String {
         match self {
-            Self::AddTap { manager, name } => format!(
+            Self::AddTap { manager, name, .. } => format!(
                 "{} {} {name}",
                 package_cmd(*manager),
                 if *manager == PackageManager::Scoop {

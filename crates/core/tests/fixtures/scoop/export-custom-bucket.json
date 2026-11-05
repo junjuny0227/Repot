@@ -1,0 +1,44 @@
+{
+  "buckets": [
+    {
+      "Name": "main",
+      "Source": "https://github.com/ScoopInstaller/Main",
+      "Updated": "2026-11-01T09:12:44+09:00",
+      "Manifests": 1412
+    },
+    {
+      "Name": "extras",
+      "Source": "https://github.com/ScoopInstaller/Extras",
+      "Updated": "2026-11-01T08:55:02+09:00",
+      "Manifests": 2087
+    },
+    {
+      "Name": "repot",
+      "Source": "https://github.com/junjuny0227/scoop-bucket",
+      "Updated": "2026-11-03T21:40:10+09:00",
+      "Manifests": 1
+    },
+    {
+      "Name": "work",
+      "Source": "git@github.com:acme/scoop-work.git",
+      "Updated": "2026-10-28T11:02:31+09:00",
+      "Manifests": 4
+    }
+  ],
+  "apps": [
+    {
+      "Name": "git",
+      "Source": "main",
+      "Updated": "2026-10-30T10:00:00+09:00",
+      "Version": "2.47.0",
+      "Info": ""
+    },
+    {
+      "Name": "repot",
+      "Source": "repot",
+      "Updated": "2026-11-03T21:41:00+09:00",
+      "Version": "0.9.0",
+      "Info": ""
+    }
+  ]
+}

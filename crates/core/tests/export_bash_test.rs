@@ -33,6 +33,7 @@ fn sample_plan(target: Os) -> ScriptPlan {
             Step::AddTap {
                 manager: PackageManager::Brew,
                 name: "oven-sh/bun".into(),
+                url: None,
             },
             Step::InstallPackage {
                 manager: PackageManager::Brew,

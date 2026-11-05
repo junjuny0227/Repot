@@ -53,6 +53,7 @@ fn pkg(provider: &str, name: &str) -> Item {
         details: ItemDetails::Package {
             manager: PackageManager::Brew,
             kind: PackageKind::Formula,
+            url: None,
         },
         findings: vec![],
     }

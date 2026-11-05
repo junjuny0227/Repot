@@ -8,9 +8,11 @@ pub struct MappedFrom {
 }
 #[derive(Debug, Clone, PartialEq)]
 pub enum Step {
+    /// `url` is set only for a Scoop bucket that Scoop cannot add by name.
     AddTap {
         manager: PackageManager,
         name: String,
+        url: Option<String>,
     },
     InstallPackage {
         manager: PackageManager,
@@ -72,11 +74,13 @@ pub fn steps_for(item: &Item, target: Os) -> Vec<Step> {
         ItemDetails::Package {
             manager,
             kind: PackageKind::Tap,
+            url,
         } => Step::AddTap {
             manager: *manager,
             name: item.name.clone(),
+            url: url.clone(),
         },
-        ItemDetails::Package { manager, kind } => Step::InstallPackage {
+        ItemDetails::Package { manager, kind, .. } => Step::InstallPackage {
             manager: *manager,
             kind: *kind,
             name: item.name.clone(),
@@ -135,6 +139,7 @@ pub fn steps_for_target(item: &Item, source: Os, target: Target) -> Vec<Step> {
             let ItemDetails::Package {
                 manager: original,
                 kind: original_kind,
+                ..
             } = item.details
             else {
                 return vec![];
@@ -147,9 +152,11 @@ pub fn steps_for_target(item: &Item, source: Os, target: Target) -> Vec<Step> {
             let mut steps = vec![];
             if manager == PackageManager::Scoop {
                 let bucket = name.split_once('/').map_or("main", |(bucket, _)| bucket);
+                // The package map only uses Scoop's known buckets.
                 steps.push(Step::AddTap {
                     manager,
                     name: bucket.into(),
+                    url: None,
                 });
             }
             steps.push(Step::InstallPackage {
@@ -175,6 +182,14 @@ pub fn is_safe_value(value: &str) -> bool {
         && value
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b"@._+/:-".contains(&b))
+}
+/// A Scoop bucket source: `https://…` or `git@host:path`, made only of safe characters.
+/// No `@` after the prefix, so credentials (`https://token@host/…`) never reach the script.
+pub fn is_safe_bucket_url(url: &str) -> bool {
+    ["https://", "git@"].iter().any(|prefix| {
+        url.strip_prefix(prefix)
+            .is_some_and(|rest| !rest.is_empty() && !rest.contains('@'))
+    }) && is_safe_value(url)
 }
 pub fn guide_url(tool: &str) -> &'static str {
     match tool {

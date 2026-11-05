@@ -19,12 +19,23 @@ fn item(details: ItemDetails, name: &str, version: Option<&str>) -> Item {
 fn maps_items_to_steps() {
     use PackageKind::*;
     use PackageManager::*;
-    let pkg = |manager, kind, name| item(ItemDetails::Package { manager, kind }, name, None);
+    let pkg = |manager, kind, name| {
+        item(
+            ItemDetails::Package {
+                manager,
+                kind,
+                url: None,
+            },
+            name,
+            None,
+        )
+    };
     assert_eq!(
         steps_for(&pkg(Brew, Tap, "oven-sh/bun"), Os::MacOs),
         vec![Step::AddTap {
             manager: Brew,
-            name: "oven-sh/bun".into()
+            name: "oven-sh/bun".into(),
+            url: None,
         }]
     );
     assert_eq!(
@@ -127,6 +138,7 @@ fn sorts_by_section_with_taps_first_stably() {
     let tap = Step::AddTap {
         manager: PackageManager::Brew,
         name: "oven-sh/bun".into(),
+        url: None,
     };
     let mut steps = vec![
         copy.clone(),
@@ -163,6 +175,57 @@ fn safe_values() {
         "a\nb",
     ] {
         assert!(!is_safe_value(bad), "{bad}");
+    }
+}
+#[test]
+fn custom_scoop_bucket_step_carries_its_url() {
+    let bucket = item(
+        ItemDetails::Package {
+            manager: PackageManager::Scoop,
+            kind: PackageKind::Tap,
+            url: Some("https://github.com/junjuny0227/scoop-bucket".into()),
+        },
+        "repot",
+        None,
+    );
+    assert_eq!(
+        steps_for(&bucket, Os::Windows),
+        vec![Step::AddTap {
+            manager: PackageManager::Scoop,
+            name: "repot".into(),
+            url: Some("https://github.com/junjuny0227/scoop-bucket".into()),
+        }]
+    );
+}
+#[test]
+fn safe_bucket_urls() {
+    for ok in [
+        "https://github.com/junjuny0227/scoop-bucket",
+        "https://git.example.com/team/bucket.git",
+        "git@github.com:acme/scoop-work.git",
+    ] {
+        assert!(is_safe_bucket_url(ok), "{ok}");
+    }
+    for bad in [
+        "",
+        "https://",
+        "git@",
+        "http://github.com/a/b",
+        "file:///C:/buckets/x",
+        "C:/buckets/x",
+        "-https://github.com/a/b",
+        "ssh://git@github.com/a/b",
+        "https://github.com/a/b c",
+        "https://github.com/a/b';calc;'",
+        "https://github.com/a/$(evil)",
+        "https://github.com/a/b`x",
+        "https://github.com/a/b?x=1",
+        // Credentials must not reach the script.
+        "https://user:token@github.com/a/b",
+        "https://ghp_abc@github.com/a/b",
+        "git@github.com:a/b@c",
+    ] {
+        assert!(!is_safe_bucket_url(bad), "{bad}");
     }
 }
 #[test]

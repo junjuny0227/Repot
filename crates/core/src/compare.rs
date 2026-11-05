@@ -53,7 +53,7 @@ fn key(step: &Step) -> Key {
             };
             Key::Package(*manager, *kind, name.to_lowercase())
         }
-        Step::AddTap { manager, name } => Key::Tap(*manager, name.to_lowercase()),
+        Step::AddTap { manager, name, .. } => Key::Tap(*manager, name.to_lowercase()),
         Step::InstallRuntime {
             tool,
             runtime,

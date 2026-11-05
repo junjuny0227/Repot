@@ -41,6 +41,7 @@ fn sample_steps() -> Vec<Step> {
         Step::AddTap {
             manager: PackageManager::Brew,
             name: "oven-sh/bun".into(),
+            url: None,
         },
         pkg(PackageManager::Brew, PackageKind::Formula, "jq"),
         pkg(
@@ -116,6 +117,12 @@ fn windows_steps() -> Vec<Step> {
         Step::AddTap {
             manager: PackageManager::Scoop,
             name: "extras".into(),
+            url: None,
+        },
+        Step::AddTap {
+            manager: PackageManager::Scoop,
+            name: "repot".into(),
+            url: Some("https://github.com/junjuny0227/scoop-bucket".into()),
         },
         pkg(PackageManager::Scoop, PackageKind::Package, "extras/vlc"),
         pkg(PackageManager::Scoop, PackageKind::Package, "git"),
@@ -134,7 +141,7 @@ fn windows_manifests() {
     let scoop: serde_json::Value = serde_json::from_str(&get("scoop.json")).unwrap();
     assert_eq!(
         scoop,
-        serde_json::json!({"buckets":[{"Name":"extras"}],"apps":[{"Name":"vlc","Source":"extras"},{"Name":"git","Source":"main"}]})
+        serde_json::json!({"buckets":[{"Name":"extras"},{"Name":"repot","Source":"https://github.com/junjuny0227/scoop-bucket"}],"apps":[{"Name":"vlc","Source":"extras"},{"Name":"git","Source":"main"}]})
     );
     assert!(get("choco-packages.config").contains(r#"<package id="7zip" />"#));
     assert!(get("README.md").contains("winget import -i winget.json"));

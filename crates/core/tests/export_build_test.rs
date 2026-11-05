@@ -55,6 +55,7 @@ fn fixture_machine() -> (FakeEnv, Vec<Item>) {
                 ItemDetails::Package {
                     manager: PackageManager::Brew,
                     kind: PackageKind::Formula,
+                    url: None,
                 },
             ),
             config(
@@ -287,6 +288,55 @@ fn runtime_display_name_is_not_validated_but_package_name_is() {
 }
 
 #[test]
+fn scoop_bucket_url_is_validated() {
+    let bucket = |id: &str, url: &str| {
+        item(
+            id,
+            id.rsplit(':').next().unwrap(),
+            Portability::SameOs,
+            ItemDetails::Package {
+                manager: PackageManager::Scoop,
+                kind: PackageKind::Tap,
+                url: Some(url.into()),
+            },
+        )
+    };
+    let items = vec![
+        bucket(
+            "scoop:bucket:repot",
+            "https://github.com/junjuny0227/scoop-bucket",
+        ),
+        bucket("scoop:bucket:local", "C:\\buckets\\local"),
+        bucket("scoop:bucket:evil", "https://x.test/a';calc;'"),
+    ];
+    let sel = select_all(&items);
+    let env = FakeEnv::new(Os::Windows, "C:/Users/t");
+    let b = build_export(
+        &env,
+        &request(&items, &sel, Os::Windows, Os::Windows, Format::Script),
+    );
+    assert_eq!(
+        b.warnings.iter().map(warning_id).collect::<Vec<_>>(),
+        vec!["scoop:bucket:local", "scoop:bucket:evil"]
+    );
+    assert!(
+        b.warnings
+            .iter()
+            .all(|w| matches!(w, ExportWarning::InvalidValue { .. }))
+    );
+    let script = &b
+        .files
+        .iter()
+        .find(|file| file.path == "restore.ps1")
+        .unwrap()
+        .contents;
+    assert!(
+        script.contains("& scoop bucket add 'repot' 'https://github.com/junjuny0227/scoop-bucket'")
+    );
+    assert!(!script.contains("calc"));
+}
+
+#[test]
 fn package_version_is_not_validated_because_it_is_not_exported() {
     // brew cask versions contain commas (e.g. "17.0.21.0.3,17.70.113"), but packages are
     // installed at the latest version, so the scanned version never reaches the script.
@@ -297,6 +347,7 @@ fn package_version_is_not_validated_because_it_is_not_exported() {
         ItemDetails::Package {
             manager: PackageManager::Brew,
             kind: PackageKind::Cask,
+            url: None,
         },
     );
     cask.version = Some("17.0.21.0.3,17.70.113".into());

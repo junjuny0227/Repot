@@ -63,13 +63,16 @@ fn tool(s: &Step) -> Option<(&'static str, &'static str)> {
 // Output checks are PowerShell expressions; exit-code checks are commands.
 fn commands(s: &Step) -> (String, bool, String) {
     match s {
-        Step::AddTap { name, .. } => (
+        Step::AddTap { name, url, .. } => (
             format!(
                 "& scoop bucket list 2>$null | Select-String -SimpleMatch {} -Quiet",
                 q(name)
             ),
             true,
-            format!("& scoop bucket add {}", q(name)),
+            match url {
+                Some(url) => format!("& scoop bucket add {} {}", q(name), q(url)),
+                None => format!("& scoop bucket add {}", q(name)),
+            },
         ),
         Step::InstallPackage { manager, name, .. } => {
             let n = q(name);
