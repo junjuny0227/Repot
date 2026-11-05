@@ -371,7 +371,7 @@ pub enum Step {
 
 `export` 모듈이 `ItemDetails`를 목적지 OS 기준 `Step`으로 바꾼다. 런타임은 이때 §9 대응표로 대응 도구를 고르고, 대응 도구가 없으면 단계를 만들지 않는다. 다른 OS 패키지는 §9 패키지 대응표의 이름으로 바꾸고 `mapped_from`에 원래 이름을 남긴다. 렌더러는 그 단계 위에 `# from brew: ripgrep` 같은 영어 주석을 달고, 대응에 Scoop bucket이 필요하면 `AddTap`을 먼저 만든다. 두 출발 항목이 같은 목적지 이름으로 대응되면 첫 항목만 내보내고 경고한다. 내보내기 README에는 대응된 패키지 목록을 적는다.
 
-사용자 Scoop bucket(`url`이 있는 항목)은 `scoop bucket add '<name>' '<url>'`로, 알려진 bucket과 대응용 bucket은 `scoop bucket add '<name>'`으로 추가한다. 이미 있는지는 둘 다 `scoop bucket list`에서 이름으로 본다. `scoop.json`의 `buckets`에도 `url`이 있으면 `Source`로 적는다(`scoop import`가 그 주소로 추가한다). 주소는 `https://…` 또는 `git@host:path` 형태이고, 접두어 뒤에 `@`가 없으며(자격 증명이 든 주소를 스크립트에 쓰지 않는다), 이름과 같은 안전 문자(영숫자와 `@._+/:-`)만 쓸 때만 내보낸다. 아니면 그 bucket 항목을 `InvalidValue` 경고와 함께 뺀다. `repot.json`에서도 같은 검사를 하고, `url`은 Scoop bucket 항목에만 허용한다. 어긋나면 그 항목을 건너뛴다. `url` 필드는 0.9에 더했고 없으면 `None`이라 이전 파일도 그대로 열린다.
+사용자 Scoop bucket(`url`이 있는 항목)은 `scoop bucket add '<name>' '<url>'`로, 알려진 bucket과 대응용 bucket은 `scoop bucket add '<name>'`으로 추가한다. 이미 있는지는 둘 다 `scoop bucket list`가 돌려주는 bucket의 `Name`이 정확히 같은지로 본다. `scoop.json`의 `buckets`에도 `url`이 있으면 `Source`로 적는다(`scoop import`가 그 주소로 추가한다). 주소는 `https://…` 또는 `git@host:path` 형태이고, 접두어 뒤에 `@`가 없으며(자격 증명이 든 주소를 스크립트에 쓰지 않는다), 이름과 같은 안전 문자(영숫자와 `@._+/:-`)만 쓸 때만 내보낸다. 아니면 그 bucket 항목을 `InvalidValue` 경고와 함께 뺀다. `repot.json`에서도 같은 검사를 하고, `url`은 Scoop bucket 항목에만 허용한다. 어긋나면 그 항목을 건너뛴다. `url` 필드는 0.9에 더했고 없으면 `None`이라 이전 파일도 그대로 열린다.
 
 `TargetPath`는 `Home(rel)`, `EditorUser { editor, rel }`, `PowerShellProfile`, `JetBrains { ide, version, rel }` 같은 논리 경로이고, 렌더러가 목적지 OS 기준으로 해석한다. 두 항목이 같은 대상 경로를 가지면(예: PowerShell 7과 5.1 profile) 첫 항목만 내보내고 경고한다.
 
@@ -401,6 +401,7 @@ repot-export-2026-11-02/
 - 패키지 매니저나 버전 관리자 자체가 없으면 설치하지 않는다. 공식 설치 방법을 안내하고 그 섹션을 건너뛴다. oh-my-zsh도 같다.
 - 설정 파일을 복사할 때 대상 파일이 이미 있으면 `<파일>.repot-backup-<YYYYMMDDHHMMSS>`로 백업한 뒤 덮어쓴다.
 - 런타임은 스캔한 정확한 버전으로, 전역 패키지·확장은 최신 버전으로 설치한다.
+- "이미 됨" 확인은 목록에서 이름·버전이 통째로 같아야 한다. 부분 문자열로 찾으면 `java` bucket이 `java-extra`나 다른 bucket 주소에, `20.1.1`이 `20.1.10`에, `eslint`가 `eslint-plugin-react`에 맞아 설치하지 않은 항목을 "이미 됨"으로 남긴다. brew tap·pyenv 버전·에디터 확장은 줄 전체(`grep -qxF`, 확장은 대소문자 무시), fnm·volta·nvm-windows 목록은 공백으로 나눈 낱말, pnpm·pipx·cargo 목록은 줄의 첫 낱말, Scoop bucket은 `Name`으로 비교한다. npm 전역 패키지는 두 스크립트 모두 `npm ls -g --depth=0 <name>`의 종료 코드로 본다. 패키지(winget·choco `--exact`, `scoop prefix`, `brew list`, `dpkg -s`, `rpm -q`, `pacman -Q`), nvm(`nvm ls <정확한 버전>`), SDKMAN!·JetBrains 플러그인(폴더 확인)은 처음부터 그 이름 하나만 본다.
 - rustup 툴체인은 툴체인과 담긴 component·target이 모두 있어야 "이미 됨"이다(bash `rustup_has`, PowerShell `Test-RustupToolchain`). 확인할 때 목적지 component 목록에서도 툴체인 호스트 접미사를 뗀다. 툴체인 이름은 `<채널>-<영문자로 시작하는 호스트>`로 찾아 `nightly`가 날짜 붙은 nightly와 맞지 않게 한다. 툴체인이 이미 있으면 다시 설치하지 않고(채널이 업데이트된다) `rustup component add --toolchain <t> …`, `rustup target add --toolchain <t> …`만 실행한다. 단계 이름에 component·target을 적는다(`rustup install rust stable (components: clippy, rust-src; targets: wasm32-unknown-unknown)`).
 
 ### ② 네이티브 매니페스트 묶음

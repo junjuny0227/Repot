@@ -57,7 +57,7 @@ fn tool(step: &Step) -> Option<(&'static str, &'static str)> {
 fn commands(step: &Step, target: Os) -> (String, String) {
     match step {
         Step::AddTap { name, .. } => (
-            format!("brew tap | grep -qx {}", q(name)),
+            format!("brew tap | grep -qxF {}", q(name)),
             format!("brew tap {}", q(name)),
         ),
         Step::InstallPackage {
@@ -114,18 +114,25 @@ fn commands(step: &Step, target: Os) -> (String, String) {
                     format!("nvm install {v}"),
                     format!("nvm alias default {v}"),
                 ),
+                // Whole words of the list, so 20.1.1 does not match an installed 20.1.10.
                 RuntimeTool::Fnm => (
-                    format!("fnm list | grep -q 'v'{v}"),
+                    format!(
+                        "fnm list | tr -s ' ' '\\n' | grep -qxF {}",
+                        q(&format!("v{version}"))
+                    ),
                     format!("fnm install {v}"),
                     format!("fnm default {v}"),
                 ),
                 RuntimeTool::Volta => (
-                    format!("volta list {r} --format plain | grep -q {r}'@'{v}"),
+                    format!(
+                        "volta list {r} --format plain | tr -s ' ' '\\n' | grep -qxF {}",
+                        q(&format!("{runtime}@{version}"))
+                    ),
                     format!("volta install {r}'@'{v}"),
                     String::new(),
                 ),
                 RuntimeTool::Pyenv => (
-                    format!("pyenv versions --bare | grep -qx {v}"),
+                    format!("pyenv versions --bare | grep -qxF {v}"),
                     format!("pyenv install {v}"),
                     format!("pyenv global {v}"),
                 ),
@@ -174,7 +181,7 @@ fn commands(step: &Step, target: Os) -> (String, String) {
         Step::InstallExtension { editor, id } => {
             let c = editor_cmd(*editor);
             (
-                format!("{c} --list-extensions | grep -qix {}", q(id)),
+                format!("{c} --list-extensions | grep -qixF {}", q(id)),
                 format!("{c} --install-extension {}", q(id)),
             )
         }

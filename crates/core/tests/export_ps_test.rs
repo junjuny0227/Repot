@@ -78,7 +78,7 @@ fn native_output_is_assigned_before_conditionals() {
     assert!(s.contains("function Test-Tool($Name)"));
     assert!(!s.contains("Test-Have"));
     assert!(!s.contains("if (& "));
-    assert!(s.contains("$installed = & scoop bucket list 2>$null | Select-String"));
+    assert!(s.contains("$installed = @((& scoop bucket list 2>$null).Name) -contains 'extras'"));
     assert!(s.contains("if ($installed) { Add-Done"));
 }
 
@@ -92,9 +92,7 @@ fn custom_scoop_bucket_is_added_with_its_url() {
     }];
     let s = render_powershell(&plan);
     assert!(s.contains("& scoop bucket add 'repot' 'https://github.com/junjuny0227/scoop-bucket'"));
-    assert!(s.contains(
-        "$installed = & scoop bucket list 2>$null | Select-String -SimpleMatch 'repot' -Quiet"
-    ));
+    assert!(s.contains("$installed = @((& scoop bucket list 2>$null).Name) -contains 'repot'"));
 }
 #[test]
 fn ps_snapshot() {
@@ -409,4 +407,57 @@ exit 0
         "{out}"
     );
     assert_eq!(changes().len(), 5);
+}
+
+#[test]
+fn presence_checks_compare_whole_names() {
+    let mut plan = windows_plan();
+    let runtime = |tool, runtime: &str| Step::InstallRuntime {
+        tool,
+        runtime: runtime.into(),
+        version: "20.1.1".into(),
+        set_default: false,
+        components: vec![],
+        targets: vec![],
+    };
+    let global = |manager| Step::InstallGlobal {
+        manager,
+        name: "eslint".into(),
+    };
+    plan.steps = vec![
+        Step::AddTap {
+            manager: PackageManager::Scoop,
+            name: "java".into(),
+            url: None,
+        },
+        runtime(RuntimeTool::NvmWindows, "node"),
+        runtime(RuntimeTool::Fnm, "node"),
+        runtime(RuntimeTool::Volta, "node"),
+        runtime(RuntimeTool::PyenvWin, "python"),
+        global(GlobalManager::Npm),
+        global(GlobalManager::Pnpm),
+        global(GlobalManager::Pipx),
+        global(GlobalManager::Cargo),
+        Step::InstallExtension {
+            editor: Editor::VsCode,
+            id: "ms-python.python".into(),
+        },
+    ];
+    let s = render_powershell(&plan);
+    for check in [
+        // `scoop bucket list` returns objects; compare the Name column, not the printed table.
+        "  $installed = @((& scoop bucket list 2>$null).Name) -contains 'java'\n",
+        "  $installed = @(& nvm list 2>$null | ForEach-Object { -split $_ }) -contains '20.1.1'\n",
+        "  $installed = @(& fnm list 2>$null | ForEach-Object { -split $_ }) -contains 'v20.1.1'\n",
+        "  $installed = @(& volta list 'node' --format plain 2>$null | ForEach-Object { -split $_ }) -contains 'node@20.1.1'\n",
+        "  $installed = @(& pyenv versions --bare 2>$null | ForEach-Object { -split $_ }) -contains '20.1.1'\n",
+        "  & npm ls -g --depth=0 'eslint' *> $null\n",
+        "  $installed = @(& pnpm ls -g --depth=0 2>$null | ForEach-Object { ($_ -split ' ')[0] }) -contains 'eslint'\n",
+        "  $installed = @(& pipx list --short 2>$null | ForEach-Object { ($_ -split ' ')[0] }) -contains 'eslint'\n",
+        "  $installed = @(& cargo install --list 2>$null | ForEach-Object { ($_ -split ' ')[0] }) -contains 'eslint'\n",
+        "  $installed = @(& code --list-extensions 2>$null) -contains 'ms-python.python'\n",
+    ] {
+        assert!(s.contains(check), "missing {check:?} in\n{s}");
+    }
+    assert!(!s.contains("Select-String"), "{s}");
 }

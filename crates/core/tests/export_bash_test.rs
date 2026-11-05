@@ -524,3 +524,113 @@ fn rustup_adds_missing_components_without_reinstalling_the_toolchain() {
         5
     );
 }
+
+fn runtime_step(tool: RuntimeTool, runtime: &str, version: &str) -> Step {
+    Step::InstallRuntime {
+        tool,
+        runtime: runtime.into(),
+        version: version.into(),
+        set_default: false,
+        components: vec![],
+        targets: vec![],
+    }
+}
+
+/// Steps whose "already there" check reads a list: one name that is only a near miss
+/// on the fake machine (prefix, longer version) and one that is really there.
+fn listed_presence_steps() -> Vec<Step> {
+    let tap = |name: &str| Step::AddTap {
+        manager: PackageManager::Brew,
+        name: name.into(),
+        url: None,
+    };
+    let extension = |id: &str| Step::InstallExtension {
+        editor: Editor::VsCode,
+        id: id.into(),
+    };
+    vec![
+        tap("homebrew/java"),
+        tap("foo/bar"),
+        runtime_step(RuntimeTool::Fnm, "node", "20.1.1"),
+        runtime_step(RuntimeTool::Fnm, "node", "18.0.0"),
+        runtime_step(RuntimeTool::Volta, "node", "20.1.1"),
+        runtime_step(RuntimeTool::Volta, "node", "18.0.0"),
+        runtime_step(RuntimeTool::Pyenv, "python", "3.12.1"),
+        runtime_step(RuntimeTool::Pyenv, "python", "3.11.0"),
+        extension("ms-python.python"),
+        extension("Esbenp.Prettier-VSCode"),
+    ]
+}
+
+#[test]
+fn presence_checks_compare_whole_names() {
+    let s = render_bash(&plan(Os::MacOs, listed_presence_steps()));
+    for check in [
+        "if brew tap | grep -qxF 'homebrew/java' >/dev/null 2>&1",
+        "if fnm list | tr -s ' ' '\\n' | grep -qxF 'v20.1.1' >/dev/null 2>&1",
+        "if volta list 'node' --format plain | tr -s ' ' '\\n' | grep -qxF 'node@20.1.1' >/dev/null 2>&1",
+        "if pyenv versions --bare | grep -qxF '3.12.1' >/dev/null 2>&1",
+        "if code --list-extensions | grep -qixF 'ms-python.python' >/dev/null 2>&1",
+    ] {
+        assert!(s.contains(check), "missing {check:?} in\n{s}");
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn near_miss_names_are_installed_and_exact_names_are_already_done() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let bin = dir.path().join("bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    let log = dir.path().join("installs");
+    let fakes = [
+        (
+            "brew",
+            "[ \"$*\" = tap ] && printf 'homebrew/java-extra\\nfoo/bar\\n' && exit 0",
+        ),
+        (
+            "fnm",
+            "[ \"$1\" = list ] && printf '* v20.1.10 default\\n* v18.0.0\\n* system\\n' && exit 0",
+        ),
+        (
+            "volta",
+            "[ \"$1\" = list ] && printf 'runtime node@20.1.10 (default)\\nruntime node@18.0.0\\n' && exit 0",
+        ),
+        (
+            "pyenv",
+            "[ \"$1\" = versions ] && printf '3.12.10\\n3.11.0\\n' && exit 0",
+        ),
+        (
+            "code",
+            "[ \"$1\" = --list-extensions ] && printf 'ms-python.python-extra\\nesbenp.prettier-vscode\\n' && exit 0",
+        ),
+    ];
+    for (name, list) in fakes {
+        let path = bin.join(name);
+        std::fs::write(
+            &path,
+            format!(
+                "#!/bin/sh\n{list}\necho \"{name} $*\" >> '{}'\n",
+                log.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    let path = format!("{}:/usr/bin:/bin", bin.display());
+    let out = run_script(
+        &plan(current_target(), listed_presence_steps()),
+        dir.path(),
+        &[("PATH", path.as_str())],
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(out.status.success(), "{stdout}");
+    assert_eq!(
+        std::fs::read_to_string(&log).unwrap(),
+        "brew tap homebrew/java\nfnm install 20.1.1\nvolta install node@20.1.1\n\
+         pyenv install 3.12.1\ncode --install-extension ms-python.python\n",
+        "{stdout}"
+    );
+    assert_eq!(stdout.matches("  already done: ").count(), 5, "{stdout}");
+}
