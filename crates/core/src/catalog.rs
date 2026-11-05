@@ -21,6 +21,7 @@ pub const ENTRIES: &[(&str, &str)] = &[
     ("file:fish-config", "Fish configuration customizes the shell environment."),
     ("file:powershell-profile", "PowerShell profile customizes shell startup."),
     ("file:starship", "Starship configuration customizes the cross-shell prompt."),
+    ("file:ssh-config", "SSH client configuration defines host aliases and connection options."),
     ("file:vscode-settings", "Editor settings customize application behavior."),
     ("file:vscode-keybindings", "Editor keybindings customize keyboard shortcuts."),
     ("file:vscode-snippet", "Editor snippets provide reusable code templates."),

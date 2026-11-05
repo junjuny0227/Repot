@@ -66,6 +66,10 @@ fn sample_steps() -> Vec<Step> {
             src: "home/.zshrc".into(),
             dest: TargetPath::Home(".zshrc".into()),
         },
+        Step::CopyFile {
+            src: "home/.ssh/config".into(),
+            dest: TargetPath::Home(".ssh/config".into()),
+        },
         Step::GitClone {
             url: "https://github.com/zsh-users/zsh-autosuggestions".into(),
             dest: TargetPath::Home(".oh-my-zsh/custom/plugins/zsh-autosuggestions".into()),
@@ -88,6 +92,16 @@ fn sample_notes() -> Vec<ExportNote> {
         },
         ExportNote::KeybindingsMayDiffer {
             file: "vscode/keybindings.json".into(),
+        },
+        ExportNote::SshKey {
+            file: "home/.ssh/config".into(),
+            line: 7,
+            path: "~/.ssh/id_ed25519".into(),
+        },
+        ExportNote::SshKey {
+            file: "home/.ssh/config".into(),
+            line: 12,
+            path: "~/.ssh/id_ed25519".into(),
         },
     ]
 }
@@ -235,4 +249,30 @@ fn readme_lists_rustup_components_and_targets() {
         ),
         "{readme}"
     );
+}
+
+#[test]
+fn readme_lists_ssh_keys_and_permissions_only_where_they_apply() {
+    let readme = |target: Os, steps: &[Step], notes: &[ExportNote]| {
+        render_manifests(&header(target), steps, &[], notes)
+            .into_iter()
+            .find(|f| f.path == "README.md")
+            .unwrap()
+            .contents
+    };
+    let mac = readme(Os::MacOs, &sample_steps(), &sample_notes());
+    assert_eq!(mac.matches("~/.ssh/id_ed25519").count(), 1, "{mac}");
+    assert!(mac.contains("| `files/home/.ssh/config` | `~/.ssh/config` |\n\nOpenSSH rejects SSH files that others can write: if you create `~/.ssh`, run `chmod 700 ~/.ssh`, and run `chmod 600` on each file you copy into it.\n"));
+    // Keys are not general notes.
+    let notes = mac.split("## Notes").nth(1).unwrap();
+    assert!(!notes.contains("id_ed25519"));
+    let windows = readme(Os::Windows, &sample_steps(), &sample_notes());
+    assert!(!windows.contains("chmod"));
+    assert!(windows.contains("\n## SSH keys\n\nCopy these SSH keys yourself (Repot does not export keys):\n  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)\n  Copy each key and its .pub file from your old machine into %USERPROFILE%\\.ssh.\n"));
+    let without_ssh: Vec<Step> = sample_steps()
+        .into_iter()
+        .filter(|s| !matches!(s, Step::CopyFile { dest, .. } if dest.is_private()))
+        .collect();
+    let plain = readme(Os::MacOs, &without_ssh, &[]);
+    assert!(!plain.contains("SSH") && !plain.contains("chmod"));
 }

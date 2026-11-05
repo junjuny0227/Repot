@@ -1,6 +1,6 @@
 use repot_core::{
     compare::{Presence, compare},
-    os::{Os, Shell},
+    os::{LinuxFamily, Os, Shell},
     snapshot::{Snapshot, StoredConfig},
     *,
 };
@@ -454,4 +454,71 @@ fn a_toolchain_without_a_listed_component_or_target_is_missing() {
         ids(&result, Presence::Missing),
         vec!["rustup:rust:1.80.0", "rustup:rust:beta"]
     );
+}
+
+#[test]
+fn ssh_configs_compare_like_the_export_writes_them() {
+    let ssh = |id: &str, source: &str, rel: &str| {
+        let mut i = config(id, source, rel);
+        i.provider = "ssh".into();
+        i.category = Category::Ssh;
+        i
+    };
+    let mac_config = "Host *\n  UseKeychain yes\n  IdentityFile ~/.ssh/id_ed25519\nHost gh\n  HostName github.com\n";
+    let snap = file(
+        vec![
+            ssh(
+                "ssh:file:.ssh/config",
+                "/Users/old/.ssh/config",
+                ".ssh/config",
+            ),
+            ssh(
+                "ssh:file:.ssh/config.d/work",
+                "/Users/old/.ssh/config.d/work",
+                ".ssh/config.d/work",
+            ),
+        ],
+        &[
+            ("ssh:file:.ssh/config", mac_config),
+            ("ssh:file:.ssh/config.d/work", "Host w\n  User alice\n"),
+        ],
+    );
+    let linux = Os::Linux(LinuxFamily::Debian);
+    let machine = vec![
+        ssh(
+            "ssh:file:.ssh/config",
+            "/home/new/.ssh/config",
+            ".ssh/config",
+        ),
+        ssh(
+            "ssh:file:.ssh/config.d/work",
+            "/home/new/.ssh/config.d/work",
+            ".ssh/config.d/work",
+        ),
+    ];
+    let judge = |config: &str, work: &str| {
+        let env = FakeEnv::new(linux, "/home/new")
+            .with_file("/home/new/.ssh/config", config)
+            .with_file("/home/new/.ssh/config.d/work", work);
+        compare(
+            &snap.items,
+            snap.source,
+            Target::default_for(linux),
+            &snap,
+            &machine,
+            linux,
+            &env,
+        )
+    };
+    // What the restore script wrote on Linux: only UseKeychain differs (commented out).
+    let restored = "Host *\n  # [repot] UseKeychain yes  # UseKeychain is OS-specific; adjust it for Linux (Debian/Ubuntu)\n  IdentityFile ~/.ssh/id_ed25519\nHost gh\n  HostName github.com\n";
+    let result = judge(restored, "Host w\n  User alice\n");
+    assert_eq!(result["ssh:file:.ssh/config"], Presence::Present);
+    assert_eq!(result["ssh:file:.ssh/config.d/work"], Presence::Present);
+    let result = judge(
+        &restored.replace("github.com", "gitlab.com"),
+        "Host w\n  User bob\n",
+    );
+    assert_eq!(result["ssh:file:.ssh/config"], Presence::Differs);
+    assert_eq!(result["ssh:file:.ssh/config.d/work"], Presence::Differs);
 }

@@ -74,6 +74,7 @@
     "file:fish-config": "Fish の設定は、シェル環境をカスタマイズします。",
     "file:powershell-profile": "PowerShell のプロファイルは、シェル起動時の動作をカスタマイズします。",
     "file:starship": "Starship の設定は、複数のシェルで共通のプロンプトをカスタマイズします。",
+    "file:ssh-config": "SSH クライアントの設定は、ホストの別名と接続オプションを定義します。",
     "file:vscode-settings": "エディタの設定は、アプリの動作をカスタマイズします。",
     "file:vscode-keybindings": "エディタのキーバインドは、キーボードショートカットをカスタマイズします。",
     "file:vscode-snippet": "エディタのスニペットは、再利用できるコードのひな形です。",

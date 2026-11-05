@@ -51,7 +51,13 @@ printf '%s\n' '  - npm install -g typescript'
 printf '%s\n' '  - code --install-extension esbenp.prettier-vscode'
 printf '%s\n' '  - copy ~/.zshrc'
 printf '%s\n' '  - copy ~/it'\''s.json'
+printf '%s\n' '  - copy ~/.ssh/config'
 printf '%s\n' '  - git clone https://github.com/zsh-users/zsh-autosuggestions'
+copy_private_file() {
+  ( umask 077; copy_file "$1" "$2" ); rc=$?
+  if [ $rc -eq 0 ]; then chmod 600 "$2" || rc=1; fi
+  return $rc
+}
 echo 'Tools this script uses:'
 check_tool 'brew' 'have '\''brew'\''' 'https://brew.sh'
 check_tool 'nvm' '[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]' 'https://github.com/nvm-sh/nvm'
@@ -125,6 +131,10 @@ copy_file 'home/it'\''s.json' "$HOME/"'it'\''s.json'; rc=$?
 if [ $rc -eq 0 ]; then record_ok 'copy ~/it'\''s.json'
 elif [ $rc -eq 2 ]; then record_done 'copy ~/it'\''s.json'
 else record_fail 'copy ~/it'\''s.json'; fi
+copy_private_file 'home/.ssh/config' "$HOME/"'.ssh/config'; rc=$?
+if [ $rc -eq 0 ]; then record_ok 'copy ~/.ssh/config'
+elif [ $rc -eq 2 ]; then record_done 'copy ~/.ssh/config'
+else record_fail 'copy ~/.ssh/config'; fi
 if have 'git' && [ -d "$HOME/.oh-my-zsh" ]; then
   if [ -d "$HOME/"'.oh-my-zsh/custom/plugins/zsh-autosuggestions' ] >/dev/null 2>&1; then record_done 'git clone https://github.com/zsh-users/zsh-autosuggestions'
   elif git clone 'https://github.com/zsh-users/zsh-autosuggestions' "$HOME/"'.oh-my-zsh/custom/plugins/zsh-autosuggestions'; then record_ok 'git clone https://github.com/zsh-users/zsh-autosuggestions'
@@ -139,6 +149,9 @@ if [ -n "$TOOLS_LIST" ]; then printf 'To finish these, install the missing tools
 printf 'Failed:\n%s' "$FAIL_LIST"
 echo 'Fill in these masked secrets:'
 printf '%s\n' '  - files/home/.zshrc line 3 (GITHUB_TOKEN)'
+echo 'Copy these SSH keys yourself (Repot does not export keys):'
+printf '%s\n' '  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)'
+printf '%s\n' '  Copy each key and its .pub file from your old machine into ~/.ssh, then run chmod 600 on the private keys.'
 echo 'Notes:'
 printf '%s\n' 'files/home/.gitconfig line 5: credential.helper was commented out because it is OS-specific.'
 exit $FAILED

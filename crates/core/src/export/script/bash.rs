@@ -219,6 +219,27 @@ fn rustup_install(version: &str, components: &[String], targets: &[String]) -> S
     install
 }
 
+/// `copy_private_file`, only when a file goes under `~/.ssh` (plan 16). New folders get
+/// 0700 and the file 0600 (OpenSSH rejects a config others can write); an existing
+/// `~/.ssh` keeps its mode, and backups keep the old file's mode.
+fn write_private_copy_helper(out: &mut String, plan: &ScriptPlan) {
+    if !plan
+        .steps
+        .iter()
+        .any(|s| matches!(s, Step::CopyFile { dest, .. } if dest.is_private()))
+    {
+        return;
+    }
+    out.push_str(
+        r#"copy_private_file() {
+  ( umask 077; copy_file "$1" "$2" ); rc=$?
+  if [ $rc -eq 0 ]; then chmod 600 "$2" || rc=1; fi
+  return $rc
+}
+"#,
+    );
+}
+
 /// `rustup_has <toolchain> <components> <targets>`, only when the plan has rustup steps.
 fn write_rustup_helper(out: &mut String, plan: &ScriptPlan) {
     if !plan.steps.iter().any(|s| {
@@ -380,6 +401,7 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         .unwrap();
     }
     write_jetbrains_helpers(&mut out, plan);
+    write_private_copy_helper(&mut out, plan);
     write_rustup_helper(&mut out, plan);
     write_preflight(&mut out, plan);
     out.push_str("if [ \"${1:-}\" != '--yes' ]; then\n  printf 'Continue? [y/N] '\n  read -r answer\n  case \"$answer\" in y|Y) ;; *) exit 0 ;; esac\nfi\n");
@@ -422,7 +444,12 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
         }
         if let Step::CopyFile { src, dest } = s {
             let label = q(&s.label(h.target));
-            writeln!(out, "copy_file {} {}; rc=$?\nif [ $rc -eq 0 ]; then record_ok {label}\nelif [ $rc -eq 2 ]; then record_done {label}\nelse record_fail {label}; fi", q(src), bash_path(dest, h.target)).unwrap();
+            let copy = if dest.is_private() {
+                "copy_private_file"
+            } else {
+                "copy_file"
+            };
+            writeln!(out, "{copy} {} {}; rc=$?\nif [ $rc -eq 0 ]; then record_ok {label}\nelif [ $rc -eq 2 ]; then record_done {label}\nelse record_fail {label}; fi", q(src), bash_path(dest, h.target)).unwrap();
             i += 1;
             continue;
         }
@@ -490,9 +517,17 @@ pub fn render_bash(plan: &ScriptPlan) -> String {
             .unwrap();
         }
     }
-    if !plan.notes.is_empty() {
+    let keys = ssh_key_lines(&plan.steps, &plan.notes, h.target);
+    if !keys.is_empty() {
+        writeln!(out, "echo {}", q(SSH_KEYS_HEADING)).unwrap();
+        for line in keys {
+            writeln!(out, "printf '%s\\n' {}", q(&line)).unwrap();
+        }
+    }
+    let notes = general_notes(&plan.notes);
+    if !notes.is_empty() {
         out.push_str("echo 'Notes:'\n");
-        for n in &plan.notes {
+        for n in notes {
             writeln!(out, "printf '%s\\n' {}", q(&note_text(n))).unwrap();
         }
     }

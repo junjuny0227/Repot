@@ -28,7 +28,8 @@ fn default_provider_ids_are_ordered() {
             "vscode",
             "jetbrains",
             "git",
-            "shell"
+            "shell",
+            "ssh"
         ]
     );
     let unique: std::collections::BTreeSet<_> = ids.iter().collect();

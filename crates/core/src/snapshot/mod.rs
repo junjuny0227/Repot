@@ -239,11 +239,13 @@ fn is_safe_target(target: &TargetPathV1) -> bool {
 
 /// A config file may only go where the provider named in the item writes its files on a
 /// scan. Being inside home is not enough: `.ssh/authorized_keys`, `Library/LaunchAgents/`
-/// or `.config/autostart/` are inside home too, and Repot never writes there.
+/// or `.config/autostart/` are inside home too, and Repot never writes there. Only `ssh`
+/// accepts `.ssh/`, and only its config files (plan 16).
 fn is_scanned_config_target(provider: &str, target: &TargetPathV1) -> bool {
     let rel = target.relative().map(|rel| rel.replace('\\', "/"));
     let rel = rel.as_deref().unwrap_or_default();
     match (provider, target) {
+        ("ssh", TargetPathV1::Home(_)) => providers::ssh::is_config_target(rel),
         ("git", TargetPathV1::Home(_)) => providers::git::is_config_target(rel),
         ("shell", TargetPathV1::Home(_)) => providers::shell::is_config_target(rel),
         ("shell", TargetPathV1::PowerShellProfile) => true,

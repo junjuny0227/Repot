@@ -2,7 +2,7 @@ use repot_core::{
     env::FakeEnv,
     export::*,
     os::{LinuxFamily, Os, Shell},
-    providers::{git::Git, jetbrains::JetBrains, shell::ShellProvider, vscode::VsCode},
+    providers::{git::Git, jetbrains::JetBrains, shell::ShellProvider, ssh::Ssh, vscode::VsCode},
     scan::Provider,
     snapshot::{self, SnapshotError, parse_snapshot},
     *,
@@ -765,6 +765,9 @@ fn skips_config_files_aimed_where_repot_never_writes() {
     let zshrc = base["items"][6].clone();
     let settings = base["items"][7].clone();
     let plugin = base["items"][8].clone();
+    let mut ssh = gitconfig.clone();
+    ssh["provider"] = "ssh".into();
+    ssh["category"] = "ssh".into();
     let aimed = |from: &serde_json::Value, id: &str, target: serde_json::Value| {
         let mut item = from.clone();
         item["id"] = id.into();
@@ -804,6 +807,16 @@ fn skips_config_files_aimed_where_repot_never_writes() {
             serde_json::json!({ "editorUser": { "editor": "cursor", "rel": "snippets/rust.json" } }),
         ),
     ];
+    ok.push(aimed(
+        &ssh,
+        "ok:ssh:config",
+        serde_json::json!({ "home": ".ssh/config" }),
+    ));
+    ok.push(aimed(
+        &ssh,
+        "ok:ssh:included",
+        serde_json::json!({ "home": ".ssh/config.d/work" }),
+    ));
     let mut jb = aimed(
         &settings,
         "ok:jetbrains:font",
@@ -867,6 +880,20 @@ fn skips_config_files_aimed_where_repot_never_writes() {
             jetbrains("options/editor-font.xml"),
         ),
         aimed(&settings, "bad:vscode:home", home(".zshrc")),
+        // `.ssh/` belongs to `ssh` items only, and only to config files there (plan 16).
+        aimed(&gitconfig, "bad:git:ssh-config", home(".ssh/config")),
+        aimed(&zshrc, "bad:shell:ssh-upper", home(".SSH/config")),
+        aimed(&ssh, "bad:ssh:zshrc", home(".zshrc")),
+        aimed(&ssh, "bad:ssh:known-hosts", home(".ssh/known_hosts")),
+        aimed(
+            &ssh,
+            "bad:ssh:authorized-keys",
+            home(".ssh/authorized_keys"),
+        ),
+        aimed(&ssh, "bad:ssh:key", home(".ssh/id_ed25519")),
+        aimed(&ssh, "bad:ssh:pub", home(".ssh/config.d/work.pub")),
+        aimed(&ssh, "bad:ssh:upper", home(".SSH/config")),
+        aimed(&ssh, "bad:ssh:pwsh", serde_json::json!("powerShellProfile")),
         // Inside the editor or IDE folder, but not a file Repot reads there.
         aimed(
             &settings,
@@ -957,7 +984,12 @@ fn every_scanned_place(os: Os) -> FakeEnv {
         )
         .with_file(format!("{home}/{}", &ignore[2..]), "*.log\n")
         .with_file(format!("{home}/.config/git/config"), "[user]\n\tname = T\n")
-        .with_file(pwsh, "Set-Alias g git\n");
+        .with_file(pwsh, "Set-Alias g git\n")
+        .with_file(
+            format!("{home}/.ssh/config"),
+            "Include config.d/*\nHost *\n  IdentityFile ~/.ssh/id_ed25519\n",
+        )
+        .with_file(format!("{home}/.ssh/config.d/work"), "Host w\n");
     for rc in [
         ".zshrc",
         ".zprofile",
@@ -1008,15 +1040,21 @@ fn every_place_a_real_scan_writes_loads_from_the_file() {
     for os in [Os::MacOs, Os::Windows] {
         let env = every_scanned_place(os);
         let mut items = vec![];
-        for provider in [&Git as &dyn Provider, &ShellProvider, &VsCode, &JetBrains] {
+        for provider in [
+            &Git as &dyn Provider,
+            &ShellProvider,
+            &VsCode,
+            &JetBrains,
+            &Ssh,
+        ] {
             items.extend(provider.scan(&env).unwrap());
         }
         let config_files = items
             .iter()
             .filter(|i| matches!(i.details, ItemDetails::ConfigFile { .. }))
             .count();
-        // 3 git, 7 rc files + a PowerShell profile, 2 editors x 4, 8 JetBrains.
-        assert_eq!(config_files, 3 + 8 + 8 + 8, "{os:?}");
+        // 3 git, 7 rc files + a PowerShell profile, 2 editors x 4, 8 JetBrains, 2 SSH.
+        assert_eq!(config_files, 3 + 8 + 8 + 8 + 2, "{os:?}");
         assert_eq!(items.len() - config_files, 2, "{os:?}: two shell plugins");
         let selection = all(&items, vec![]);
         let saved = export(&env, &items, &selection, os, Target::default_for(os));
@@ -1038,5 +1076,74 @@ fn every_place_a_real_scan_writes_loads_from_the_file() {
             Target::default_for(os),
         );
         assert_eq!(saved, via_file, "{os:?}");
+    }
+}
+
+#[test]
+fn ssh_items_round_trip_and_export_the_same_through_the_file() {
+    let config = "Host *\n  UseKeychain yes\n  IdentityFile ~/.ssh/id_ed25519\n  SetEnv DEPLOY_TOKEN=abc123\n";
+    let env = FakeEnv::new(Os::MacOs, "/Users/t")
+        .with_file("/Users/t/.ssh/config", config)
+        .with_file(
+            "/Users/t/.ssh/id_ed25519",
+            "-----BEGIN OPENSSH PRIVATE KEY-----\n",
+        );
+    let items = Ssh.scan(&env).unwrap();
+    assert_eq!(items.len(), 1);
+    let selection = all(&items, vec![]);
+    let saved = export(
+        &env,
+        &items,
+        &selection,
+        Os::MacOs,
+        Target::default_for(Os::MacOs),
+    );
+    let text = repot_json(&saved);
+    assert!(text.contains("\"category\": \"ssh\""), "{text}");
+    assert!(text.contains("\"keyFile\""), "{text}");
+    assert!(!text.contains("abc123") && !text.contains("PRIVATE KEY"));
+    let opened = parse_snapshot(text).unwrap();
+    assert_eq!(opened.skipped_items, 0);
+    let snap = &opened.snapshot;
+    assert_eq!(snap.items, items);
+    // The file keeps the macOS form.
+    assert!(
+        snap.configs["ssh:file:.ssh/config"]
+            .content
+            .contains("\n  UseKeychain yes\n")
+    );
+    for target in [
+        Target::default_for(Os::MacOs),
+        Target::default_for(Os::Linux(LinuxFamily::Debian)),
+        Target::default_for(Os::Windows),
+    ] {
+        let direct = export(&env, &items, &selection, Os::MacOs, target);
+        let via_file = export(
+            snap,
+            &snap.items,
+            &all(&snap.items, vec![]),
+            snap.source,
+            target,
+        );
+        assert_eq!(direct, via_file, "{target:?}");
+        let file = |path: &str| {
+            direct
+                .files
+                .iter()
+                .find(|f| f.path == path)
+                .map(|f| f.contents.as_str())
+        };
+        let payload = file("files/home/.ssh/config").unwrap();
+        assert_eq!(
+            payload.contains("# [repot] UseKeychain yes"),
+            target.os != Os::MacOs,
+            "{target:?}"
+        );
+        // The script-format README carries the key list even without mapped packages.
+        let readme = file("README.md").expect("README.md");
+        assert!(
+            readme.contains("## SSH keys\n\nCopy these SSH keys yourself (Repot does not export keys):\n  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 3)\n"),
+            "{readme}"
+        );
     }
 }

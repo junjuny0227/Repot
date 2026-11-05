@@ -68,6 +68,7 @@ pub enum Category {
     Editor,
     Git,
     Shell,
+    Ssh,
 }
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -204,6 +205,13 @@ pub enum TargetPath {
         rel: PathBuf,
     },
 }
+impl TargetPath {
+    /// Under `~/.ssh`: the restore script keeps these files private (plan 16).
+    pub fn is_private(&self) -> bool {
+        matches!(self, TargetPath::Home(rel)
+            if rel.to_string_lossy().replace('\\', "/").split('/').next() == Some(".ssh"))
+    }
+}
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Finding {
@@ -213,8 +221,23 @@ pub struct Finding {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum FindingKind {
-    Secret { name: Option<String> },
-    OsSpecificLine { key: String },
-    Duplicate { other_provider: String },
+    Secret {
+        name: Option<String>,
+    },
+    OsSpecificLine {
+        key: String,
+    },
+    Duplicate {
+        other_provider: String,
+    },
     Unreadable,
+    /// A key path an SSH config points at. Repot never reads or exports the key.
+    KeyFile {
+        path: String,
+    },
+    /// An SSH `Include` Repot does not follow (outside `~/.ssh`, `..`, or a wildcard
+    /// before the last part); the line stays as written.
+    ExternalInclude {
+        path: String,
+    },
 }

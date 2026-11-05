@@ -17,6 +17,7 @@ pub mod rustup;
 pub mod scoop;
 pub mod sdkman;
 pub mod shell;
+pub mod ssh;
 pub mod vscode;
 pub mod winget;
 use crate::scan::Provider;
@@ -45,5 +46,6 @@ pub fn default_providers() -> Vec<Arc<dyn Provider>> {
         Arc::new(jetbrains::JetBrains),
         Arc::new(git::Git),
         Arc::new(shell::ShellProvider),
+        Arc::new(ssh::Ssh),
     ]
 }

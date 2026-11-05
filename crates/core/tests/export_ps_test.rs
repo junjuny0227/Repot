@@ -1,6 +1,6 @@
 use repot_core::{
     export::{
-        payload::MaskedLine,
+        payload::{ExportNote, MaskedLine},
         script::{ScriptHeader, ScriptPlan, powershell::render_powershell},
         step::Step,
     },
@@ -63,13 +63,28 @@ fn windows_plan() -> ScriptPlan {
                 src: "powershell/Microsoft.PowerShell_profile.ps1".into(),
                 dest: TargetPath::PowerShellProfile,
             },
+            Step::CopyFile {
+                src: "home/.ssh/config".into(),
+                dest: TargetPath::Home(".ssh/config".into()),
+            },
         ],
         masked: vec![MaskedLine {
             file: "home/.gitconfig".into(),
             line: 9,
             name: None,
         }],
-        notes: vec![],
+        notes: vec![
+            ExportNote::SshKey {
+                file: "home/.ssh/config".into(),
+                line: 7,
+                path: "~/.ssh/id_ed25519".into(),
+            },
+            ExportNote::CommentedOsLine {
+                file: "home/.ssh/config".into(),
+                line: 6,
+                key: "UseKeychain".into(),
+            },
+        ],
     }
 }
 #[test]
@@ -460,4 +475,28 @@ fn presence_checks_compare_whole_names() {
         assert!(s.contains(check), "missing {check:?} in\n{s}");
     }
     assert!(!s.contains("Select-String"), "{s}");
+}
+
+#[test]
+fn ssh_config_is_copied_as_usual_and_keys_are_listed_before_notes() {
+    let s = render_powershell(&windows_plan());
+    assert!(s.contains("$rc = Copy-RepotFile 'home/.ssh/config' (Join-Path $HOME '.ssh\\config')\nif ($rc -eq 0) { Add-Ok 'copy %USERPROFILE%\\.ssh\\config' }"));
+    let tail = s.split("Write-Host 'Failed:'").nth(1).unwrap();
+    assert!(tail.contains(
+        "Write-Host 'Copy these SSH keys yourself (Repot does not export keys):'\n\
+         Write-Host '  - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)'\n\
+         Write-Host '  Copy each key and its .pub file from your old machine into %USERPROFILE%\\.ssh.'\n\
+         Write-Host 'Notes:'\n\
+         Write-Host 'files/home/.ssh/config line 6: UseKeychain was commented out because it is OS-specific.'\n"
+    ), "{tail}");
+    let mut plan = windows_plan();
+    plan.notes.clear();
+    let s = render_powershell(&plan);
+    assert!(s.contains(
+        "Write-Host '  - the keys you use (default names: id_ed25519, id_ecdsa, id_rsa)'"
+    ));
+    assert!(!s.contains("Write-Host 'Notes:'"));
+    plan.steps
+        .retain(|s| !matches!(s, Step::CopyFile { dest, .. } if dest.is_private()));
+    assert!(!render_powershell(&plan).contains("SSH keys"));
 }

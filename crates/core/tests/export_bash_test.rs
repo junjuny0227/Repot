@@ -71,6 +71,10 @@ fn sample_plan(target: Os) -> ScriptPlan {
                 src: "home/it's.json".into(),
                 dest: TargetPath::Home("it's.json".into()),
             },
+            Step::CopyFile {
+                src: "home/.ssh/config".into(),
+                dest: TargetPath::Home(".ssh/config".into()),
+            },
             Step::GitClone {
                 url: "https://github.com/zsh-users/zsh-autosuggestions".into(),
                 dest: TargetPath::Home(".oh-my-zsh/custom/plugins/zsh-autosuggestions".into()),
@@ -86,6 +90,11 @@ fn sample_plan(target: Os) -> ScriptPlan {
         file: "home/.gitconfig".into(),
         line: 5,
         key: "credential.helper".into(),
+    });
+    p.notes.push(ExportNote::SshKey {
+        file: "home/.ssh/config".into(),
+        line: 7,
+        path: "~/.ssh/id_ed25519".into(),
     });
     p
 }
@@ -633,4 +642,144 @@ fn near_miss_names_are_installed_and_exact_names_are_already_done() {
         "{stdout}"
     );
     assert_eq!(stdout.matches("  already done: ").count(), 5, "{stdout}");
+}
+
+#[cfg(unix)]
+fn ssh_plan() -> ScriptPlan {
+    let mut p = plan(
+        current_target(),
+        vec![
+            Step::CopyFile {
+                src: "home/.ssh/config".into(),
+                dest: TargetPath::Home(".ssh/config".into()),
+            },
+            Step::CopyFile {
+                src: "home/.ssh/config.d/work".into(),
+                dest: TargetPath::Home(".ssh/config.d/work".into()),
+            },
+            Step::CopyFile {
+                src: "home/.zshrc".into(),
+                dest: TargetPath::Home(".zshrc".into()),
+            },
+        ],
+    );
+    for (line, path) in [
+        (7, "~/.ssh/id_ed25519"),
+        (12, "~/.ssh/work_ed25519"),
+        (20, "~/.ssh/id_ed25519"),
+    ] {
+        p.notes.push(ExportNote::SshKey {
+            file: "home/.ssh/config".into(),
+            line,
+            path: path.into(),
+        });
+    }
+    p.notes.push(ExportNote::CommentedOsLine {
+        file: "home/.ssh/config".into(),
+        line: 6,
+        key: "UseKeychain".into(),
+    });
+    p
+}
+#[cfg(unix)]
+fn mode(path: &std::path::Path) -> u32 {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::metadata(path).unwrap().permissions().mode() & 0o777
+}
+#[cfg(unix)]
+#[test]
+fn ssh_files_are_private_and_keys_are_listed_once() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    for (rel, text) in [
+        ("files/home/.ssh/config", "Host a\n"),
+        ("files/home/.ssh/config.d/work", "Host b\n"),
+        ("files/home/.zshrc", "# rc\n"),
+    ] {
+        let path = dir.path().join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, text).unwrap();
+    }
+    let p = ssh_plan();
+    let text = render_bash(&p);
+    assert!(text.contains("copy_private_file 'home/.ssh/config' \"$HOME/\"'.ssh/config'; rc=$?"));
+    assert!(text.contains("copy_file 'home/.zshrc' \"$HOME/\"'.zshrc'; rc=$?"));
+    // Without ~/.ssh files the helper is not written at all.
+    assert!(!render_bash(&copy_only_plan()).contains("copy_private_file"));
+
+    // A new machine: ~/.ssh does not exist yet.
+    let home = dir.path().join("home");
+    std::fs::create_dir_all(&home).unwrap();
+    let config = dir.path().join("xdg-config");
+    let data = dir.path().join("xdg-data");
+    let envs = [
+        ("HOME", home.to_str().unwrap()),
+        ("XDG_CONFIG_HOME", config.to_str().unwrap()),
+        ("XDG_DATA_HOME", data.to_str().unwrap()),
+    ];
+    let out = run_script(&p, dir.path(), &envs);
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(out.status.success(), "{stdout}");
+    assert_eq!(mode(&home.join(".ssh")), 0o700);
+    assert_eq!(mode(&home.join(".ssh/config.d")), 0o700);
+    assert_eq!(mode(&home.join(".ssh/config")), 0o600);
+    assert_eq!(mode(&home.join(".ssh/config.d/work")), 0o600);
+    let summary = stdout.split("Failed:\n").nth(1).unwrap();
+    assert_eq!(
+        summary,
+        "Copy these SSH keys yourself (Repot does not export keys):\n\
+         \x20 - ~/.ssh/id_ed25519 (files/home/.ssh/config line 7)\n\
+         \x20 - ~/.ssh/work_ed25519 (files/home/.ssh/config line 12)\n\
+         \x20 Copy each key and its .pub file from your old machine into ~/.ssh, then run chmod 600 on the private keys.\n\
+         Notes:\n\
+         files/home/.ssh/config line 6: UseKeychain was commented out because it is OS-specific.\n",
+        "{stdout}"
+    );
+
+    // An existing ~/.ssh keeps its mode; an existing config is backed up and made private.
+    let home = dir.path().join("home2");
+    std::fs::create_dir_all(home.join(".ssh")).unwrap();
+    std::fs::set_permissions(home.join(".ssh"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    std::fs::write(home.join(".ssh/config"), "Host old\n").unwrap();
+    std::fs::set_permissions(
+        home.join(".ssh/config"),
+        std::fs::Permissions::from_mode(0o644),
+    )
+    .unwrap();
+    let envs = [
+        ("HOME", home.to_str().unwrap()),
+        ("XDG_CONFIG_HOME", config.to_str().unwrap()),
+        ("XDG_DATA_HOME", data.to_str().unwrap()),
+    ];
+    assert!(run_script(&p, dir.path(), &envs).status.success());
+    assert_eq!(mode(&home.join(".ssh")), 0o755);
+    assert_eq!(mode(&home.join(".ssh/config")), 0o600);
+    assert_eq!(
+        std::fs::read_to_string(home.join(".ssh/config")).unwrap(),
+        "Host a\n"
+    );
+    let backup = std::fs::read_dir(home.join(".ssh"))
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .find(|p| p.to_string_lossy().contains("config.repot-backup-"))
+        .expect("a backup");
+    assert_eq!(std::fs::read_to_string(&backup).unwrap(), "Host old\n");
+    assert_eq!(mode(&backup), 0o644);
+    let again = run_script(&p, dir.path(), &envs);
+    assert!(String::from_utf8_lossy(&again.stdout).contains("already done: copy ~/.ssh/config\n"));
+}
+#[test]
+fn ssh_config_without_key_lines_still_names_the_default_keys() {
+    let mut p = plan(
+        Os::MacOs,
+        vec![Step::CopyFile {
+            src: "home/.ssh/config".into(),
+            dest: TargetPath::Home(".ssh/config".into()),
+        }],
+    );
+    let text = render_bash(&p);
+    assert!(text.contains("echo 'Copy these SSH keys yourself (Repot does not export keys):'\nprintf '%s\\n' '  - the keys you use (default names: id_ed25519, id_ecdsa, id_rsa)'\n"));
+    assert!(!text.contains("echo 'Notes:'"));
+    p.steps.clear();
+    assert!(!render_bash(&p).contains("SSH keys"));
 }

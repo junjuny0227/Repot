@@ -74,6 +74,7 @@
     "file:fish-config": "Fish 配置用于自定义 Shell 环境。",
     "file:powershell-profile": "PowerShell 配置文件用于自定义 Shell 的启动行为。",
     "file:starship": "Starship 配置用于自定义可跨 Shell 使用的命令提示符。",
+    "file:ssh-config": "SSH 客户端配置用于定义主机别名和连接选项。",
     "file:vscode-settings": "编辑器设置用于自定义应用的行为。",
     "file:vscode-keybindings": "编辑器键绑定用于自定义键盘快捷键。",
     "file:vscode-snippet": "编辑器代码片段提供可复用的代码模板。",
