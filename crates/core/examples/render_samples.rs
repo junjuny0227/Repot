@@ -1,6 +1,6 @@
 use repot_core::{
     export::{
-        payload::{ExportNote, MaskedLine},
+        payload::{ExportNote, MaskedLine, prepare_config},
         script::{ScriptHeader, ScriptPlan, bash::render_bash, powershell::render_powershell},
         step::{Step, sort_steps},
     },
@@ -8,6 +8,52 @@ use repot_core::{
     os::{LinuxFamily, Os},
 };
 use std::{error::Error, path::PathBuf};
+
+/// The plan 16 example `~/.ssh/config` from a Mac. CI runs real OpenSSH on the copies
+/// prepared for each destination (`ssh -G` exits 255 on an option it does not know).
+const SSH_CONFIG: &str = "Include config.d/*
+Include ~/.orbstack/ssh/config
+
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_ed25519
+
+Host github-work
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/work_ed25519
+  IdentitiesOnly yes
+
+Host bastion
+  HostName bastion.example.com
+  ControlMaster auto
+  ControlPath ~/.ssh/cm-%r@%h:%p
+  ControlPersist 10m
+  SetEnv DEPLOY_TOKEN=abc123
+";
+
+/// The example config as an export from macOS to `target` writes it.
+fn ssh_config_for(target: Os) -> String {
+    let source = PathBuf::from("/Users/demo/.ssh/config");
+    let item = Item {
+        id: "ssh:file:.ssh/config".into(),
+        provider: "ssh".into(),
+        category: Category::Ssh,
+        name: ".ssh/config".into(),
+        version: None,
+        description: None,
+        catalog_id: Some("file:ssh-config".into()),
+        origin: Origin::Path(source.clone()),
+        portability: Portability::Any,
+        details: ItemDetails::ConfigFile {
+            source,
+            target: TargetPath::Home(".ssh/config".into()),
+        },
+        findings: vec![],
+    };
+    prepare_config(&item, SSH_CONFIG, &[], Os::MacOs, target).contents
+}
 
 fn sample_plan(target: Os) -> ScriptPlan {
     let mut steps = vec![];
@@ -213,6 +259,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
         std::fs::write(out.join(name), text)?;
     }
+    for (name, target) in [
+        ("ssh-config-macos", Os::MacOs),
+        ("ssh-config-linux", Os::Linux(LinuxFamily::Debian)),
+        ("ssh-config-windows", Os::Windows),
+    ] {
+        std::fs::write(out.join(name), ssh_config_for(target))?;
+    }
     Ok(())
 }
 
@@ -301,5 +354,35 @@ mod tests {
                     ..
                 }
         )));
+    }
+
+    #[test]
+    fn ssh_samples_comment_out_what_each_destination_rejects() {
+        let commented = |text: &str| -> Vec<String> {
+            text.lines()
+                .filter_map(|l| l.trim_start().strip_prefix("# [repot] "))
+                .map(|l| l.split_whitespace().next().unwrap().to_owned())
+                .collect()
+        };
+        let mac = ssh_config_for(Os::MacOs);
+        let linux = ssh_config_for(Os::Linux(LinuxFamily::Debian));
+        let windows = ssh_config_for(Os::Windows);
+        assert!(commented(&mac).is_empty());
+        assert_eq!(commented(&linux), ["UseKeychain"]);
+        assert_eq!(
+            commented(&windows),
+            [
+                "UseKeychain",
+                "ControlMaster",
+                "ControlPath",
+                "ControlPersist"
+            ]
+        );
+        for text in [&mac, &linux, &windows] {
+            // Same line numbers as the source; the host CI resolves is still there.
+            assert_eq!(text.lines().count(), SSH_CONFIG.lines().count());
+            assert!(text.contains("Host github-work\n  HostName github.com\n"));
+            assert!(text.contains("SetEnv DEPLOY_TOKEN=<REDACTED>"));
+        }
     }
 }

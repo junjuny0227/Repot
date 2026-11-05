@@ -547,6 +547,9 @@ h3 {
 .tile-shell {
   background-color: var(--graphite);
 }
+.tile-ssh {
+  background-color: var(--green);
+}
 .tile-readonly {
   background-color: var(--green);
 }

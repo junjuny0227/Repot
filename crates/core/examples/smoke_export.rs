@@ -6,9 +6,16 @@ use repot_core::{
 };
 use std::{error::Error, path::PathBuf};
 
+const SSH_CONFIG: &str =
+    "Host github-work\n  HostName github.com\n  User git\n  IdentityFile ~/.ssh/work_ed25519\n";
+
 fn smoke_bundle(os: Os) -> ExportBundle {
     let source = PathBuf::from("/repot-fixture/.repot-smoke");
-    let env = FakeEnv::new(os, "/repot-fixture").with_file(&source, "smoke\n");
+    // CI checks the restored file's permissions and resolves the host with real OpenSSH.
+    let ssh_source = PathBuf::from("/repot-fixture/.ssh/config");
+    let env = FakeEnv::new(os, "/repot-fixture")
+        .with_file(&source, "smoke\n")
+        .with_file(&ssh_source, SSH_CONFIG);
     let items = vec![
         Item {
             id: "smoke:file".into(),
@@ -23,6 +30,22 @@ fn smoke_bundle(os: Os) -> ExportBundle {
             details: ItemDetails::ConfigFile {
                 source,
                 target: TargetPath::Home(".repot-smoke".into()),
+            },
+            findings: vec![],
+        },
+        Item {
+            id: "ssh:file:.ssh/config".into(),
+            provider: "ssh".into(),
+            category: Category::Ssh,
+            name: ".ssh/config".into(),
+            version: None,
+            description: None,
+            catalog_id: Some("file:ssh-config".into()),
+            origin: Origin::Path(ssh_source.clone()),
+            portability: Portability::Any,
+            details: ItemDetails::ConfigFile {
+                source: ssh_source,
+                target: TargetPath::Home(".ssh/config".into()),
             },
             findings: vec![],
         },
@@ -81,11 +104,33 @@ mod tests {
     use repot_core::os::LinuxFamily;
 
     #[test]
-    fn smoke_bundle_has_one_copy_and_npm_without_warnings() {
+    fn smoke_bundle_has_two_copies_and_npm_without_warnings() {
         for os in [Os::MacOs, Os::Windows, Os::Linux(LinuxFamily::Debian)] {
             let bundle = smoke_bundle(os);
             assert!(bundle.warnings.is_empty());
-            assert_eq!(bundle.files.len(), 3); // script, repot.json, payload
+            // script, repot.json, two payloads, README (it lists the SSH keys to copy)
+            let mut paths: Vec<_> = bundle.files.iter().map(|f| f.path.as_str()).collect();
+            paths.sort_unstable();
+            let script = if os == Os::Windows {
+                "restore.ps1"
+            } else {
+                "restore.sh"
+            };
+            let mut expected = vec![
+                "README.md",
+                "files/home/.repot-smoke",
+                "files/home/.ssh/config",
+                "repot.json",
+                script,
+            ];
+            expected.sort_unstable();
+            assert_eq!(paths, expected);
+            let ssh = bundle
+                .files
+                .iter()
+                .find(|f| f.path == "files/home/.ssh/config")
+                .unwrap();
+            assert_eq!(ssh.contents, SSH_CONFIG);
             let payload = bundle
                 .files
                 .iter()

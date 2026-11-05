@@ -32,6 +32,7 @@ export function content(locale: Locale) {
     ['editor', m.tools.editor],
     ['git', m.tools.git],
     ['shell', m.tools.shell],
+    ['ssh', m.tools.ssh],
   ];
   return {
     locale,

@@ -6,7 +6,9 @@
       "git:file:.gitconfig": "available",
       "npm:typescript": "available",
       "rustup:rust:stable": "available",
-      "shell:file:.zshrc": "available"
+      "shell:file:.zshrc": "available",
+      "ssh:file:.ssh/config": "available",
+      "ssh:file:.ssh/config.d/work": "available"
     },
     "windows": {
       "brew:cask:rectangle": {
@@ -29,7 +31,9 @@
         "unavailable": {
           "shellUnsupported": "zsh"
         }
-      }
+      },
+      "ssh:file:.ssh/config": "available",
+      "ssh:file:.ssh/config.d/work": "available"
     }
   },
   "scan": {
@@ -179,6 +183,91 @@
         },
         "provider": "shell",
         "version": null
+      },
+      {
+        "catalogId": "file:ssh-config",
+        "category": "ssh",
+        "description": "SSH client configuration defines host aliases and connection options.",
+        "details": {
+          "configFile": {
+            "source": "/Users/demo/.ssh/config",
+            "target": {
+              "home": ".ssh/config"
+            }
+          }
+        },
+        "findings": [
+          {
+            "kind": {
+              "secret": {
+                "name": "DEPLOY_TOKEN"
+              }
+            },
+            "line": 20
+          },
+          {
+            "kind": {
+              "externalInclude": {
+                "path": "~/.orbstack/ssh/config"
+              }
+            },
+            "line": 2
+          },
+          {
+            "kind": {
+              "osSpecificLine": {
+                "key": "UseKeychain"
+              }
+            },
+            "line": 6
+          },
+          {
+            "kind": {
+              "keyFile": {
+                "path": "~/.ssh/id_ed25519"
+              }
+            },
+            "line": 7
+          },
+          {
+            "kind": {
+              "keyFile": {
+                "path": "~/.ssh/work_ed25519"
+              }
+            },
+            "line": 12
+          }
+        ],
+        "id": "ssh:file:.ssh/config",
+        "name": ".ssh/config",
+        "origin": {
+          "path": "/Users/demo/.ssh/config"
+        },
+        "portability": "any",
+        "provider": "ssh",
+        "version": null
+      },
+      {
+        "catalogId": "file:ssh-config",
+        "category": "ssh",
+        "description": "SSH client configuration defines host aliases and connection options.",
+        "details": {
+          "configFile": {
+            "source": "/Users/demo/.ssh/config.d/work",
+            "target": {
+              "home": ".ssh/config.d/work"
+            }
+          }
+        },
+        "findings": [],
+        "id": "ssh:file:.ssh/config.d/work",
+        "name": ".ssh/config.d/work",
+        "origin": {
+          "path": "/Users/demo/.ssh/config.d/work"
+        },
+        "portability": "any",
+        "provider": "ssh",
+        "version": null
       }
     ],
     "providers": [
@@ -309,6 +398,15 @@
         "status": {
           "ok": {
             "count": 1
+          }
+        }
+      },
+      {
+        "category": "ssh",
+        "id": "ssh",
+        "status": {
+          "ok": {
+            "count": 2
           }
         }
       }

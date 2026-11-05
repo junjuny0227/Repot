@@ -5,7 +5,8 @@
     "globalPackage": "Global packages",
     "editor": "Editors",
     "git": "Git",
-    "shell": "Shell"
+    "shell": "Shell",
+    "ssh": "SSH"
   },
   "os": {
     "linux": "Linux ({family})",
@@ -25,7 +26,9 @@
     "secretStored": "Masked in the Repot file. Fill in the value after restoring.",
     "secretStoredNamed": "Masked in the Repot file ({name}). Fill in the value after restoring.",
     "osSpecificLine": "{key} is specific to this OS and will be commented out on a different OS.",
-    "duplicate": "Also detected by {provider}."
+    "duplicate": "Also detected by {provider}.",
+    "keyFile": "Uses the key {path}. Repot does not export keys; copy it to the new machine yourself.",
+    "externalInclude": "Includes {path}, which another tool manages on this machine. The line stays, but that file is not exported."
   },
   "reason": {
     "unreadable": "Unavailable: the file could not be read.",

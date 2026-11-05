@@ -5,7 +5,8 @@
     "globalPackage": "전역 패키지",
     "editor": "에디터",
     "git": "Git",
-    "shell": "셸"
+    "shell": "셸",
+    "ssh": "SSH"
   },
   "os": {
     "linux": "Linux ({family})",
@@ -25,7 +26,9 @@
     "secretStored": "Repot 파일에 가린 채 저장된 비밀 정보입니다. 복원한 뒤 값을 채우세요.",
     "secretStoredNamed": "Repot 파일에 가린 채 저장된 비밀 정보({name})입니다. 복원한 뒤 값을 채우세요.",
     "osSpecificLine": "{key} 설정은 이 OS 전용이라 다른 OS에서는 주석 처리됩니다.",
-    "duplicate": "{provider}에서도 감지되었습니다."
+    "duplicate": "{provider}에서도 감지되었습니다.",
+    "keyFile": "키 {path}을(를) 사용합니다. Repot은 키를 내보내지 않으니 새 기기에 직접 복사하세요.",
+    "externalInclude": "다른 도구가 이 기기에서 관리하는 {path}을(를) 불러옵니다. 이 줄은 그대로 두지만 그 파일은 내보내지 않습니다."
   },
   "reason": {
     "unreadable": "사용할 수 없음: 파일을 읽을 수 없습니다.",

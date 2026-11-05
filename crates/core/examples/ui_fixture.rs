@@ -1,6 +1,27 @@
 use repot_core::{FakeEnv, PROVIDER_TIMEOUT, default_providers, scan};
 use repot_core::{availability::availability_map, os::Os};
 use std::sync::Arc;
+const SSH_CONFIG: &str = "Include config.d/*
+Include ~/.orbstack/ssh/config
+
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/id_ed25519
+
+Host github-work
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/work_ed25519
+  IdentitiesOnly yes
+
+Host bastion
+  HostName bastion.example.com
+  ControlMaster auto
+  ControlPath ~/.ssh/cm-%r@%h:%p
+  ControlPersist 10m
+  SetEnv DEPLOY_TOKEN=synthetic-fixture-value
+";
 fn main() {
     let env = FakeEnv::new(Os::MacOs, "/Users/demo")
         .with_command("brew", &["leaves", "--installed-on-request"], "ripgrep\n")
@@ -12,6 +33,12 @@ fn main() {
         .with_file("/opt/npm/typescript/package.json", r#"{"description":"Typed JavaScript tooling"}"#)
         .with_file("/Users/demo/.zshrc", "export DEMO_TOKEN=synthetic-fixture-value\n")
         .with_file("/Users/demo/.gitconfig", "[user]\n  name = Demo\n")
+        // The plan 16 example: a followed `config.d/*`, an external Include and key paths.
+        .with_file("/Users/demo/.ssh/config", SSH_CONFIG)
+        .with_file(
+            "/Users/demo/.ssh/config.d/work",
+            "Host *.corp.example.com\n  User alice\n  ProxyJump bastion\n",
+        )
         .with_program("rustup")
         .with_command("rustup", &["toolchain", "list"], "stable-aarch64-apple-darwin (default)\n")
         .with_command(

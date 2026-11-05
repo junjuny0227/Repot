@@ -20,6 +20,7 @@ export const CATEGORIES: Category[] = [
   'editor',
   'git',
   'shell',
+  'ssh',
 ];
 
 /** The package manager a destination uses unless the user picks another (spec §9). */
@@ -110,6 +111,10 @@ export interface Filter {
   onlyMissing: boolean;
 }
 
+/** A finding the user may act on. An Include of another tool's file needs nothing from them (plan 16). */
+export const hasWarning = (item: Item): boolean =>
+  item.findings.some((f) => typeof f.kind !== 'object' || !('externalInclude' in f.kind));
+
 export function filterItems(
   items: Item[],
   avail: AvailabilityMap,
@@ -124,7 +129,7 @@ export function filterItems(
         i.name.toLowerCase().includes(q) ||
         (itemDescription(i) ?? '').toLowerCase().includes(q)) &&
       (!f.onlyAvailable || isAvailable(avail[i.id])) &&
-      (!f.onlyWarnings || i.findings.length > 0) &&
+      (!f.onlyWarnings || hasWarning(i)) &&
       (!f.onlyMissing || presence[i.id] === 'missing'),
   );
 }

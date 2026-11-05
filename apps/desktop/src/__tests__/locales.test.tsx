@@ -140,9 +140,9 @@ test('screens render in every locale without English leftovers', () => {
   }
 });
 
-// Values that may stay as in English: a product name, pure formatting, and terms a
+// Values that may stay as in English: a product or protocol name, pure formatting, and terms a
 // language's developers write in English (mainland Chinese dev tools say "Shell").
-const SAME_EVERYWHERE = new Set(['category.git', 'os.linux', 'withCount']);
+const SAME_EVERYWHERE = new Set(['category.git', 'category.ssh', 'os.linux', 'withCount']);
 const SAME_IN: Record<string, Set<string>> = { 'zh-Hans': new Set(['category.shell']) };
 function flat(obj: unknown, prefix = ''): [string, string][] {
   if (typeof obj === 'string') return [[prefix, obj]];

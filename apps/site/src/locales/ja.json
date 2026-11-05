@@ -86,12 +86,14 @@
       "globalPackage": "グローバルパッケージ",
       "editor": "エディタ",
       "git": "Git",
-      "shell": "シェル"
+      "shell": "シェル",
+      "ssh": "SSH"
     },
     "pyenv": "pyenv（pyenv-win を含む）",
     "editor": "VS Code と Cursor の拡張機能と設定、JetBrains IDE のプラグインと設定",
     "git": "ユーザー設定と、設定済みのグローバル除外ファイル",
     "shell": "zsh、Bash、fish、PowerShell のプロファイル、oh-my-zsh のカスタムプラグインとテーマ、Starship の設定",
+    "ssh": "SSH クライアントの設定と、そこから読み込む ~/.ssh 内のファイル（鍵は手動でコピー）",
     "note": "同じ OS（Linux では同じディストリビューション系統）に移行する場合、パッケージは元のマネージャーをそのまま使います。別の OS に移行する場合は Repot 内蔵のパッケージ対応表だけを使い、Windows では winget、Scoop、Chocolatey から選べます。ランタイム管理ツールは OS に合わせて対応付けられ、移行できない項目は推測せずに無効になります。"
   },
   "install": {

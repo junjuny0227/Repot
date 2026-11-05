@@ -68,6 +68,7 @@ Repot 读取电脑上已安装的内容，逐项提供说明，并导出恢复�
 | 编辑器 | VS Code 和 Cursor：扩展、设置、键盘快捷键、代码片段。JetBrains IDE（IntelliJ IDEA、WebStorm、PyCharm 等）：插件、代码样式、键盘映射、配色方案、实时模板 |
 | Git | 用户配置和全局忽略文件 |
 | Shell | zsh、Bash、fish 和 PowerShell 配置文件、oh-my-zsh 自定义插件与主题、Starship |
+| SSH | SSH 客户端配置及其引入的 `~/.ssh` 内文件（密钥需手动复制） |
 
 迁移到相同的操作系统（Linux 还需属于同一发行版系列）时，软件包管理器的项目沿用原来的管理器和名称。
 迁移到其他操作系统时，Repot 只使用应用内置的软件包对照表（约 285 个开发工具和应用）：

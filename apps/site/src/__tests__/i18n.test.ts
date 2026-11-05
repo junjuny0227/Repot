@@ -51,6 +51,7 @@ test('no empty strings', () => {
 // Brand and file-type names that read the same in every language.
 const SAME = new Set([
   'tools.groups.git',
+  'tools.groups.ssh',
   'install.files.mac-intel',
   'install.files.linux-appimage',
 ]);

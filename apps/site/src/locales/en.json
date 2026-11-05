@@ -86,12 +86,14 @@
       "globalPackage": "Global packages",
       "editor": "Editors",
       "git": "Git",
-      "shell": "Shell"
+      "shell": "Shell",
+      "ssh": "SSH"
     },
     "pyenv": "pyenv (including pyenv-win)",
     "editor": "VS Code and Cursor extensions and settings, JetBrains IDE plugins and settings",
     "git": "User configuration and the configured global ignore file",
     "shell": "zsh, Bash, fish and PowerShell profiles, oh-my-zsh custom plugins and themes, Starship configuration",
+    "ssh": "SSH client config and the files it includes from ~/.ssh (keys stay manual)",
     "note": "Within the same OS (and Linux distribution family), packages keep their original manager. Across operating systems, Repot uses only its built-in package map; on Windows you choose winget, Scoop or Chocolatey. Runtime managers are mapped between operating systems; unavailable items are disabled rather than guessed."
   },
   "install": {

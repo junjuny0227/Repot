@@ -73,6 +73,7 @@ Repot은 기기에 설치된 것을 읽어 항목마다 설명하고, 실행 전
 | 에디터 | VS Code와 Cursor의 확장, 설정, 단축키, 스니펫. JetBrains IDE(IntelliJ IDEA, WebStorm, PyCharm 등)의 플러그인, 코드 스타일, 키맵, 색 구성표, 라이브 템플릿 |
 | Git | 사용자 설정과 전역 ignore 파일 |
 | 셸 | zsh, Bash, fish, PowerShell 프로필, oh-my-zsh 사용자 플러그인과 테마, Starship |
+| SSH | SSH 클라이언트 설정과 그 설정이 불러오는 `~/.ssh` 안의 파일(키는 직접 복사) |
 
 같은 OS(Linux는 같은 배포판 계열)로 옮기면 패키지 매니저 항목은 원래 매니저와 이름을
 그대로 씁니다. 다른 OS로 옮길 때는 앱에 내장된 패키지 대응표(개발 도구와 앱 약 285개)만
