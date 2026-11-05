@@ -20,7 +20,11 @@ static TOKENS: LazyLock<Regex> = LazyLock::new(|| {
 static URL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"[a-zA-Z][a-zA-Z0-9+.-]*://([^/\s:@]+(?::[^/\s@]+)?)@").unwrap());
 static ASSIGNMENT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^\s*(?:export\s+|\$env:)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$").unwrap()
+    // SSH `SetEnv` takes `Key value` and `Key=value` forms (plan 16).
+    Regex::new(
+        r"^\s*(?:export\s+|\$env:|(?i:SetEnv)(?:\s*=\s*|\s+))?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$",
+    )
+    .unwrap()
 });
 static FISH: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^\s*set\s+(?:-\S+\s+)*([A-Za-z_][A-Za-z0-9_]*)\s+(.*)$").unwrap()
