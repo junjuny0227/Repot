@@ -196,7 +196,9 @@ repot export repot.json --only-missing        # 只导出本机缺少的内容
 - winget 仅处理 `winget` 源，不处理 Microsoft Store（`msstore`）软件包。
 - Volta 仅扫描运行时，不扫描通过 Volta 安装的全局软件包。
 - rustup 仅扫描工具链，不扫描组件或目标平台。
-- Scoop 不保留默认 bucket 之外的自定义 bucket URL。
+- 名称已知的 Scoop bucket（`extras`、`versions` 等）即使在本机是从分叉添加的，也会按官方来源
+  恢复。自定义 bucket 保留其 `https://` 或 `git@` 地址；来自本地文件夹或其他地址的 bucket
+  不会导出。
 - `repot.json` 只包含该次导出中的项目。因无法迁移到该目标而被排除的项目，之后无法从文件中导出；
   被遮盖的敏感信息也会保持遮盖。
 

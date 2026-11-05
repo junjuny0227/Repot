@@ -225,7 +225,9 @@ selection.
 - winget handles only the `winget` source, not Microsoft Store (`msstore`) packages.
 - Volta scans runtimes only, not global packages installed through Volta.
 - rustup scans toolchains only, not components or targets.
-- Scoop does not preserve custom bucket URLs other than its default bucket.
+- Scoop buckets with a well-known name (`extras`, `versions`, ...) are restored from the
+  official source, even if this machine added them from a fork. Custom buckets keep their
+  `https://` or `git@` URL; buckets from a local folder or other URLs are not exported.
 - `repot.json` holds only the items its export contained. Items left out because they
   could not move to that destination cannot be exported from the file later, and
   masked secrets stay masked.
