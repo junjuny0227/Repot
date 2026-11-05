@@ -103,6 +103,21 @@ fn label(item: &Item) -> String {
     }
 }
 
+/// Width of the label column in `scan` and `compare` lists.
+const LABEL_WIDTH: usize = 40;
+
+/// One list line: the label padded to [`LABEL_WIDTH`], then the id. A longer label (usually a
+/// Homebrew cask's `version,commit`) is cut with `…` so every id starts in the same column; the
+/// id itself is never cut, and `--json` keeps the whole version.
+fn item_line(item: &Item) -> String {
+    let mut label = label(item);
+    if label.chars().count() > LABEL_WIDTH {
+        label = label.chars().take(LABEL_WIDTH - 1).collect();
+        label.push('…');
+    }
+    format!("  {label:<LABEL_WIDTH$} {}", item.id)
+}
+
 fn scan_command(ctx: &mut Context, json: bool) -> Outcome {
     let result = scan_this_machine(ctx);
     if json {
@@ -134,7 +149,7 @@ fn scan_command(ctx: &mut Context, json: bool) -> Outcome {
         }
         writeln!(ctx.out, "\n{} ({})", text::category(category), items.len())?;
         for item in items {
-            writeln!(ctx.out, "  {:<40} {}", label(item), item.id)?;
+            writeln!(ctx.out, "{}", item_line(item))?;
         }
     }
     let missing: Vec<_> = result
@@ -208,7 +223,7 @@ fn compare_command(ctx: &mut Context, file: &Path, json: bool) -> Outcome {
         let items = of(state);
         writeln!(ctx.out, "\n{title}: {}", items.len())?;
         for item in items {
-            writeln!(ctx.out, "  {:<40} {}", label(item), item.id)?;
+            writeln!(ctx.out, "{}", item_line(item))?;
         }
     }
     let unusable = session
