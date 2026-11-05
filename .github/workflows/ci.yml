@@ -658,10 +658,20 @@ jobs:
           $resolved = & $ssh -G github-work | Out-String
           if ($LASTEXITCODE -ne 0) { throw "ssh -G exited $LASTEXITCODE" }
           if ($resolved -notmatch '(?m)^hostname github\.com\s*$') { throw 'github-work did not resolve' }
-          # ssh -G prints IdentityFile as written; -v logs the expanded path before it
-          # connects (to a closed local port here).
+          # ssh -G prints IdentityFile as written. ssh -v logs the expanded path, and
+          # Win32-OpenSSH 9.5 does so only after it connects, so give it a local port that
+          # accepts and then closes the connection.
+          $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+          $listener.Start()
+          $port = $listener.LocalEndpoint.Port
           $log = Join-Path $env:RUNNER_TEMP 'ssh-v.log'
-          Start-Process -FilePath $ssh -ArgumentList '-v', '-o', 'BatchMode=yes', '-o', 'HostName=127.0.0.1', '-o', 'Port=1', 'github-work' -RedirectStandardError $log -NoNewWindow -Wait
+          $process = Start-Process -FilePath $ssh -ArgumentList '-v', '-o', 'BatchMode=yes', '-o', 'HostName=127.0.0.1', '-o', "Port=$port", 'github-work' -RedirectStandardError $log -NoNewWindow -PassThru
+          $accept = $listener.AcceptTcpClientAsync()
+          if (-not $accept.Wait(30000)) { throw 'ssh did not connect' }
+          Start-Sleep -Seconds 2
+          $accept.Result.Close()
+          $listener.Stop()
+          if (-not $process.WaitForExit(30000)) { $process.Kill(); throw 'ssh did not exit' }
           $text = Get-Content $log -Raw
           Write-Host $text
           $want = 'identity file ' + ($env:USERPROFILE -replace '[\\/]+', '/') + '/.ssh/work_ed25519'
