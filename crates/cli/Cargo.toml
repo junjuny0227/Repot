@@ -1,6 +1,6 @@
 [package]
 name = "repot-cli"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
 description = "Scan a development environment and export restore scripts from the command line"
 license = "Apache-2.0"
