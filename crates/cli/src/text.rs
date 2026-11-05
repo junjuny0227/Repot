@@ -30,6 +30,7 @@ pub fn category(c: Category) -> &'static str {
         Category::Editor => "Editors",
         Category::Git => "Git",
         Category::Shell => "Shell",
+        Category::Ssh => "SSH",
     }
 }
 

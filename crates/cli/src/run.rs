@@ -138,6 +138,7 @@ fn scan_command(ctx: &mut Context, json: bool) -> Outcome {
         Category::Editor,
         Category::Git,
         Category::Shell,
+        Category::Ssh,
     ] {
         let items: Vec<_> = result
             .items
