@@ -44,7 +44,16 @@ export type Portability =
   | { mapped: RuntimeTool };
 export type ItemDetails =
   | { package: { manager: string; kind: 'formula' | 'cask' | 'tap' | 'package'; url?: string } }
-  | { runtime: { tool: RuntimeTool; runtime: string; isDefault: boolean } }
+  | {
+      runtime: {
+        tool: RuntimeTool;
+        runtime: string;
+        isDefault: boolean;
+        // rustup only, left out when empty.
+        components?: string[];
+        targets?: string[];
+      };
+    }
   | { globalPackage: { manager: string } }
   | { extension: { editor: Editor } }
   | { idePlugin: { ide: JetBrainsIde; folder: string } }
