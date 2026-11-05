@@ -4,7 +4,14 @@ import type { ReactNode } from 'react';
 // element that uses them carries the accessible name. Category glyphs are copied
 // from apps/desktop/src/screens/icons.tsx so the site matches the app sidebar.
 
-export type ToolKey = 'packageManager' | 'runtime' | 'globalPackage' | 'editor' | 'git' | 'shell';
+export type ToolKey =
+  | 'packageManager'
+  | 'runtime'
+  | 'globalPackage'
+  | 'editor'
+  | 'git'
+  | 'shell'
+  | 'ssh';
 export type PrincipleKey = 'readonly' | 'secrets' | 'network' | 'review';
 
 const GLYPHS: Record<ToolKey | PrincipleKey, ReactNode> = {
@@ -43,6 +50,12 @@ const GLYPHS: Record<ToolKey | PrincipleKey, ReactNode> = {
   shell: (
     <g fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3.4 5l3 3-3 3M8 11.4h4.6" />
+    </g>
+  ),
+  ssh: (
+    <g fill="none" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="5.4" cy="8" r="2.4" />
+      <path d="M7.8 8h5.4M11.4 8v2.2M13.2 8v1.6" />
     </g>
   ),
   // lock: nothing on the machine is touched

@@ -75,6 +75,7 @@ restore script you review before running. It never changes your device.
 | Editors | VS Code and Cursor: extensions, settings, keybindings, snippets. JetBrains IDEs (IntelliJ IDEA, WebStorm, PyCharm and others): plugins, code styles, keymaps, color schemes, live templates |
 | Git | User configuration and the global ignore file |
 | Shell | zsh, Bash, fish and PowerShell profiles, oh-my-zsh custom plugins and themes, Starship |
+| SSH | SSH client config and the files it includes from `~/.ssh` (keys stay manual) |
 
 Within the same OS (and Linux distribution family), package-manager entries keep
 their original manager and name. For a different OS, Repot uses only the package map
