@@ -3013,7 +3013,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "repot-cli"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "clap",
  "repot-core",
@@ -3023,7 +3023,7 @@ dependencies = [
 
 [[package]]
 name = "repot-core"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "insta",
  "regex",
@@ -3037,7 +3037,7 @@ dependencies = [
 
 [[package]]
 name = "repot-desktop"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "repot-core",
  "serde",
