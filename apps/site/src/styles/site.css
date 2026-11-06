@@ -241,7 +241,8 @@ a:hover {
 button.button {
   border: 0;
   font-family: inherit;
-  cursor: default;
+  /* A web page, not an app: everything clickable shows the pointing hand, like the links. */
+  cursor: pointer;
 }
 .button:active {
   filter: brightness(0.92);
@@ -789,7 +790,7 @@ h3 {
   border-radius: var(--radius-control);
   color: var(--label-2);
   list-style: none;
-  cursor: default;
+  cursor: pointer;
 }
 .language-menu summary::-webkit-details-marker {
   display: none;
