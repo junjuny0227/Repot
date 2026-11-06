@@ -20,6 +20,7 @@
 | | |
 | --- | --- |
 | macOS、Linux（Homebrew） | `brew install junjuny0227/tap/repot` |
+| Linux、macOS（安装脚本） | `curl -fsSL https://junjuny0227.github.io/Repot/install.sh \| sh` ([脚本](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)) |
 | Windows（Scoop） | `scoop bucket add repot https://github.com/junjuny0227/scoop-bucket`，然后 `scoop install repot/repot` |
 | 任意系统（手动） | 从 [Releases](https://github.com/junjuny0227/Repot/releases/latest) 下载 `repot-cli-<版本>-<target>.tar.gz` / `.zip`，用 `.sha256` 文件校验后把 `repot` 放到 `PATH` 中 |
 | 已安装 Rust | `cargo install --git https://github.com/junjuny0227/Repot repot-cli` |

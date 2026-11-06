@@ -20,6 +20,7 @@ SSH 接続、自分のスクリプトから行えます。
 | | |
 | --- | --- |
 | macOS、Linux（Homebrew） | `brew install junjuny0227/tap/repot` |
+| Linux、macOS（インストールスクリプト） | `curl -fsSL https://junjuny0227.github.io/Repot/install.sh \| sh` ([スクリプト](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)) |
 | Windows（Scoop） | `scoop bucket add repot https://github.com/junjuny0227/scoop-bucket` のあと `scoop install repot/repot` |
 | すべての OS（手動） | [Releases](https://github.com/junjuny0227/Repot/releases/latest) から `repot-cli-<バージョン>-<target>.tar.gz` / `.zip` をダウンロードし、`.sha256` ファイルで確認してから `repot` を `PATH` に置きます |
 | Rust がある場合 | `cargo install --git https://github.com/junjuny0227/Repot repot-cli` |

@@ -146,6 +146,13 @@ scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
 scoop install repot/repot
 ```
 
+Linux や macOS で Homebrew を使わない場合は、インストールスクリプトを使います。この機器に合うリリースの
+アーカイブをダウンロードし、SHA-256 で確認して `repot` を `~/.local/bin` に置きます（[先に読む](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)）。
+
+```sh
+curl -fsSL https://junjuny0227.github.io/Repot/install.sh | sh
+```
+
 どちらもリリースの公開時に更新されるので、`brew upgrade` / `scoop update repot` で最新に保てます。
 パッケージマネージャーを使わない場合は [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) から
 `repot-cli-<バージョン>-<target>.tar.gz`（macOS、Linux）または `.zip`（Windows）を

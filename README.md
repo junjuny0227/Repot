@@ -152,6 +152,14 @@ scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
 scoop install repot/repot
 ```
 
+Without Homebrew on Linux or macOS, the install script downloads the release archive for
+your machine, checks its SHA-256 and puts `repot` in `~/.local/bin`
+([read it first](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)):
+
+```sh
+curl -fsSL https://junjuny0227.github.io/Repot/install.sh | sh
+```
+
 Both are updated when a release is published, so `brew upgrade` / `scoop update repot`
 keep it current. Without a package manager, download
 `repot-cli-<version>-<target>.tar.gz` (macOS, Linux) or `.zip` (Windows) from

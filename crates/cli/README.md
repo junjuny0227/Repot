@@ -20,6 +20,7 @@ Command output is in English.
 | | |
 | --- | --- |
 | macOS, Linux (Homebrew) | `brew install junjuny0227/tap/repot` |
+| Linux, macOS (install script) | `curl -fsSL https://junjuny0227.github.io/Repot/install.sh \| sh` ([source](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)) |
 | Windows (Scoop) | `scoop bucket add repot https://github.com/junjuny0227/scoop-bucket` then `scoop install repot/repot` |
 | Any OS, by hand | Download `repot-cli-<version>-<target>.tar.gz` / `.zip` from [Releases](https://github.com/junjuny0227/Repot/releases/latest), check it against its `.sha256` file and put `repot` on your `PATH` |
 | With Rust | `cargo install --git https://github.com/junjuny0227/Repot repot-cli` |

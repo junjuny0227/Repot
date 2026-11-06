@@ -135,6 +135,13 @@ scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
 scoop install repot/repot
 ```
 
+在 Linux 或 macOS 上不使用 Homebrew 时，可以使用安装脚本。它会下载适合本机的发布压缩包，
+用 SHA-256 校验后把 `repot` 放到 `~/.local/bin`（[先阅读脚本](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)）：
+
+```sh
+curl -fsSL https://junjuny0227.github.io/Repot/install.sh | sh
+```
+
 发布新版本时两者都会更新，因此可用 `brew upgrade` / `scoop update repot` 保持最新。
 不使用包管理器时，从 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest) 下载
 `repot-cli-<版本>-<target>.tar.gz`（macOS、Linux）或 `.zip`（Windows），用 `.sha256`
