@@ -17,6 +17,11 @@
   "projectNav": "项目",
   "backToTop": "Repot，返回顶部",
   "language": "语言",
+  "copy": {
+    "copy": "复制",
+    "copied": "已复制",
+    "failed": "无法复制。请选中命令后手动复制。"
+  },
   "hero": {
     "downloadFor": {
       "mac": "下载 Mac 版",
@@ -36,7 +41,8 @@
     "howToOpen": "如何打开",
     "otherDownloads": "其他下载",
     "releaseNotes": "发行说明",
-    "screenshotAlt": "Repot 的检查窗口：左侧是带项目数量的分类侧边栏，中间是附有描述的扫描项目清单，右侧详情面板提示 .zshrc 中的三处敏感信息将被遮盖。"
+    "screenshotAlt": "Repot 的检查窗口：左侧是带项目数量的分类侧边栏，中间是附有描述的扫描项目清单，右侧详情面板提示 .zshrc 中的三处敏感信息将被遮盖。",
+    "cli": "习惯用终端？安装 repot 命令："
   },
   "how": {
     "title": "工作原理",

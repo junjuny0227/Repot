@@ -8,6 +8,14 @@ import type { PrincipleKey, ToolKey } from './icons';
 
 const REPO = 'https://github.com/junjuny0227/Repot';
 
+// How to install the repot CLI on each OS; the hero and the install section show the same one.
+const CLI_COMMAND: Record<DesktopOs, string> = {
+  mac: 'brew install junjuny0227/tap/repot',
+  linux: 'brew install junjuny0227/tap/repot',
+  windows:
+    'scoop bucket add repot https://github.com/junjuny0227/scoop-bucket\nscoop install repot/repot',
+};
+
 export function content(locale: Locale) {
   const m = messagesFor(locale);
   const principles: PrincipleKey[] = ['readonly', 'secrets', 'network', 'review'];
@@ -52,6 +60,7 @@ export function content(locale: Locale) {
     projectNav: m.projectNav,
     backToTop: m.backToTop,
     language: m.language,
+    copy: m.copy,
 
     hero: {
       ...m.hero,
@@ -60,6 +69,7 @@ export function content(locale: Locale) {
       macArm: m.install.files['mac-arm'],
       macIntel: m.install.files['mac-intel'],
       version: (version: string) => format(m.hero.version, { version }),
+      cliCommand: CLI_COMMAND,
     },
 
     how: {
@@ -89,12 +99,7 @@ export function content(locale: Locale) {
       macCommand: 'xattr -dr com.apple.quarantine /Applications/Repot.app',
       linuxCommand: 'chmod +x Repot_*.AppImage',
       cliGuideUrl: `${REPO}/blob/main/crates/cli/README${locale === 'en' ? '' : `.${locale}`}.md`,
-      cliCommand: {
-        mac: 'brew install junjuny0227/tap/repot',
-        linux: 'brew install junjuny0227/tap/repot',
-        windows:
-          'scoop bucket add repot https://github.com/junjuny0227/scoop-bucket\nscoop install repot/repot',
-      } as Record<DesktopOs, string>,
+      cliCommand: CLI_COMMAND,
     },
 
     footer: {

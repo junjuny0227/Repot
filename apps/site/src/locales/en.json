@@ -17,6 +17,11 @@
   "projectNav": "Project",
   "backToTop": "Repot, back to top",
   "language": "Language",
+  "copy": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "failed": "Could not copy. Select the command and copy it by hand."
+  },
   "hero": {
     "downloadFor": {
       "mac": "Download for Mac",
@@ -36,7 +41,8 @@
     "howToOpen": "How to open it",
     "otherDownloads": "Other downloads",
     "releaseNotes": "Release notes",
-    "screenshotAlt": "Repot's review window: a sidebar of categories with item counts, a checklist of scanned items with descriptions, and a detail panel showing that three secrets in .zshrc will be masked."
+    "screenshotAlt": "Repot's review window: a sidebar of categories with item counts, a checklist of scanned items with descriptions, and a detail panel showing that three secrets in .zshrc will be masked.",
+    "cli": "Prefer the terminal? Install the repot command:"
   },
   "how": {
     "title": "How it works",

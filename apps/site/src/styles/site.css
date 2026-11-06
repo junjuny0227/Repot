@@ -299,6 +299,8 @@ a:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* A long command scrolls inside its box instead of widening the hero. */
+  max-width: 100%;
   margin-top: 32px;
 }
 .download-title {
@@ -312,6 +314,17 @@ a:hover {
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
+}
+.hero-cli {
+  width: 520px;
+  max-width: 100%;
+  margin-top: 24px;
+  font-size: var(--site-small);
+  line-height: var(--site-small-lh);
+  color: var(--label-2);
+}
+.hero-cli .command-wrap {
+  margin-top: 8px;
 }
 .hint {
   max-width: 460px;
@@ -395,10 +408,10 @@ a:hover {
   line-height: var(--site-small-lh);
   color: var(--label-2);
 }
-.footnote pre {
+.footnote .command-wrap {
   margin: 8px -4px 0;
 }
-.footnote pre + p {
+.footnote .command-wrap + p {
   margin-top: 8px;
 }
 
@@ -705,6 +718,48 @@ h3 {
 .launch li + li::before {
   left: 48px;
 }
+/* A command with a copy button (CopyCommand): the code scrolls, the button stays put. */
+.command-wrap {
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
+}
+.command {
+  display: flex;
+  align-items: stretch;
+  border-radius: 8px;
+  background-color: var(--code);
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+.command pre {
+  flex: 1;
+  min-width: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+.command button {
+  flex: none;
+  padding: 0 12px;
+  border: 0;
+  border-left: 1px solid var(--separator);
+  border-radius: 0 8px 8px 0;
+  background-color: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--site-small);
+  cursor: pointer;
+}
+.command button:hover {
+  background-color: var(--fill);
+}
+.command button:active {
+  background-color: var(--fill-2);
+}
+.copy-status {
+  margin-top: 6px;
+  font-size: var(--site-small);
+  color: var(--orange-text);
+}
 pre {
   overflow-x: auto;
   padding: 8px 12px;
@@ -714,7 +769,7 @@ pre {
   color: var(--label);
   white-space: pre;
 }
-.launch pre {
+.launch .command-wrap {
   margin-top: 8px;
 }
 @media (max-width: 880px) {

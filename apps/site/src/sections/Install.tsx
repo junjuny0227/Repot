@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useContent } from '../content';
 import { type DesktopOs, downloadsFor, type Platform, RELEASES_URL } from '../downloads';
 import { DownloadArrow } from '../icons';
+import { CopyCommand } from './CopyCommand';
 
 const ORDER: DesktopOs[] = ['mac', 'windows', 'linux'];
 
@@ -54,9 +55,7 @@ export function Install({ platform }: { platform: Platform }) {
             <p>
               <strong>{C.install.cliTitle}</strong> {C.install.cliText}
             </p>
-            <pre>
-              <code>{C.install.cliCommand[os]}</code>
-            </pre>
+            <CopyCommand command={C.install.cliCommand[os]} />
             <p>
               <a href={C.install.cliGuideUrl}>{C.install.cliGuide}</a>
             </p>
@@ -72,11 +71,7 @@ export function Install({ platform }: { platform: Platform }) {
                 </span>
                 <div>
                   <p>{s}</p>
-                  {os === 'linux' && i === 0 && (
-                    <pre>
-                      <code>{C.install.linuxCommand}</code>
-                    </pre>
-                  )}
+                  {os === 'linux' && i === 0 && <CopyCommand command={C.install.linuxCommand} />}
                 </div>
               </li>
             ))}
@@ -84,9 +79,7 @@ export function Install({ platform }: { platform: Platform }) {
           {os === 'mac' && (
             <div className="footnote">
               <p>{C.install.macNote}</p>
-              <pre>
-                <code>{C.install.macCommand}</code>
-              </pre>
+              <CopyCommand command={C.install.macCommand} />
             </div>
           )}
         </div>
