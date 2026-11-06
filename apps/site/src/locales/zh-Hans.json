@@ -139,8 +139,9 @@
     },
     "macNote": "在新版 macOS 中，按住 Control 点按 ›“打开”已无法绕过此检查。你也可以在“终端”中移除下载文件的隔离属性：",
     "cliTitle": "命令行工具。",
-    "cliText": "repot 命令可在终端中完成同样的扫描、比较和导出。使用包管理器安装：",
-    "cliGuide": "命令行工具使用指南"
+    "cliText": "repot 命令可在终端中完成同样的扫描、比较和导出。安装命令：",
+    "cliGuide": "命令行工具使用指南",
+    "cliLinuxNote": "这会把 repot 放到 ~/.local/bin。如果 shell 找不到它，请把该文件夹加入 PATH。使用 Homebrew 的话，可以改为运行："
   },
   "footer": {
     "summary": "Repot 是免费的开源软件，基于 Apache-2.0 许可证发布。",

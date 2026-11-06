@@ -86,6 +86,21 @@ test('the hero shows the CLI install command for the detected platform, with a c
   }
 });
 
+test('Linux gets the release archive, not Homebrew, with Homebrew as the alternative', () => {
+  const linux = {
+    userAgent: 'Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0',
+  };
+  const html = render(linux);
+  const archive = `curl -fsSL https://github.com/junjuny0227/Repot/releases/download/v${VERSION}/repot-cli-${VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C ~/.local/bin --strip-components=1 repot-cli-${VERSION}-x86_64-unknown-linux-gnu/repot`;
+  const hero = html.slice(0, html.indexOf('id="how"'));
+  expect(hero).toContain(archive);
+  expect(hero).not.toContain('brew install');
+  const install = html.slice(html.indexOf('id="install"'));
+  expect(install).toContain(archive);
+  expect(install).toContain('~/.local/bin. If your shell does not find it');
+  expect(install).toContain('<code>brew install junjuny0227/tap/repot</code>');
+});
+
 test('every command on the page is copyable', () => {
   const html = render(mac);
   expect(html).not.toContain('<pre');

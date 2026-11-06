@@ -56,6 +56,12 @@ export function Install({ platform }: { platform: Platform }) {
               <strong>{C.install.cliTitle}</strong> {C.install.cliText}
             </p>
             <CopyCommand command={C.install.cliCommand[os]} />
+            {os === 'linux' && (
+              <>
+                <p>{C.install.cliLinuxNote}</p>
+                <CopyCommand command={C.install.brewCommand} />
+              </>
+            )}
             <p>
               <a href={C.install.cliGuideUrl}>{C.install.cliGuide}</a>
             </p>

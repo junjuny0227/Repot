@@ -139,8 +139,9 @@
     },
     "macNote": "최신 macOS에서는 Control-클릭 › 열기로 더 이상 확인을 건너뛸 수 없습니다. 대신 터미널에서 다운로드 격리 속성을 지울 수 있습니다:",
     "cliTitle": "명령줄 도구.",
-    "cliText": "repot 명령으로 같은 스캔·비교·내보내기를 터미널에서 할 수 있습니다. 패키지 매니저로 설치하세요.",
-    "cliGuide": "명령줄 도구 사용법"
+    "cliText": "repot 명령으로 같은 스캔·비교·내보내기를 터미널에서 할 수 있습니다. 설치 명령:",
+    "cliGuide": "명령줄 도구 사용법",
+    "cliLinuxNote": "repot을 ~/.local/bin에 넣습니다. 셸에서 찾지 못하면 이 폴더를 PATH에 추가하세요. Homebrew를 쓴다면 대신 이 명령을 실행하세요."
   },
   "footer": {
     "summary": "Repot은 무료 오픈 소스이며 Apache-2.0 라이선스로 배포됩니다.",
