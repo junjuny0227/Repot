@@ -17,6 +17,11 @@
   "projectNav": "프로젝트",
   "backToTop": "Repot, 맨 위로",
   "language": "언어",
+  "copy": {
+    "copy": "복사",
+    "copied": "복사됨",
+    "failed": "복사하지 못했습니다. 명령을 선택해 직접 복사해 주세요."
+  },
   "hero": {
     "downloadFor": {
       "mac": "Mac용 다운로드",
@@ -36,7 +41,8 @@
     "howToOpen": "여는 방법",
     "otherDownloads": "다른 다운로드",
     "releaseNotes": "릴리스 노트",
-    "screenshotAlt": "Repot의 검토 창: 카테고리와 항목 수를 보여 주는 사이드바, 설명이 붙은 스캔 항목 체크리스트, .zshrc의 비밀 정보 세 개를 가린다고 알려 주는 세부 정보 패널."
+    "screenshotAlt": "Repot의 검토 창: 카테고리와 항목 수를 보여 주는 사이드바, 설명이 붙은 스캔 항목 체크리스트, .zshrc의 비밀 정보 세 개를 가린다고 알려 주는 세부 정보 패널.",
+    "cli": "터미널이 편하다면 repot 명령을 설치하세요."
   },
   "how": {
     "title": "작동 방식",

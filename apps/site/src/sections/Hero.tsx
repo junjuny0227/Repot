@@ -1,8 +1,20 @@
 import appIcon from '../../../desktop/app-icon-macos.svg';
 import { useContent } from '../content';
-import { downloadsFor, type Platform, RELEASE_URL, VERSION } from '../downloads';
+import { type DesktopOs, downloadsFor, type Platform, RELEASE_URL, VERSION } from '../downloads';
 import { DownloadArrow, WarningTriangle } from '../icons';
+import { CopyCommand } from './CopyCommand';
 import { Screenshot } from './Screenshot';
+
+// The CLI installs from a package manager, not from the download above, so it gets its own line.
+function Cli({ os }: { os: DesktopOs }) {
+  const C = useContent();
+  return (
+    <div className="hero-cli">
+      <p>{C.hero.cli}</p>
+      <CopyCommand command={C.hero.cliCommand[os]} />
+    </div>
+  );
+}
 
 function Buttons({ platform, macArch }: { platform: Platform; macArch: 'mac-arm' | 'mac-intel' }) {
   const C = useContent();
@@ -34,6 +46,7 @@ function Buttons({ platform, macArch }: { platform: Platform; macArch: 'mac-arm'
           ))}
         </div>
         <p className="hint">{C.hero.macHelp}</p>
+        <Cli os="mac" />
       </div>
     );
   }
@@ -47,6 +60,7 @@ function Buttons({ platform, macArch }: { platform: Platform; macArch: 'mac-arm'
         </a>
       </div>
       <p className="hint">{C.hero.fileHint[platform]}</p>
+      <Cli os={platform} />
     </div>
   );
 }

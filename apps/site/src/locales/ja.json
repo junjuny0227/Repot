@@ -17,6 +17,11 @@
   "projectNav": "プロジェクト",
   "backToTop": "Repot、ページの先頭へ",
   "language": "言語",
+  "copy": {
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "failed": "コピーできませんでした。コマンドを選択して手動でコピーしてください。"
+  },
   "hero": {
     "downloadFor": {
       "mac": "Mac 版をダウンロード",
@@ -36,7 +41,8 @@
     "howToOpen": "開き方",
     "otherDownloads": "その他のダウンロード",
     "releaseNotes": "リリースノート",
-    "screenshotAlt": "Repot の確認画面：項目数付きのカテゴリが並ぶサイドバー、説明付きのスキャン項目のチェックリスト、.zshrc の機密情報 3 件がマスクされることを示す詳細パネル。"
+    "screenshotAlt": "Repot の確認画面：項目数付きのカテゴリが並ぶサイドバー、説明付きのスキャン項目のチェックリスト、.zshrc の機密情報 3 件がマスクされることを示す詳細パネル。",
+    "cli": "ターミナル派なら repot コマンドをインストールできます。"
   },
   "how": {
     "title": "仕組み",

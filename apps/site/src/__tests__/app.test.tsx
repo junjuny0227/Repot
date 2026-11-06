@@ -71,6 +71,29 @@ test("the hero offers the detected platform's installer", () => {
   }
 });
 
+test('the hero shows the CLI install command for the detected platform, with a copy button', () => {
+  const hero = (html: string) => html.slice(0, html.indexOf('id="how"'));
+  for (const code of codes) {
+    const onMac = hero(render(mac, code));
+    expect(onMac).toContain('brew install junjuny0227/tap/repot');
+    expect(onMac).toMatch(/<pre><code>brew install[^<]*<\/code><\/pre><button type="button">/);
+    const onWindows = hero(render(windows, code));
+    expect(onWindows).toContain('scoop install repot/repot');
+    expect(onWindows).not.toContain('brew install');
+    // No package manager to suggest on a phone.
+    expect(hero(render(iphone, code))).not.toContain('class="command"');
+  }
+});
+
+test('every command on the page has a copy button', () => {
+  const html = render(mac);
+  const commands = html.match(/<pre>/g)?.length ?? 0;
+  expect(commands).toBeGreaterThan(0);
+  expect(
+    html.match(/<div class="command"><pre>[\s\S]*?<\/pre><button type="button">/g),
+  ).toHaveLength(commands);
+});
+
 test('every page links to every language, marks its own, and asks for translation help', () => {
   for (const { code } of LOCALES) {
     const html = render(mac, code);
