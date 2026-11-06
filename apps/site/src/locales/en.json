@@ -20,7 +20,9 @@
   "copy": {
     "copy": "Copy",
     "copied": "Copied",
-    "failed": "Could not copy. Select the command and copy it by hand."
+    "label": "Copy command",
+    "copiedStatus": "Copied to the clipboard.",
+    "failedStatus": "Could not copy. Select the command and copy it manually."
   },
   "hero": {
     "downloadFor": {
@@ -42,7 +44,7 @@
     "otherDownloads": "Other downloads",
     "releaseNotes": "Release notes",
     "screenshotAlt": "Repot's review window: a sidebar of categories with item counts, a checklist of scanned items with descriptions, and a detail panel showing that three secrets in .zshrc will be masked.",
-    "cli": "Prefer the terminal? Install the repot command:"
+    "cli": "Or install the command-line tool, repot:"
   },
   "how": {
     "title": "How it works",

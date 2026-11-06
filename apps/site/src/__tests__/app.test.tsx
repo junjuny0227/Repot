@@ -75,23 +75,22 @@ test('the hero shows the CLI install command for the detected platform, with a c
   const hero = (html: string) => html.slice(0, html.indexOf('id="how"'));
   for (const code of codes) {
     const onMac = hero(render(mac, code));
-    expect(onMac).toContain('brew install junjuny0227/tap/repot');
-    expect(onMac).toMatch(/<pre><code>brew install[^<]*<\/code><\/pre><button type="button">/);
+    expect(onMac).toMatch(
+      /<div class="command-box"><code>brew install junjuny0227\/tap\/repot<\/code><button/,
+    );
     const onWindows = hero(render(windows, code));
     expect(onWindows).toContain('scoop install repot/repot');
     expect(onWindows).not.toContain('brew install');
     // No package manager to suggest on a phone.
-    expect(hero(render(iphone, code))).not.toContain('class="command"');
+    expect(hero(render(iphone, code))).not.toContain('class="command-box"');
   }
 });
 
-test('every command on the page has a copy button', () => {
+test('every command on the page is copyable', () => {
   const html = render(mac);
-  const commands = html.match(/<pre>/g)?.length ?? 0;
-  expect(commands).toBeGreaterThan(0);
-  expect(
-    html.match(/<div class="command"><pre>[\s\S]*?<\/pre><button type="button">/g),
-  ).toHaveLength(commands);
+  expect(html).not.toContain('<pre');
+  // Hero CLI, install CLI and the macOS quarantine command.
+  expect(html.match(/<div class="command-box"><code>[^<]+<\/code><button/g)).toHaveLength(3);
 });
 
 test('every page links to every language, marks its own, and asks for translation help', () => {
