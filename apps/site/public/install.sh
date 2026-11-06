@@ -40,8 +40,9 @@ main() {
 
   expected=$(cut -d ' ' -f 1 <"$tmp/$name.tar.gz.sha256")
   actual=$(sha256 "$tmp/$name.tar.gz")
-  [ -n "$expected" ] && [ "$expected" = "$actual" ] ||
+  if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
     fail "checksum mismatch for $name.tar.gz (expected $expected, got $actual); nothing was installed"
+  fi
 
   tar -xzf "$tmp/$name.tar.gz" -C "$tmp"
   [ -f "$tmp/$name/repot" ] || fail "$name.tar.gz has no repot in it; nothing was installed"
