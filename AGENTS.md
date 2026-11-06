@@ -25,6 +25,7 @@
 | `pnpm package-map:gen candidates` / `run` | verified (2026-11-03, 보고할 문제가 있으면 exit 1) | 계획 10 (로컬 전용, 네트워크와 `JEB_AI_HUB_KEY` 필요, CI에서 돌리지 않는다) |
 | `pnpm package-map:gen apply-review` (에이전트 결정은 `--reviewer agent`, provenance `agent-review`) | verified (2026-11-03, `--reviewer agent`로 실제 반영) | 계획 10 |
 | `cargo run -p repot-cli -- scan` / `export --dry-run` | verified (exit 0, 2026-11-04) | 계획 15 Task 3 (실제 기기를 읽기만 함) |
+| `node --test scripts/install-sh/*.test.mjs` / `shellcheck -s sh apps/site/public/install.sh` | verified (exit 0, 2026-11-06) | CLI 설치 스크립트 (로컬 가짜 릴리스만 쓴다, Windows에서는 돌리지 않는다) |
 | `pnpm check` (검사만, CI는 `pnpm exec biome ci .`) / `pnpm fix` (포맷·린트 자동 수정) | verified (exit 0, 2026-11-04) | Biome 도입 |
 
 - 툴체인은 `rust-toolchain.toml`(stable, clippy, rustfmt)과 pnpm workspace를 따른다.

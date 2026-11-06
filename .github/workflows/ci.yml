@@ -561,6 +561,41 @@ jobs:
       - run: pnpm --filter @repot/site test
       - run: pnpm --filter @repot/site build
 
+  # The CLI install script (apps/site/public/install.sh, served by the site). It runs on
+  # every change: the script lives under apps/site/, which the site-only shortcut skips.
+  install-script:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Lint the install script
+        if: runner.os == 'Linux'
+        run: shellcheck -s sh apps/site/public/install.sh
+      # Offline: a local stand-in for GitHub Releases (latest redirect, checksum mismatch, 404).
+      - run: node --test scripts/install-sh/*.test.mjs
+      # Online: the real latest release, piped to sh as the site tells users to.
+      - name: Install the latest release
+        shell: bash
+        run: |
+          sh < apps/site/public/install.sh
+          ~/.local/bin/repot --version
+      - name: Install on other Linux distributions
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for image in debian:stable fedora:latest archlinux:latest; do
+            echo "== $image"
+            docker run --rm -v "$PWD/apps/site/public/install.sh:/install.sh:ro" "$image" sh -c '
+              command -v curl > /dev/null || { apt-get update -qq && apt-get install -yqq curl ca-certificates > /dev/null; }
+              sh < /install.sh && ~/.local/bin/repot --version'
+          done
+
   scripts:
     needs: changes
     if: needs.changes.outputs.site_only != 'true'
