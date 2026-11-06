@@ -27,3 +27,8 @@ test('the site imports the desktop tokens instead of copying them', () => {
     '@import "../../../desktop/src/styles/tokens.css"',
   );
 });
+
+test('a <button class="button"> drops the browser border so it looks like the link buttons', () => {
+  const css = Object.values(siteCss).join('\n');
+  expect(css).toMatch(/button\.button\s*\{[^}]*border:\s*0;/);
+});

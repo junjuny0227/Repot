@@ -237,6 +237,12 @@ a:hover {
 .button:hover {
   text-decoration: none;
 }
+/* <button class="button"> (copy) drops the UA border and font so it matches the links. */
+button.button {
+  border: 0;
+  font-family: inherit;
+  cursor: default;
+}
 .button:active {
   filter: brightness(0.92);
 }
@@ -904,6 +910,13 @@ h3 {
 .command-box .button {
   flex: none;
   min-width: 44px;
+  /* A 44px pointer target around the 28px button, as on the Doorplate site. */
+  position: relative;
+}
+.command-box .button::after {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
 }
 .command.copied .button .symbol {
   color: var(--green-text);
