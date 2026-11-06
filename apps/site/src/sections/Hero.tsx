@@ -10,7 +10,7 @@ function Cli({ os }: { os: DesktopOs }) {
   const C = useContent();
   return (
     <div className="hero-cli">
-      <p>{C.hero.cli}</p>
+      <p className="download-title">{C.hero.cli}</p>
       <CopyCommand command={C.hero.cliCommand[os]} />
     </div>
   );

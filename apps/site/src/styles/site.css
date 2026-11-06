@@ -299,8 +299,6 @@ a:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* A long command scrolls inside its box instead of widening the hero. */
-  max-width: 100%;
   margin-top: 32px;
 }
 .download-title {
@@ -316,15 +314,12 @@ a:hover {
   gap: 12px;
 }
 .hero-cli {
-  width: 520px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 520px;
   margin-top: 24px;
-  font-size: var(--site-small);
-  line-height: var(--site-small-lh);
-  color: var(--label-2);
 }
-.hero-cli .command-wrap {
-  margin-top: 8px;
+.hero-cli .download-title {
+  margin-bottom: 8px;
 }
 .hint {
   max-width: 460px;
@@ -408,11 +403,8 @@ a:hover {
   line-height: var(--site-small-lh);
   color: var(--label-2);
 }
-.footnote .command-wrap {
-  margin: 8px -4px 0;
-}
-.footnote .command-wrap + p {
-  margin-top: 8px;
+.footnote .command {
+  margin: 8px -4px;
 }
 
 .group {
@@ -718,63 +710,12 @@ h3 {
 .launch li + li::before {
   left: 48px;
 }
-/* A command with a copy button (CopyCommand): the code scrolls, the button stays put. */
-.command-wrap {
-  min-width: 0;
-  max-width: 100%;
-  text-align: left;
-}
-.command {
-  display: flex;
-  align-items: stretch;
-  border-radius: 8px;
-  background-color: var(--code);
-  box-shadow: inset 0 0 0 1px var(--separator);
-}
-.command pre {
-  flex: 1;
-  min-width: 0;
-  background-color: transparent;
-  box-shadow: none;
-}
-.command button {
-  flex: none;
-  padding: 0 12px;
-  border: 0;
-  border-left: 1px solid var(--separator);
-  border-radius: 0 8px 8px 0;
-  background-color: transparent;
-  color: var(--accent);
-  font: inherit;
-  font-size: var(--site-small);
-  cursor: pointer;
-}
-.command button:hover {
-  background-color: var(--fill);
-}
-.command button:active {
-  background-color: var(--fill-2);
-}
-.copy-status {
-  margin-top: 6px;
-  font-size: var(--site-small);
-  color: var(--orange-text);
-}
-pre {
-  overflow-x: auto;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background-color: var(--code);
-  box-shadow: inset 0 0 0 1px var(--separator);
-  color: var(--label);
-  white-space: pre;
-}
-.launch .command-wrap {
+.launch .command {
   margin-top: 8px;
 }
 @media (max-width: 880px) {
   .install {
-    /* minmax(0, …): a long command in a <pre> scrolls instead of widening the page. */
+    /* minmax(0, …): a long file name or command cannot widen the page. */
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -935,4 +876,46 @@ pre {
 }
 .beta a {
   white-space: nowrap;
+}
+
+/* Copyable commands: a code block with a push button. Long commands wrap instead of being cut. */
+.command {
+  text-align: left;
+}
+.command-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 8px;
+  background-color: var(--code);
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+.command-box code {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  color: var(--label);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.command-box .button {
+  flex: none;
+  min-width: 44px;
+}
+.command.copied .button .symbol {
+  color: var(--green-text);
+}
+.copy-status:empty {
+  display: none;
+}
+.copy-status {
+  margin-top: 6px;
+  font-size: var(--site-small);
+  line-height: var(--site-small-lh);
+}
+.command.failed .copy-status {
+  color: var(--red-text);
 }

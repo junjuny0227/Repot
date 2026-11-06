@@ -137,3 +137,25 @@ export const Globe = () => (
     />
   </svg>
 );
+
+export const CopyGlyph = () => (
+  <svg className="symbol" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
+      <rect x="5.4" y="5.4" width="8" height="8" rx="1.6" />
+      <path d="M10.6 5.4V4a1.4 1.4 0 0 0-1.4-1.4H4a1.4 1.4 0 0 0-1.4 1.4v5.2A1.4 1.4 0 0 0 4 10.6h1.4" />
+    </g>
+  </svg>
+);
+
+export const Checkmark = () => (
+  <svg className="symbol" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <path
+      d="M3.4 8.4l3 3 6.2-6.8"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
