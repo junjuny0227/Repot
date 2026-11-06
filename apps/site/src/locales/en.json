@@ -141,7 +141,8 @@
     "cliTitle": "Command-line tool.",
     "cliText": "The repot command does the same scan, comparison and export in a terminal. To install it:",
     "cliGuide": "How to use the command-line tool",
-    "cliLinuxNote": "This puts repot in ~/.local/bin. If your shell does not find it, add that folder to PATH. With Homebrew, run this instead:"
+    "cliLinuxNote": "The script checks the download against its SHA-256, puts repot in ~/.local/bin and tells you if that folder is not on PATH. It changes nothing else. With Homebrew, run this instead:",
+    "installScript": "Read the install script"
   },
   "footer": {
     "summary": "Repot is free and open source. Apache-2.0 license.",
