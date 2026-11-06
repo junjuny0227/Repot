@@ -2,20 +2,19 @@
 // links, product and tool names, and terminal commands stay here because they are not translated.
 // Facts come from README.md and the MVP spec only.
 import { createContext, useContext } from 'react';
-import { type AssetId, type DesktopOs, VERSION } from './downloads';
-import { format, formatList, type Locale, messagesFor } from './i18n';
+import type { AssetId, DesktopOs } from './downloads';
+import { BASE, format, formatList, type Locale, messagesFor, SITE_ORIGIN } from './i18n';
 import type { PrincipleKey, ToolKey } from './icons';
 
 const REPO = 'https://github.com/junjuny0227/Repot';
 
 const BREW = 'brew install junjuny0227/tap/repot';
-const LINUX_TARGET = `repot-cli-${VERSION}-x86_64-unknown-linux-gnu`;
+// apps/site/public/install.sh, published with the site.
+const INSTALL_SCRIPT = `${SITE_ORIGIN}${BASE}install.sh`;
 
-// How to install the repot CLI on each OS; the hero and the install section show the same one.
-// Few Linux users have Homebrew, so Linux unpacks the release archive into ~/.local/bin instead.
 const CLI_COMMAND: Record<DesktopOs, string> = {
   mac: BREW,
-  linux: `mkdir -p ~/.local/bin && curl -fsSL ${REPO}/releases/download/v${VERSION}/${LINUX_TARGET}.tar.gz | tar -xz -C ~/.local/bin --strip-components=1 ${LINUX_TARGET}/repot`,
+  linux: `curl -fsSL ${INSTALL_SCRIPT} | sh`,
   windows:
     'scoop bucket add repot https://github.com/junjuny0227/scoop-bucket\nscoop install repot/repot',
 };
@@ -75,6 +74,7 @@ export function content(locale: Locale) {
       version: (version: string) => format(m.hero.version, { version }),
       cliCommand: CLI_COMMAND,
       brewCommand: BREW,
+      installScriptSource: `${REPO}/blob/main/apps/site/public/install.sh`,
     },
 
     how: {
@@ -106,6 +106,7 @@ export function content(locale: Locale) {
       cliGuideUrl: `${REPO}/blob/main/crates/cli/README${locale === 'en' ? '' : `.${locale}`}.md`,
       cliCommand: CLI_COMMAND,
       brewCommand: BREW,
+      installScriptSource: `${REPO}/blob/main/apps/site/public/install.sh`,
     },
 
     footer: {

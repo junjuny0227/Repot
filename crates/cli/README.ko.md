@@ -20,6 +20,7 @@
 | | |
 | --- | --- |
 | macOS, Linux (Homebrew) | `brew install junjuny0227/tap/repot` |
+| Linux, macOS(설치 스크립트) | `curl -fsSL https://junjuny0227.github.io/Repot/install.sh \| sh` ([스크립트](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)) |
 | Windows (Scoop) | `scoop bucket add repot https://github.com/junjuny0227/scoop-bucket` 다음에 `scoop install repot/repot` |
 | 모든 OS, 직접 설치 | [Releases](https://github.com/junjuny0227/Repot/releases/latest)에서 `repot-cli-<버전>-<target>.tar.gz` / `.zip`을 받아 `.sha256` 파일로 확인한 뒤 `repot`을 `PATH`에 둡니다 |
 | Rust가 있으면 | `cargo install --git https://github.com/junjuny0227/Repot repot-cli` |

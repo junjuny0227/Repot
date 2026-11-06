@@ -147,6 +147,13 @@ scoop bucket add repot https://github.com/junjuny0227/scoop-bucket
 scoop install repot/repot
 ```
 
+Linux나 macOS에서 Homebrew 없이 설치하려면 설치 스크립트를 씁니다. 이 기기에 맞는 릴리스 압축 파일을
+받아 SHA-256으로 확인하고 `repot`을 `~/.local/bin`에 넣습니다([먼저 읽어 보기](https://github.com/junjuny0227/Repot/blob/main/apps/site/public/install.sh)).
+
+```sh
+curl -fsSL https://junjuny0227.github.io/Repot/install.sh | sh
+```
+
 릴리스가 공개되면 둘 다 갱신되므로 `brew upgrade` / `scoop update repot`으로 최신을 유지합니다.
 패키지 매니저 없이 쓰려면 [GitHub Releases](https://github.com/junjuny0227/Repot/releases/latest)에서
 `repot-cli-<버전>-<target>.tar.gz`(macOS, Linux)나 `.zip`(Windows)을 받아 `.sha256`

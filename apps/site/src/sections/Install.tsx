@@ -65,6 +65,11 @@ export function Install({ platform }: { platform: Platform }) {
             <p>
               <a href={C.install.cliGuideUrl}>{C.install.cliGuide}</a>
             </p>
+            {os === 'linux' && (
+              <p>
+                <a href={C.install.installScriptSource}>{C.install.installScript}</a>
+              </p>
+            )}
           </div>
         </div>
         <div>
