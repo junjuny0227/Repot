@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useContent } from '../content';
 import { Checkmark, CopyGlyph } from '../icons';
+import { ScrollingCode } from './ScrollingCode';
 
 export type CopyStatus = 'idle' | 'copied' | 'failed';
 
@@ -42,7 +43,7 @@ export function CopyCommand({
   return (
     <div className={`command ${status}`}>
       <div className="command-box">
-        <code>{command}</code>
+        <ScrollingCode>{command}</ScrollingCode>
         <button
           type="button"
           className="button"
