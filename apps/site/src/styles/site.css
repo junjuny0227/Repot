@@ -324,6 +324,10 @@ button.button {
   max-width: 520px;
   margin-top: 24px;
 }
+/* The command scrolls inside its box, so the column must not grow to the command's width. */
+.hero .downloads {
+  width: 100%;
+}
 .hero-cli .download-title {
   margin-bottom: 8px;
 }
@@ -884,28 +888,95 @@ h3 {
   white-space: nowrap;
 }
 
-/* Copyable commands: a code block with a push button. Long commands wrap instead of being cut. */
+/* Copyable commands: a code block with a push button. A long command stays on one line and
+   scrolls sideways, so a path is never split mid-word; the copy button stays in view. */
 .command {
   text-align: left;
 }
 .command-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 8px 8px 8px 12px;
   border-radius: 8px;
   background-color: var(--code);
   box-shadow: inset 0 0 0 1px var(--separator);
 }
-.command-box code {
+/* A long command scrolls sideways (ScrollingCode). Each end with hidden text fades into the
+   box, and a thin overlay scrollbar shows only while the pointer is over the box or it has
+   focus. The native scrollbar is hidden: a classic one would make only overflowing boxes taller. */
+.command-text {
+  position: relative;
   flex: 1;
   min-width: 0;
+}
+.command-box code {
+  display: block;
   padding: 4px 0;
   color: var(--label);
   font-size: 13px;
   line-height: 20px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.command-box code::-webkit-scrollbar {
+  display: none;
+}
+.command-scrollbar {
+  position: absolute;
+  right: 0;
+  bottom: -5px;
+  left: 0;
+  height: 4px;
+  opacity: 0;
+}
+.command-box:hover .command-scrollbar,
+.command-box:focus-within .command-scrollbar {
+  opacity: 1;
+}
+.command-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  background-color: var(--label-3);
+  touch-action: none;
+}
+/* A taller invisible grab area than the 4px bar. */
+.command-thumb::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+}
+.command-text::before,
+.command-text::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  opacity: 0;
+}
+.command-text::before {
+  left: 0;
+  background: linear-gradient(to right, var(--code), transparent);
+}
+.command-text::after {
+  right: 0;
+  background: linear-gradient(to left, var(--code), transparent);
+}
+.command-text[data-hidden-start]::before,
+.command-text[data-hidden-end]::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .command-text::before,
+  .command-text::after,
+  .command-scrollbar {
+    transition: opacity 150ms ease;
+  }
 }
 .command-box .button {
   flex: none;

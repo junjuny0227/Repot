@@ -76,7 +76,7 @@ test('the hero shows the CLI install command for the detected platform, with a c
   for (const code of codes) {
     const onMac = hero(render(mac, code));
     expect(onMac).toMatch(
-      /<div class="command-box"><code>brew install junjuny0227\/tap\/repot<\/code><button/,
+      /<div class="command-box"><div class="command-text"><code>brew install junjuny0227\/tap\/repot<\/code><\/div><button/,
     );
     const onWindows = hero(render(windows, code));
     expect(onWindows).toContain('scoop install repot/repot');
@@ -108,7 +108,11 @@ test('every command on the page is copyable', () => {
   const html = render(mac);
   expect(html).not.toContain('<pre');
   // Hero CLI, install CLI and the macOS quarantine command.
-  expect(html.match(/<div class="command-box"><code>[^<]+<\/code><button/g)).toHaveLength(3);
+  expect(
+    html.match(
+      /<div class="command-box"><div class="command-text"><code>[^<]+<\/code><\/div><button/g,
+    ),
+  ).toHaveLength(3);
 });
 
 test('every page links to every language, marks its own, and asks for translation help', () => {
