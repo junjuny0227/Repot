@@ -1203,14 +1203,6 @@
         "evidence": "brew repo github.com/ollama/ollama, homepage ollama.com; winget Ollama.Ollama Publisher Ollama, same repo (Portable is a different distribution)"
       }
     },
-    "opencode-desktop": {
-      "winget": {
-        "method": "jeb",
-        "probability": 0.9576604038971875,
-        "tier": "MEDIUM",
-        "catalogSnapshot": "2026-11-03T11:48:54.428Z"
-      }
-    },
     "openlogi": {
       "scoop": {
         "method": "agent-review",

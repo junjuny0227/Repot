@@ -1024,7 +1024,7 @@
     },
     "opencode-desktop": {
       "brewCask": "opencode-desktop",
-      "winget": "SST.OpenCodeDesktop"
+      "winget": "Anomaly.OpenCode.Desktop"
     },
     "openlogi": {
       "brewCask": "openlogi",
